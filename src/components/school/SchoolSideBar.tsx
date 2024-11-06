@@ -1,7 +1,7 @@
 import { Menu } from 'primereact/menu';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const SideBar = () => {
+const SchoolSideBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const currentPath = location.pathname;
@@ -47,8 +47,8 @@ const SideBar = () => {
                 { label: 'Rekam Presensi Siswa', icon: 'pi pi-book', command: () => navigate('/school/attendance-record'), className: currentPath === '/school/attendance-record' ? 'active-route' : 'menu-item' },
                 { label: 'Rekam Absensi Siswa', icon: 'pi pi-book', command: () => navigate('/school/attendance-record-result'), className: currentPath === '/school/attendance-record-result' ? 'active-route' : 'menu-item' },
                 { label: 'Custom Event Baru', icon: 'pi pi-book', command: () => navigate('/school/custom-event'), className: currentPath === '/school/custom-event' ? 'active-route' : 'menu-item' },
-                { label: 'Waktu Presensi Siswa', icon: 'pi pi-list', command: () => navigate('/attendance/time'), className: currentPath === '/attendance/time' ? 'active-route' : 'menu-item' },
-                { label: 'Daftar Status Presensi', icon: 'pi pi-list', command: () => navigate('/attendance/type'), className: currentPath === '/attendance/type' ? 'active-route' : 'menu-item' },
+                { label: 'Set Waktu Presensi Siswa', icon: 'pi pi-list', command: () => navigate('/school/default-attendance-time'), className: currentPath === '/school/default-attendance-time' ? 'active-route' : 'menu-item' },
+                { label: 'Daftar Status Presensi', icon: 'pi pi-list', command: () => navigate('/school/attendance/status'), className: currentPath === '/school/attendance/status' ? 'active-route' : 'menu-item' },
             ]
         },
         {
@@ -58,16 +58,16 @@ const SideBar = () => {
         {
             label: 'Pencapaian',
             items: [
-                { label: 'Daftar Pencapaian', icon: 'pi pi-book', command: () => navigate('/achievement'), className: currentPath === '/achievement' ? 'active-route' : 'menu-item' },
-                { label: 'Data Pencapaian Siswa', icon: 'pi pi-book', command: () => navigate('/achievement/student'), className: currentPath === '/achievement/student' ? 'active-route' : 'menu-item' }
+                { label: 'Daftar Pencapaian', icon: 'pi pi-book', command: () => navigate('/school/achievement'), className: currentPath === '/school/achievement' ? 'active-route' : 'menu-item' },
+                { label: 'Daftar Pencapaian Siswa', icon: 'pi pi-book', command: () => navigate('/school/achievement/student'), className: currentPath === '/school/achievement/student' ? 'active-route' : 'menu-item' }
             ]
         },
         {
             label: 'Pelanggaran',
             items: [
-                { label: 'Daftar Pelanggaran', icon: 'pi pi-book', command: () => navigate('/violation'), className: currentPath === '/violation' ? 'active-route' : 'menu-item' },
-                { label: 'Data Pelanggaran Siswa', icon: 'pi pi-book', command: () => navigate('/violation/student'), className: currentPath === '/violation/student' ? 'active-route' : 'menu-item' },
-                { label: 'Lapor Poin Siswa', icon: 'pi pi-book', command: () => navigate('/violation/studentpointreport'), className: currentPath === '/violation/studentpointreport' ? 'active-route' : 'menu-item' },
+                { label: 'Daftar Pelanggaran', icon: 'pi pi-book', command: () => navigate('/school/violation'), className: currentPath === '/school/violation' ? 'active-route' : 'menu-item' },
+                { label: 'Data Pelanggaran Siswa', icon: 'pi pi-book', command: () => navigate('/school/violation/student'), className: currentPath === '/school/violation/student' ? 'active-route' : 'menu-item' },
+                { label: 'Lapor Poin Siswa', icon: 'pi pi-book', command: () => navigate('/school/violation/student-point-report'), className: currentPath === '/school/violation/student-point-report' ? 'active-route' : 'menu-item' },
             ]
         },
     ];
@@ -79,4 +79,4 @@ const SideBar = () => {
     );
 };
 
-export default SideBar;
+export default SchoolSideBar;

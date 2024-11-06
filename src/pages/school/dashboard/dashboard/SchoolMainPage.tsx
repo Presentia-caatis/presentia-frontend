@@ -12,7 +12,7 @@ interface MainPageData {
     attandence_islate: number;
 }
 
-const MainPage = () => {
+const SchoolMainPage = () => {
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-color');
 
@@ -232,4 +232,4 @@ const MainPage = () => {
     );
 };
 
-export default MainPage;
+export default SchoolMainPage;

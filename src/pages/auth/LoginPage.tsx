@@ -13,9 +13,17 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [checked, setChecked] = useState(false);
     const navigator = useNavigate();
+
     const handleLogin = () => {
-        // authenticationService.AuthUser(email, password);
-        navigator('/school/mainpage');
+        if (checked) {
+            navigator('/admin/mainpage');
+        } else {
+            navigator('/school/mainpage');
+        }
+    };
+
+    const handleGoogleLogin = () => {
+        console.log('Google login');
     };
 
     return (
@@ -72,11 +80,17 @@ const LoginPage = () => {
                                         onChange={(e) => setChecked(e.checked ?? false)}
                                         className="mr-2"
                                     />
-                                    <label htmlFor="rememberme1">Remember me</label>
+                                    <label htmlFor="rememberme1">Etmin?</label>
                                 </div>
                             </div>
 
-                            <Button label="Sign In" onClick={handleLogin} className="w-full p-3 text-xl" />
+                            <Button label="Sign In" onClick={handleLogin} className="w-full p-3 text-xl mb-3" />
+                            <Button
+                                label="Sign in with Google"
+                                icon="pi pi-google"
+                                className="w-full p-3 text-xl p-button-outlined"
+                                onClick={handleGoogleLogin}
+                            />
                         </div>
                     </Card>
                 </div>

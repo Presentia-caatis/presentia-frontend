@@ -18,7 +18,7 @@ type StudentData = {
     status: string;
 };
 
-const AchievementListPage = () => {
+const SchoolStudentPage = () => {
 
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -33,30 +33,36 @@ const AchievementListPage = () => {
         status: ''
     });
 
+    const [selectedStudents, setSelectedStudents] = useState<StudentData[] | undefined>(undefined);
+
     return (
         <>
             <div className="card">
                 <div className='flex justify-content-between p-4 card'>
                     <div className='flex gap-2'>
-                        <Button icon="pi pi-plus" severity='success' label='New' onClick={() => {
+                        <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
                             setShowAddDialog(true);
                         }} />
-                        <Button icon="pi pi-trash" severity='danger' label='Delete' disabled />
+                        <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
                     </div>
                     <Button icon="pi pi-upload" severity='help' label='Export' />
                 </div>
 
-                <DataTable paginator header={
-                    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                        <h5 className="m-0">Daftar Siswa</h5>
-                        <span className="block mt-2 md:mt-0 p-input-icon-left ">
-                            <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
-                            <InputText className='py-2 pl-5' placeholder="Search..." />
-                        </span>
-                    </div>
-                } rows={20} rowsPerPageOptions={[20, 50, 75, 100]} emptyMessage="Belum ada siswa" tableStyle={{ minWidth: '50rem' }}
+                <DataTable dataKey="id"
+                    selection={selectedStudents!}
+                    selectionMode="multiple"
+                    onSelectionChange={(e) => setSelectedStudents(e.value)} paginator header={
+                        <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 className="m-0">Data Siswa SMK Telkom Bandung</h5>
+                            <span className="block mt-2 md:mt-0 p-input-icon-left ">
+                                <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
+                                <InputText className='py-2 pl-5' placeholder="Search..." />
+                            </span>
+                        </div>
+                    } rows={20} rowsPerPageOptions={[20, 50, 75, 100]} emptyMessage="Belum ada siswa" tableStyle={{ minWidth: '50rem' }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
+                    <Column selectionMode='multiple' headerStyle={{ width: '3rem' }}></Column>
                     <Column sortable field="nama" header="Nama"></Column>
                     <Column sortable field="nis" header="NIS"></Column>
                     <Column sortable field="nisn" header="NISN"></Column>
@@ -80,8 +86,7 @@ const AchievementListPage = () => {
                                 onClick={() => alert('Open student list for this class')}
                             />
                         </div>
-                    )}
-                        header="Actions" />
+                    )} />
                 </DataTable>
 
                 <Dialog visible={showAddDialog} style={{ width: '450px' }} onHide={() => { setShowAddDialog(false) }} header="Penambahan Data Siswa" footer={
@@ -163,4 +168,4 @@ const AchievementListPage = () => {
     );
 };
 
-export default AchievementListPage;
+export default SchoolStudentPage;

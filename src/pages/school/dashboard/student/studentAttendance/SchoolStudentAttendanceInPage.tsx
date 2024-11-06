@@ -4,7 +4,7 @@ import caatisLogo from '../../../../../assets/caatisLogo.png';
 import telkomLogo from '../../../../../assets/telkomuniversityLogo.png';
 import smkTelkomLogo from '../../../../../assets/logo-smk-telkom-bdg.png';
 
-const StudentAttendanceOutPage = () => {
+const SchoolStudentAttendanceInPage = () => {
     const topStudents = [
         { name: 'Ahmad Ali', time: '08:00' },
         { name: 'Budi Santoso', time: '08:05' },
@@ -28,7 +28,7 @@ const StudentAttendanceOutPage = () => {
                     <img src={smkTelkomLogo} className='w-6rem md:w-8rem lg:w-11rem' alt="SMK Telkom Logo" />
                 </a>
             </div>
-            <h1 className="text-center lg:text-6xl">Presensi Keluar<br />SMK Telkom Bandung</h1>
+            <h1 className="text-center lg:text-6xl">Presensi Masuk<br />SMK Telkom Bandung</h1>
             <Card className="w-full lg:w-6 flex flex-column">
                 <form className='px-2' action="">
                     <InputText className="w-full text-center py-4 text-2xl border border-2 border-black-alpha-90" placeholder="Masukkan NIS" />
@@ -86,4 +86,4 @@ const StudentAttendanceOutPage = () => {
     );
 };
 
-export default StudentAttendanceOutPage;
+export default SchoolStudentAttendanceInPage;

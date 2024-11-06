@@ -12,43 +12,28 @@ type ClassroomData = {
     id: number;
     name: string;
     status: string;
-    studentCount: number;
-    maleCount: number;
-    femaleCount: number;
 };
 
-const ClassroomListPage = () => {
+const SchoolAttendanceStatusPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [classroomData, setClassroomData] = useState<ClassroomData>({
         id: 0,
         name: '',
         status: '',
-        studentCount: 0,
-        maleCount: 0,
-        femaleCount: 0,
     });
     const [selectedClassrooms, setSelectedClassrooms] = useState<ClassroomData[] | undefined>(undefined);
     const [classroomList, setClassroomList] = useState<ClassroomData[]>([
-        { id: 1, name: 'Kelas A', status: 'Active', studentCount: 30, maleCount: 15, femaleCount: 15 },
-        { id: 2, name: 'Kelas B', status: 'Inactive', studentCount: 20, maleCount: 10, femaleCount: 10 }
+        { id: 1, name: 'Sakit', status: 'Active' },
+        { id: 2, name: 'Izin', status: 'Inactive' }
     ]);
 
-    const renderStudentCount = (rowData: ClassroomData) => (
-        <span
-            className="student-count-tooltip"
-            data-pr-tooltip={`Laki-Laki: ${rowData.maleCount}, Perempuan: ${rowData.femaleCount}`}
-            data-pr-position="top"
-        >
-            {rowData.studentCount}
-        </span>
-    );
 
     return (
         <>
             <div className="card">
                 <div className="flex justify-content-between p-4 card">
                     <div className="flex gap-2">
-                        <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowAddDialog(true)} />
+                        <Button icon="pi pi-plus" severity="success" label="Status Baru" onClick={() => setShowAddDialog(true)} />
                         <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedClassrooms?.length} />
                     </div>
                     <Button icon="pi pi-upload" severity="help" label="Export" />
@@ -65,7 +50,7 @@ const ClassroomListPage = () => {
                     paginator
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 className="m-0">Daftar Kelas</h5>
+                            <h5 className="m-0">Daftar Status Presensi</h5>
                             <span className="block mt-2 md:mt-0 p-input-icon-left">
                                 <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
                                 <InputText className="py-2 pl-5" placeholder="Search..." />
@@ -83,21 +68,8 @@ const ClassroomListPage = () => {
                     <Column field="name" header="Name" sortable />
                     <Column field="status" header="Status" sortable />
                     <Column
-                        field="studentCount"
-                        header="Jumlah Murid"
-                        sortable
-                        body={renderStudentCount}
-                    />
-                    <Column
                         body={() => (
                             <div className='flex gap-2'>
-                                <Button
-                                    icon="pi pi-eye"
-                                    className="p-button-info p-button-rounded"
-                                    tooltip="Lihat daftar siswa"
-                                    tooltipOptions={{ position: 'top' }}
-                                    onClick={() => alert('Open student list for this class')}
-                                />
                                 <Button
                                     icon="pi pi-pencil"
                                     className="p-button-success p-button-rounded"
@@ -114,7 +86,6 @@ const ClassroomListPage = () => {
                                 />
                             </div>
                         )}
-                        header="Actions"
                     />
                 </DataTable>
 
@@ -122,7 +93,7 @@ const ClassroomListPage = () => {
                     visible={showAddDialog}
                     style={{ width: '450px' }}
                     onHide={() => setShowAddDialog(false)}
-                    header="Tambah Kelas Baru"
+                    header="Tambah Status Baru"
                     footer={
                         <div>
                             <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => setShowAddDialog(false)} />
@@ -173,4 +144,4 @@ const ClassroomListPage = () => {
     );
 };
 
-export default ClassroomListPage;
+export default SchoolAttendanceStatusPage;

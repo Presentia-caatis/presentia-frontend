@@ -1,14 +1,13 @@
-// src/layouts/SchoolLayout.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { useLayoutConfig } from '../context/LayoutConfigContext';
 import LayoutConfigSidebar from '../components/LayoutConfigSidebar';
-import Topbar from '../components/school/TopBar';
-import SideBar from '../components/school/SideBar';
-import Footer from '../components/school/Footer';
+import Topbar from '../components/school/SchoolTopBar';
+import SideBar from '../components/school/SchoolSideBar';
+import Footer from '../components/school/SchoolFooter';
 
-const SchoolLayout: React.FC = () => {
+const SchoolLayout = () => {
     const { darkMode } = useLayoutConfig();
     const [containerClass, setContainerClass] = useState('');
 

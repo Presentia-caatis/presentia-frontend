@@ -18,8 +18,7 @@ type EventData = {
     status: string;
 };
 
-const CustomEventPage = () => {
-
+const SchoolCustomEventPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [loading, setLoading] = useState(true);
     const [date, setDate] = useState(new Date());
@@ -42,6 +41,7 @@ const CustomEventPage = () => {
     return (
         <>
             <div className="card">
+                <h1>Custom Event Baru</h1>
                 <Messages ref={msgs} />
                 <div className='flex justify-content-between p-4 card mt-4'>
                     <div className='flex gap-2'>
@@ -131,4 +131,4 @@ const CustomEventPage = () => {
     );
 };
 
-export default CustomEventPage;
+export default SchoolCustomEventPage;

@@ -1,44 +1,31 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Calendar } from "primereact/calendar"
-import { Dropdown } from 'primereact/dropdown';
 import { useState } from "react";
 import { Button } from 'primereact/button';
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
+import { Toolbar } from "primereact/toolbar";
 
-const StudentAttendanceRecordPage = () => {
+const SchoolStudentAttendanceRecordResultPage = () => {
     const [listKelas, setListKelas] = useState([{ label: 'Kelas A', value: 'Kelas A' }, { label: 'Kelas B', value: 'Kelas B' }]);
     const [selectedKelas, setSelectedKelas] = useState();
     const [date, setDate] = useState(new Date());
     return (
         <>
             <div className="card">
-                <h1>Rekam Presensi SMAN24 Bandung</h1>
-                <div className="grid mt-4">
-                    <div className="col-12 xl:col-6">
-                        <h5>Silahkan Pilih Tanggal Presensi Dan Generate</h5>
-                        <Calendar id="date" value={date} className="w-8" />
-                    </div>
-                    <div className="col-12 xl:col-6">
-                        <h5>Silahkan Pilih Kelas</h5>
-                        <Dropdown placeholder="Silahkan Pilih Kelas" value={selectedKelas} options={listKelas} onChange={(e) => {
-                            setSelectedKelas(e.value);
-                        }} optionLabel="label" className="w-4" />
-                    </div>
-                </div>
-                <h3>Generate siswa yang tidak melakukan presensi (Absen)</h3>
-                <Button icon="pi pi-upload" label="Generate" />
+                <h3>Silahkan Pilih Tanggal</h3>
+                <Calendar id="date" value={date} className="w-8" />
+
             </div>
             <div className="card">
+                <Toolbar start={<Button type="button" icon="pi pi-trash" label="Hapus" severity="danger" className="mb-2" disabled
+                />} end={<Button type="button" icon="pi pi-upload" label="Export" severity='help' className="mb-2"
+                />} className="mb-4" />
+
                 <DataTable paginator header={
                     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                        <div className="text-align-left flex gap-2">
-                            <Button type="button" icon="pi pi-filter-slash" label="Clear" className="p-button-outlined mb-2"
-                            />
-                            <Button type="button" icon="pi pi-upload" label="Export" className="p-button-outlined mb-2"
-                            />
-                        </div>
+                        <h5 className="m-0">Pencapaian SMAN 24 Bandung</h5>
                         <span className="block mt-2 md:mt-0 p-input-icon-left ">
                             <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
                             <InputText className='py-2 pl-5' placeholder="Search..." />
@@ -57,7 +44,8 @@ const StudentAttendanceRecordPage = () => {
                 </DataTable>
             </div>
         </>
+
     )
 }
 
-export default StudentAttendanceRecordPage;
+export default SchoolStudentAttendanceRecordResultPage;
