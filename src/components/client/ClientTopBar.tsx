@@ -1,14 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from 'primereact/button';
-import { Tooltip } from 'primereact/tooltip';
+import { useRef, useState } from 'react';
+import { Toast } from 'primereact/toast';
 
-const AdminTopbar = () => {
-    const [topbarMenuActive, setTopbarMenuActive] = useState(false);
-    const outsideClickListener = useRef<((event: MouseEvent) => void) | null>(null);
-    const topbarMenuRef = useRef<HTMLDivElement>(null);
-    const topbarMenuButtonRef = useRef<HTMLButtonElement>(null);
-
+const ClientTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = useRef(null);
     const navigate = useNavigate();
@@ -27,6 +21,7 @@ const AdminTopbar = () => {
             icon: 'pi pi-cog',
             action: () => {
                 console.log('Open Settings');
+                // Open settings modal or page
             },
         },
         {
@@ -58,50 +53,12 @@ const AdminTopbar = () => {
         };
     },);
 
-    const onMenuToggle = () => {
-    };
-
-    const onTopBarMenuButton = () => {
-        setTopbarMenuActive(prevState => !prevState);
-    };
-
-    const handleLogout = () => {
-        console.log('Logged out');
-    };
-
-    const bindOutsideClickListener = () => {
-        if (outsideClickListener.current) {
-            document.addEventListener('click', outsideClickListener.current);
-        }
-    };
-
-    const unbindOutsideClickListener = () => {
-        if (outsideClickListener.current) {
-            document.removeEventListener('click', outsideClickListener.current);
-        }
-    };
-
-    useEffect(() => {
-        outsideClickListener.current = (event) => {
-            if (
-                topbarMenuRef.current && !topbarMenuRef.current.contains(event.target as Node) &&
-                topbarMenuButtonRef.current && !topbarMenuButtonRef.current.contains(event.target as Node)
-            ) {
-                setTopbarMenuActive(false);
-            }
-        };
-        bindOutsideClickListener();
-        return () => {
-            unbindOutsideClickListener();
-        };
-    }, []);
-
     return (
         <div className="layout-topbar flex justify-content-between">
-            <Link to="/login" className="layout-topbar-logo">
-                <span>Presentia Super Admin</span>
+            <Link to={"dashboard"} className="layout-topbar-logo">
+                <span>My Presentia</span>
             </Link>
-
+            <Toast ref={toast} />
             <div
                 ref={containerRef}
                 className="flex gap-2 cursor-pointer relative"
@@ -148,4 +105,4 @@ const AdminTopbar = () => {
     );
 };
 
-export default AdminTopbar;
+export default ClientTopBar;

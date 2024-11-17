@@ -18,7 +18,7 @@ const LoginPage = () => {
         if (checked) {
             navigator('/admin/mainpage');
         } else {
-            navigator('/school/mainpage');
+            navigator('/client/dashboard');
         }
     };
 
