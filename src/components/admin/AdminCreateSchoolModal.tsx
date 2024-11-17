@@ -4,9 +4,6 @@ import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
-import { MultiSelect } from "primereact/multiselect";
-
-
 
 type OwnerData = {
     name: string;

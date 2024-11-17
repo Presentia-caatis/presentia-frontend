@@ -142,7 +142,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
         >
             {currentStep === "purchase" ? (
                 <div className="grid">
-                    <div className="col-12 mb-3">
+                    <div className="col-12 ">
                         <label htmlFor="name" className="block mb-2">
                             Nama Sekolah
                         </label>
@@ -154,7 +154,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                             placeholder="Masukkan nama sekolah"
                         />
                     </div>
-                    <div className="col-12 mb-3">
+                    <div className="col-12 ">
                         <label htmlFor="plan" className="block mb-2">
                             Pilih Paket
                         </label>
@@ -167,7 +167,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                             className="w-full"
                         />
                     </div>
-                    <div className="col-12 mb-3">
+                    <div className="col-12 ">
                         <label htmlFor="duration" className="block mb-2">
                             Pilih Durasi
                         </label>
@@ -220,7 +220,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                 </div>
             ) : (
                 <div>
-                    <div className="p-3 mb-3 border-1 border-round surface-border">
+                    <div className="p-3 border-1 border-round surface-border">
                         <h5>Detail Sekolah</h5>
                         <p>Nama: {schoolName}</p>
                         <p>Paket: {selectedPlan}</p>

@@ -19,8 +19,8 @@ const ClientSideBar = () => {
                 {
                     label: 'Pembayaran',
                     icon: 'pi pi-fw pi-receipt',
-                    command: () => navigate('/client/dashboard/pembayaran'),
-                    className: currentPath === '/client/dashboard/pembayaran' ? 'active-route' : 'menu-item'
+                    command: () => navigate('/client/dashboard/billing'),
+                    className: currentPath === '/client/dashboard/billing' ? 'active-route' : 'menu-item'
                 },
                 {
                     label: 'Support',

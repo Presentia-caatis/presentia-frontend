@@ -26,6 +26,10 @@ import ClientLayout from './layout/ClientLayout';
 import ClientDashboard from './pages/client/dashboard/ClientDashboardPage';
 import ClientProfilePage from './pages/client/profile/ClientProfilePage';
 import AdminSchoolPage from './pages/admin/school-management/AdminSchoolPage';
+import ClientBillingPage from './pages/client/dashboard/invoice/ClientInvoicePage';
+import ClientInvoiceDetailPage from './pages/client/dashboard/invoice/ClientInvoiceDetailPage';
+import ClientSupportPage from './pages/client/dashboard/support/ClientSupportPage';
+import ClientSupportDetailPage from './pages/client/dashboard/support/ClientSupportDetailPage';
 
 const AppRoutes = () => {
     return (
@@ -39,28 +43,12 @@ const AppRoutes = () => {
 
                 <Route path="client" element={<ClientLayout />}>
                     <Route path="dashboard" element={<ClientDashboard />} />
+                    <Route path="dashboard/billing" element={<ClientBillingPage />} />
+                    <Route path="invoice/:id" element={<ClientInvoiceDetailPage />} />
+                    <Route path="dashboard/support" element={<ClientSupportPage />} />
+                    <Route path="support/ticket/:id" element={<ClientSupportDetailPage />} />
                     <Route path="profile" element={<ClientProfilePage />} />
-
-                    <Route path="student">
-                        <Route index element={<StudentListPage />} />
-                    </Route>
-                    <Route path='attendance-record' element={<StudentAttendanceRecordPage />} />
-                    <Route path='attendance-record-result' element={<StudentAttendanceRecordResultPage />} />
-                    <Route path='custom-event' element={<CustomEventPage />} />
-                    <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
-                    <Route path='attendance/status' element={<AttendanceStatusListPage />} />
-
-                    <Route path='classroom' element={<ClassroomListPage />} />
-
-                    <Route path='achievement' element={<AchievementListPage />} />
-                    <Route path='achievement/student' element={<StudentAchievementListPage />} />
-
-                    <Route path='violation' element={<ViolationPage />} />
-                    <Route path='violation/student' element={<StudentViolationPage />} />
-                    <Route path='violation/student-point-report' element={<ViolationStudentPointReport />} />
                 </Route>
-
-
 
                 <Route path="/admin/*" element={<AdminLayout />}>
                     <Route path="mainpage" element={<AdminDashboard />} />
