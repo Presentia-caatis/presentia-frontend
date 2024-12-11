@@ -11,8 +11,8 @@ const LandingPage = () => {
                         <span className="block text-6xl font-bold mb-1">Presentia</span>
                         <div className="text-6xl text-primary font-bold mb-3">Digitalisasi Absensi Sekolah Anda</div>
                         <p className="mt-0 mb-4 text-700 line-height-3">Optimalkan pengelolaan kehadiran siswa dengan sistem presensi berbasis web yang cepat, aman, dan terintegrasi.</p>
-                        <Button label="Pelajari Lebih Lanjut" type="button" className="mr-3" raised />
-                        <Button label="Demo Langsung" type="button" outlined />
+                        <Button label="Login" type="button" className="mr-3" raised />
+                        <Button label="Daftar" type="button" outlined />
                     </section>
                 </div>
                 <div className="col-12 md:col-6 overflow-hidden">

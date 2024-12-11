@@ -158,7 +158,7 @@ const SchoolMainPage = () => {
                                 <i className="pi pi-users text-blue-500 text-xl"></i>
                             </div>
                         </div>
-                    </div>
+                </div>
                 </div>
                 <div className="col-12 lg:col-6 xl:col-3">
                     <div className="card mb-0">

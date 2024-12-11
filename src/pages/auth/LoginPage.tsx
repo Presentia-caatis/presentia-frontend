@@ -1,30 +1,75 @@
-import React, { useState } from 'react';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import authServices from '../../services/authServices';
+
+
+interface LoginFormInputs {
+    email: string;
+    password: string;
+}
 
 const LoginPage = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm<LoginFormInputs>();
     const toast = React.useRef<Toast>(null);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [checked, setChecked] = useState(false);
-    const navigator = useNavigate();
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = () => {
-        if (checked) {
-            navigator('/admin/mainpage');
-        } else {
-            navigator('/client/dashboard');
+    const onSubmitLogin: SubmitHandler<LoginFormInputs> = async (data) => {
+        try {
+            const response = await authServices.login(data);
+
+            const { token, role } = response;
+            localStorage.setItem('token', token);
+
+            navigate('/client/dashboard');
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Login Success',
+                detail: 'You are now logged in.',
+            });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Login Failed',
+                detail: error.response?.data?.message || 'Something went wrong.',
+            });
         }
     };
 
     const handleGoogleLogin = () => {
-        console.log('Google login');
+        authServices.googleLogin();
     };
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const status = queryParams.get('status');
+        const name = queryParams.get('name');
+        const email = queryParams.get('email');
+        const token = queryParams.get('token');
+
+        if (status === 'new_user') {
+            navigate('/register', { state: { name, email } });
+        } else if (status === 'existing_user') {
+            if (token) {
+                localStorage.setItem('token', token);
+                navigate('/client/dashboard');
+            }
+        } else if (status === 'error') {
+            alert('Authentication failed.');
+        }
+    }, [location, navigate]);
+
 
     return (
         <div className="min-h-screen flex align-items-center justify-content-center">
@@ -45,53 +90,56 @@ const LoginPage = () => {
                             </p>
                         </div>
 
-                        <div>
-                            <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
-                                Email
-                            </label>
-                            <InputText
-                                id="email"
-                                type="text"
-                                placeholder="Email address"
-                                className="w-full md:w-30rem mb-5"
-                                style={{ padding: '1rem' }}
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-
-                            <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
-                                Password
-                            </label>
-                            <Password
-                                id="password"
-                                placeholder="Password"
-                                className="w-full mb-3"
-                                inputClassName="w-full"
-                                inputStyle={{ padding: '1rem' }}
-                                feedback={false}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-
-                            <div className="flex align-items-center justify-content-between mb-4 gap-3">
-                                <div className="flex align-items-center">
-                                    <Checkbox
-                                        checked={checked}
-                                        onChange={(e) => setChecked(e.checked ?? false)}
-                                        className="mr-2"
+                        <form onSubmit={handleSubmit(onSubmitLogin)}>
+                            <div>
+                                <div className='flex flex-column mb-3'>
+                                    <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
+                                        Email
+                                    </label>
+                                    <InputText
+                                        id="email"
+                                        placeholder="Email address"
+                                        className={`w-full md:w-30rem mb-2 ${errors.email ? 'p-invalid' : ''}`}
+                                        style={{ padding: '1rem' }}
+                                        {...register('email', { required: 'Email is required' })}
                                     />
-                                    <label htmlFor="rememberme1">Etmin?</label>
+                                    {errors.email && <small className="p-error">{errors.email.message}</small>}
                                 </div>
-                            </div>
 
-                            <Button label="Sign In" onClick={handleLogin} className="w-full p-3 text-xl mb-3" />
-                            <Button
-                                label="Sign in with Google"
-                                icon="pi pi-google"
-                                className="w-full p-3 text-xl p-button-outlined"
-                                onClick={handleGoogleLogin}
-                            />
-                        </div>
+                                <div className='flex flex-column mb-3'>
+                                    <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
+                                        Password
+                                    </label>
+                                    <Password
+                                        id="password"
+                                        placeholder="Password"
+                                        className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
+                                        inputClassName="w-full" 
+                                        inputStyle={{ padding: '1rem' }}
+                                        feedback={false}
+                                        {...register('password', { required: 'Password is required' })}
+                                    />
+                                    {errors.password && <small className="p-error">{errors.password.message}</small>}
+                                </div>
+                                <div className="flex align-items-center justify-content-between mb-4 mt-2 gap-3">
+                                    <div className="flex align-items-center">
+                                        <Checkbox checked={false}
+                                            className="mr-2"
+                                        />
+                                        <label htmlFor="Remember Password">Save Password?</label>
+                                    </div>
+                                </div>
+
+                                <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" />
+                            </div>
+                        </form>
+                        <Button
+                            type='button'
+                            label="Sign in with Google"
+                            icon="pi pi-google"
+                            className="w-full p-3 text-xl p-button-outlined"
+                            onClick={handleGoogleLogin}
+                        />
                     </Card>
                 </div>
             </div>
