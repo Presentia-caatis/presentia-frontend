@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
-import { Password } from 'primereact/password';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
@@ -12,7 +11,7 @@ import authServices from '../../services/authServices';
 
 
 interface LoginFormInputs {
-    email: string;
+    email_or_username: string;
     password: string;
 }
 
@@ -22,12 +21,14 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(false);
+    const [isPasswordVisible, setPasswordVisible] = useState(false);
 
     const onSubmitLogin: SubmitHandler<LoginFormInputs> = async (data) => {
         try {
+            setLoading(true);
             const response = await authServices.login(data);
 
-            const { token, role } = response;
+            const { token, user } = response;
             localStorage.setItem('token', token);
 
             navigate('/client/dashboard');
@@ -35,20 +36,39 @@ const LoginPage = () => {
             toast.current?.show({
                 severity: 'success',
                 summary: 'Login Success',
-                detail: 'You are now logged in.',
+                detail: `Welcome, ${user.name}`,
             });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
+            setLoading(false);
+        const errorMessage = error.response?.data?.message || 'Invalid credentials.';
+            const errorDetails = error.response?.data?.errors;
+
+            let fullErrorMessage = errorMessage;
+
+            if (errorDetails) {
+                const detailMessages = Object.keys(errorDetails)
+                    .map((key) => errorDetails[key].join(', '))
+                    .join(', ');
+                fullErrorMessage = `${detailMessages}`;
+            }
+
             toast.current?.show({
                 severity: 'error',
                 summary: 'Login Failed',
-                detail: error.response?.data?.message || 'Something went wrong.',
+                detail: fullErrorMessage,
             });
+        } finally {
+            setLoading(false);
         }
-    };
+    }
 
     const handleGoogleLogin = () => {
         authServices.googleLogin();
+    };
+
+    const togglePasswordVisibility = () => {
+        setPasswordVisible((prevState) => !prevState);
     };
 
     useEffect(() => {
@@ -94,31 +114,43 @@ const LoginPage = () => {
                             <div>
                                 <div className='flex flex-column mb-3'>
                                     <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
-                                        Email
+                                        Email atau Username
                                     </label>
                                     <InputText
-                                        id="email"
-                                        placeholder="Email address"
-                                        className={`w-full md:w-30rem mb-2 ${errors.email ? 'p-invalid' : ''}`}
+                                        id="email_or_username"
+                                        placeholder="Email or Username"
+                                        className={`w-full md:w-30rem mb-2 ${errors.email_or_username ? 'p-invalid' : ''}`}
                                         style={{ padding: '1rem' }}
-                                        {...register('email', { required: 'Email is required' })}
+                                        {...register('email_or_username', { required: 'Email or Username is required' })}
                                     />
-                                    {errors.email && <small className="p-error">{errors.email.message}</small>}
+                                    {errors.email_or_username && <small className="p-error">{errors.email_or_username.message}</small>}
                                 </div>
 
                                 <div className='flex flex-column mb-3'>
                                     <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
                                         Password
                                     </label>
-                                    <Password
-                                        id="password"
-                                        placeholder="Password"
-                                        className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
-                                        inputClassName="w-full" 
-                                        inputStyle={{ padding: '1rem' }}
-                                        feedback={false}
-                                        {...register('password', { required: 'Password is required' })}
-                                    />
+                                    <div className="p-inputgroup relative">
+                                        <InputText
+                                            id="password"
+                                            placeholder="Password"
+                                            type={isPasswordVisible ? 'text' : 'password'}
+                                            className={`w-full md:w-30rem pr-6 mb-2 ${errors.password ? 'p-invalid' : ''}`}
+                                            {...register('password', { required: 'Password is required' })}
+                                        />
+                                        <i
+                                            className={`pi ${isPasswordVisible ? 'pi-eye-slash' : 'pi-eye'} absolute cursor-pointer z-1`}
+                                            style={{
+                                                right: '10px',
+                                                top: '45%',
+                                                transform: 'translateY(-50%)',
+                                                fontSize: '1.2rem',
+                                                color: '#6c757d',
+                                            }}
+                                            onClick={togglePasswordVisibility}
+                                        ></i>
+                                    </div>
+
                                     {errors.password && <small className="p-error">{errors.password.message}</small>}
                                 </div>
                                 <div className="flex align-items-center justify-content-between mb-4 mt-2 gap-3">
