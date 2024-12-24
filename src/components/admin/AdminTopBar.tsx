@@ -98,7 +98,7 @@ const AdminTopbar = () => {
 
     return (
         <div className="layout-topbar flex justify-content-between">
-            <Link to="/login" className="layout-topbar-logo">
+            <Link to="" className="layout-topbar-logo">
                 <span>Presentia Super Admin</span>
             </Link>
 

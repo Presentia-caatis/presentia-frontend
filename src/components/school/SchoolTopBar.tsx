@@ -64,7 +64,7 @@ const SchoolTopbar = () => {
 
     return (
         <div className="layout-topbar  flex justify-content-between">
-            <Link to="/login" className="layout-topbar-logo">
+            <Link to="/school/mainpage" className="layout-topbar-logo">
                 <img src={smkTelkomlogo} alt="logo" />
                 <span>SMK Telkom Bandung</span>
             </Link>
