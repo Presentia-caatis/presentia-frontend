@@ -23,13 +23,15 @@ import SchoolProfilePage from './pages/school/profile/SchoolProfilePage';
 import PublicLayout from './layout/PublicLayout';
 import LandingPage from './pages/public/LandingPage';
 import ClientLayout from './layout/ClientLayout';
-import ClientDashboard from './pages/client/dashboard/ClientDashboardPage';
+import ClientDashboard from './pages/client/dashboard/dashboard/ClientDashboardPage';
 import ClientProfilePage from './pages/client/profile/ClientProfilePage';
 import AdminSchoolPage from './pages/admin/school-management/AdminSchoolPage';
 import ClientBillingPage from './pages/client/dashboard/invoice/ClientInvoicePage';
 import ClientInvoiceDetailPage from './pages/client/dashboard/invoice/ClientInvoiceDetailPage';
 import ClientSupportPage from './pages/client/dashboard/support/ClientSupportPage';
 import ClientSupportDetailPage from './pages/client/dashboard/support/ClientSupportDetailPage';
+import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
+import RegisterPage from './pages/auth/RegisterPage';
 
 const AppRoutes = () => {
     return (
@@ -39,7 +41,7 @@ const AppRoutes = () => {
                     <Route path='/' element={<LandingPage />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
-
+                <Route path="/register" element={<RegisterPage />} />
 
                 <Route path="client" element={<ClientLayout />}>
                     <Route path="dashboard" element={<ClientDashboard />} />
@@ -53,6 +55,7 @@ const AppRoutes = () => {
                 <Route path="/admin/*" element={<AdminLayout />}>
                     <Route path="mainpage" element={<AdminDashboard />} />
                     <Route path="schools" element={<AdminSchoolPage />} />
+                    <Route path="subscriptions" element={<AdminSubscribtionPage />} />
                 </Route>
 
                 <Route path="/school/*" element={<SchoolLayout />}>

@@ -25,3 +25,19 @@ a {
 .layout-wrapper {
     min-height: 100vh;
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.hover\:surface-200:hover {
+    background-color: var(--surface-200);
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-secondary {
+    color: var(--text-secondary-color, #6c757d); 
+}
