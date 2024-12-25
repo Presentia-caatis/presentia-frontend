@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 
 const LandingPage = () => {
     const navigator = useNavigate();
-    const [userEmail, setUserEmail] = useState('zaky@gmail.com');
+    const [userEmail, setUserEmail] = useState('');
     return (
         <div>
             <div className="grid grid-nogutter surface-0 text-800">

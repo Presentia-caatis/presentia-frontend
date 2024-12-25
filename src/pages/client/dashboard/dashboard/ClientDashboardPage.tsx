@@ -35,6 +35,7 @@ type UserData = {
 const ClientDashboardPage = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [userData, setUserData] = useState<UserData | null>(null);
     const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
     const [isModalVisible, setModalVisible] = useState(false);
@@ -143,21 +144,21 @@ const ClientDashboardPage = () => {
                                         <p className="mb-3 flex">
                                             <i className="pi pi-map-marker text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
-                                                <strong className='mr-2'>Alamat:</strong>
+                                                <strong className='mr-2 white-space-nowrap'>Alamat:</strong>
                                                 <span>{schoolData.address}</span>
                                             </div>
                                         </p>
                                         <p className="mb-3 flex">
                                             <i className="pi pi-calendar text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
-                                                <strong className='mr-2'>Terdaftar Sejak:</strong>
+                                                <strong className='mr-2 white-space-nowrap'>Terdaftar Sejak:</strong>
                                                 <span>{new Date(schoolData.registeredAt).toLocaleDateString()}</span>
                                             </div>
                                         </p>
                                         <p className="mb-3 flex">
                                             <i className="pi pi-calendar-times text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
-                                                <strong className='mr-2'>Jatuh Tempo Paket:</strong>
+                                                <strong className='mr-2 white-space-nowrap'>Jatuh Tempo Paket:</strong>
                                                 <span>{new Date(schoolData.dueDate).toLocaleDateString()}</span>
                                             </div>
                                         </p>

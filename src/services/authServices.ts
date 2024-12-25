@@ -6,15 +6,19 @@ class AuthService {
         return response.data;
     }
 
-
     async register(payload: { username: string; email: string; password: string, password_confirmation: string }) {
         const response = await axiosClient.post('/register', payload);
         return response.data;
     }
 
     async logout() {
-        await axiosClient.post('/logout');
-        localStorage.clear();
+        try {
+            await axiosClient.post('/logout');
+            localStorage.clear();
+        } catch (error) {
+            console.error('Logout error:', error.response.data);
+        }
+
     }
 
     googleLogin() {
