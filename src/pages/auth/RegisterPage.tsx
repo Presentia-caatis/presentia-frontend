@@ -46,7 +46,7 @@ const RegisterPage = () => {
         }
     };
 
-    const password = watch('password'); 
+    const password = watch('password');
 
     return (
         <div className="min-h-screen flex align-items-center justify-content-center">

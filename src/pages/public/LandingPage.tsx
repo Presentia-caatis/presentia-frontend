@@ -1,10 +1,15 @@
 import { Button } from "primereact/button"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"
 
 const LandingPage = () => {
-    const navigator = useNavigate();
-    const [userEmail, setUserEmail] = useState('');
+    const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        setIsLoggedIn(!!token);
+    }, []);
     return (
         <div>
             <div className="grid grid-nogutter surface-0 text-800">
@@ -13,14 +18,31 @@ const LandingPage = () => {
                         <span className="block text-6xl font-bold mb-1">Presentia</span>
                         <div className="text-6xl text-primary font-bold mb-3">Digitalisasi Absensi Sekolah Anda</div>
                         <p className="mt-0 mb-4 text-700 line-height-3">Optimalkan pengelolaan kehadiran siswa dengan sistem presensi berbasis web yang cepat, aman, dan terintegrasi.</p>
-                        {userEmail ? (
+                        {isLoggedIn ? (
                             <div>
-                                <Button label="Dashboard" type="button" className="mr-3" raised />
+                                <Button
+                                    label="Dashboard"
+                                    type="button"
+                                    className="mr-3"
+                                    onClick={() => navigate('/client/dashboard')}
+                                    raised
+                                />
                             </div>
                         ) : (
                             <div>
-                                <Button label="Login" type="button" className="mr-3" raised />
-                                <Button label="Daftar" type="button" outlined />
+                                <Button
+                                    label="Login"
+                                    type="button"
+                                    className="mr-3"
+                                    onClick={() => navigate('/login')}
+                                    raised
+                                />
+                                <Button
+                                    label="Daftar"
+                                    type="button"
+                                    onClick={() => navigate('/register')}
+                                    outlined
+                                />
                             </div>
                         )}
 
@@ -179,21 +201,18 @@ const LandingPage = () => {
             <br />
             <br />
 
-            {userEmail ?? (<div>
-
+            {!isLoggedIn && (<div>
                 <div className="surface-0 text-700 text-center px-4 py-8 md:px-6 lg:px-8">
                     <div className="text-blue-600 font-bold mb-3"><i className="pi pi-user"></i>&nbsp;PILIH PRESENTIA</div>
                     <div className="text-900 font-bold text-5xl mb-3">Daftar Akun Sekarang</div>
                     <div className="text-700 text-2xl mb-5">Bergabunglah dengan sekolah lain yang telah beralih ke sistem presensi modern kami.</div>
                     <Button label="Daftar Akun" onClick={() => {
-                        navigator('/login')
+                        navigate('/login')
                     }} icon="pi pi-user" className="font-bold px-5 py-3 white-space-nowrap" rounded raised />
                 </div>
 
                 <br />
                 <br /> </div>)}
-
-
         </div>
     )
 }

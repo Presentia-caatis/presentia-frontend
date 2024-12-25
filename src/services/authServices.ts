@@ -12,13 +12,8 @@ class AuthService {
     }
 
     async logout() {
-        try {
-            await axiosClient.post('/logout');
-            localStorage.clear();
-        } catch (error) {
-            console.error('Logout error:', error.response.data);
-        }
-
+        const response = await axiosClient.post('/logout');
+        return response.data;
     }
 
     googleLogin() {

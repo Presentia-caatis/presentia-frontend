@@ -1,15 +1,46 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
+import AuthServices from '../../services/authServices';
+import { Toast } from 'primereact/toast';
 
 const PublicTopbar = () => {
+    const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [hovered, setHovered] = useState(false);
-    const [userEmail, setUserEmail] = useState('zaky@gmail.com');
+    const [userEmail, setUserEmail] = useState('');
+    const toast = React.useRef<Toast>(null);
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        console.log('Logged out');
+    useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            const parsedData = JSON.parse(userData);
+            setUserEmail(parsedData.email);
+            setIsLoggedIn(true);
+        }
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await AuthServices.logout();
+
+            setIsLoggedIn(false);
+            setUserEmail('');
+
+            navigate('/');
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Logout Success',
+                detail: 'Kamu sudah logout dari aplikasi',
+            });
+        } catch (error) {
+            console.error('Logout failed:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Logout Gagal',
+                detail: 'Something went wrong.',
+            });
+        }
     };
 
     return (
@@ -19,9 +50,14 @@ const PublicTopbar = () => {
             </Link>
 
             {!isLoggedIn ? (
-                <Button onClick={() => {
-                    setIsLoggedIn(true);
-                }} className="text-xl font-semibold">Login</Button>
+                <Button
+                    onClick={() => {
+                        navigate('/login')
+                    }}
+                    className="text-xl font-semibold"
+                >
+                    Login
+                </Button>
             ) : (
                 <div
                     className="relative flex align-items-center"
@@ -44,7 +80,7 @@ const PublicTopbar = () => {
 
                     {hovered && (
                         <div
-                            className="absolute bg-white border-1 border-round-lg shadow text-sm px-3 py-2  mt-2"
+                            className="absolute bg-white border-1 border-round-lg shadow text-sm px-3 py-2 mt-2"
                             style={{
                                 left: '50%',
                                 transform: 'translateX(-50%)',
@@ -53,8 +89,8 @@ const PublicTopbar = () => {
                             }}
                             onMouseLeave={() => setHovered(false)}
                         >
-                            <div className='flex flex-column'>
-                                <div className='white-space-nowrap'>
+                            <div className="flex flex-column">
+                                <div className="white-space-nowrap">
                                     Anda login sebagai:
                                 </div>
                                 <b>{userEmail}</b>

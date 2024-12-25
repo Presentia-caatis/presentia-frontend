@@ -134,35 +134,35 @@ const ClientDashboardPage = () => {
                                         <h1 className="text-4xl font-bold ml-2">{schoolData.name}</h1>
                                     </div>
                                     <div className="mt-4 text-lg">
-                                        <p className="mb-3 flex">
+                                        <div className="mb-3 flex">
                                             <i className="pi pi-info-circle text-xl mr-2"></i>
                                             <div className='flex'>
                                                 <strong className='mr-2'>Status:</strong>
                                                 <span>{schoolData.status}</span>
                                             </div>
-                                        </p>
-                                        <p className="mb-3 flex">
+                                        </div>
+                                        <div className="mb-3 flex">
                                             <i className="pi pi-map-marker text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
                                                 <strong className='mr-2 white-space-nowrap'>Alamat:</strong>
                                                 <span>{schoolData.address}</span>
                                             </div>
-                                        </p>
-                                        <p className="mb-3 flex">
+                                        </div>
+                                        <div className="mb-3 flex">
                                             <i className="pi pi-calendar text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
                                                 <strong className='mr-2 white-space-nowrap'>Terdaftar Sejak:</strong>
                                                 <span>{new Date(schoolData.registeredAt).toLocaleDateString()}</span>
                                             </div>
-                                        </p>
-                                        <p className="mb-3 flex">
+                                        </div>
+                                        <div className="mb-3 flex">
                                             <i className="pi pi-calendar-times text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
                                                 <strong className='mr-2 white-space-nowrap'>Jatuh Tempo Paket:</strong>
                                                 <span>{new Date(schoolData.dueDate).toLocaleDateString()}</span>
                                             </div>
-                                        </p>
-                                        <p className="mb-3">
+                                        </div>
+                                        <div className="mb-3">
                                             <i className="pi pi-box text-xl mr-2"></i>
                                             <strong>Paket:</strong>
                                             <Tag
@@ -179,7 +179,7 @@ const ClientDashboardPage = () => {
                                                 }
                                             />
                                             <Tooltip target="#package-tooltip" position="right" />
-                                        </p>
+                                        </div>
                                     </div>
                                 </div>
 

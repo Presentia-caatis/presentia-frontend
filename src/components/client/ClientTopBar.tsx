@@ -1,30 +1,43 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import authServices from '../../services/authServices';
 
 const ClientTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const toast = useRef(null);
+    const toast = React.useRef<Toast>(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
-    const [username, setUsername] = useState<string | null>(null);
+
+    const [user, setUser] = useState<{ fullname: string } | null>(null);
 
     useEffect(() => {
-        const storedUsername = localStorage.getItem('username');
-        if (!storedUsername) {
-            handleLogout();
-        } else {
-            setUsername(storedUsername);
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            setUser(JSON.parse(userData));
         }
     }, []);
 
     const handleLogout = async () => {
         try {
             await authServices.logout();
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            localStorage.clear();
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Logout Success',
+                detail: 'You are now logged out.',
+            });
             navigate('/');
-        } catch (error) {
-            console.error('Error during logout:', error);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Logout Failed',
+                detail: error.response?.data?.message || 'Something went wrong.',
+            });
         }
     };
 
@@ -86,7 +99,7 @@ const ClientTopBar = () => {
                 aria-haspopup
             >
                 <div className=''>
-                    {username || 'Guest'}
+                    {user?.fullname || 'Guest'}
                 </div>
                 <div>
                     <i
