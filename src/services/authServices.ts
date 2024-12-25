@@ -1,7 +1,7 @@
 import axiosClient from '../utils/axiosClient';
 
 class AuthService {
-    async login(payload: { email: string; password: string }) {
+    async login(payload: { email_or_username: string; password: string }) {
         const response = await axiosClient.post('/login', payload);
         return response.data;
     }
@@ -12,10 +12,9 @@ class AuthService {
         return response.data;
     }
 
-
     async logout() {
-        const response = await axiosClient.post('/logout');
-        return response.data;
+        await axiosClient.post('/logout');
+        localStorage.clear();
     }
 
     googleLogin() {

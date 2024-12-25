@@ -1,12 +1,32 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
+import authServices from '../../services/authServices';
 
 const ClientTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = useRef(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
+    const [username, setUsername] = useState<string | null>(null);
+
+    useEffect(() => {
+        const storedUsername = localStorage.getItem('username');
+        if (!storedUsername) {
+            handleLogout();
+        } else {
+            setUsername(storedUsername);
+        }
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await authServices.logout();
+            navigate('/');
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    };
 
     const profileItems = [
         {
@@ -21,14 +41,13 @@ const ClientTopBar = () => {
             icon: 'pi pi-cog',
             action: () => {
                 console.log('Open Settings');
-                // Open settings modal or page
             },
         },
         {
             label: 'Logout',
             icon: 'pi pi-sign-out',
             action: () => {
-                navigate('/');
+                handleLogout();
             },
         },
     ];
@@ -66,8 +85,8 @@ const ClientTopBar = () => {
                 aria-controls="popup_profile_menu"
                 aria-haspopup
             >
-                <div>
-                    MUHAMMAD ZAKY FATHURAHIM
+                <div className=''>
+                    {username || 'Guest'}
                 </div>
                 <div>
                     <i
@@ -78,7 +97,7 @@ const ClientTopBar = () => {
 
                 {profileOpen && (
                     <div
-                        className="absolute bg-white card p-0 text-sm w-full transition-all duration-300 opacity-100 scale-100"
+                        className="absolute bg-white min-w-full card p-0 text-sm transition-all duration-300 opacity-100 scale-100"
                         style={{
                             left: '50%',
                             transform: 'translateX(-50%)',
