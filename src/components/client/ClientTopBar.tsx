@@ -11,7 +11,7 @@ const ClientTopBar = () => {
     const [profileOpen, setProfileOpen] = useState(false);
 
     const [user, setUser] = useState<{ fullname: string } | null>(null);
-
+    
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (userData) {
