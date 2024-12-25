@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import authServices from '../../services/authServices';
+import { useToastContext } from '../../context/ToastContext';
 
 const ClientTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -18,6 +19,17 @@ const ClientTopBar = () => {
         }
     }, []);
 
+    const { showToast } = useToastContext();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
+        showToast({
+            severity: severity,
+            summary: summary,
+            detail: detail
+        });
+    }
+
     const handleLogout = async () => {
         try {
             await authServices.logout();
@@ -25,19 +37,11 @@ const ClientTopBar = () => {
             localStorage.removeItem('token');
             localStorage.clear();
 
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Logout Success',
-                detail: 'You are now logged out.',
-            });
+            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             navigate('/');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Logout Failed',
-                detail: error.response?.data?.message || 'Something went wrong.',
-            });
+            callToast(showToast, 'error', 'Logout Gagal', 'Tidak bisa logout');
         }
     };
 

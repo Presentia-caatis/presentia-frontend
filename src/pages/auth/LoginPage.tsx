@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
 import { Card } from 'primereact/card';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { SubmitHandler, useForm, Controller } from 'react-hook-form';
-import authServices from '../../services/AuthServices';
+import authServices from '../../services/authServices';
 import { useToastContext } from '../../context/ToastContext';
 
 
@@ -19,24 +18,16 @@ interface LoginFormInputs {
 
 const LoginPage = () => {
     const { register, handleSubmit, formState: { errors }, control } = useForm<LoginFormInputs>();
-    const toast = React.useRef<Toast>(null);
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
 
-    function toastLoginBerhasil(showToast) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
         showToast({
-            severity: "success",
-            summary: "Login Berhasil",
-            detail: "Sekarang kamu sudah login"
-        });
-    }
-
-    function toastLoginGagal(showToast) {
-        showToast({
-            severity: "error",
-            summary: "Login Gagal",
-            detail: "Email atau Password salah"
+            severity: severity,
+            summary: summary,
+            detail: detail
         });
     }
 
@@ -50,10 +41,10 @@ const LoginPage = () => {
             localStorage.setItem('user', JSON.stringify(user));
             navigate('/client/dashboard');
 
-            toastLoginBerhasil(showToast);
+            callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            toastLoginGagal(showToast);
+            callToast(showToast, 'error', 'Login Gagal', 'Email atau Password salah');
         } finally {
             setLoading(false);
         }
@@ -80,18 +71,13 @@ const LoginPage = () => {
             }
         } else if (status === 'error') {
             const message = queryParams.get('message');
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Login Failed',
-                detail: message,
-            });
+            callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
         }
     }, [location, navigate]);
 
 
     return (
         <>
-            <Toast ref={toast} />
             <div className="min-h-screen flex align-items-center justify-content-center">
                 <div className="flex">
                     <div
@@ -158,7 +144,7 @@ const LoginPage = () => {
                                         </div>
                                     </div>
 
-                                    <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" />
+                                    <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" loading={loading} />
                                 </div>
                             </form>
                             <Button
