@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
-import { Toast } from 'primereact/toast';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authServices from '../../services/authServices';
+import { useToastContext } from '../../context/ToastContext';
 
 interface RegisterFormInputs {
-    name: string;
+    fullname: string;
+    username: string;
     password: string;
     confirmPassword: string;
 }
@@ -18,31 +18,33 @@ interface RegisterFormInputs {
 const RegisterPage = () => {
     const { state }: any = useLocation();
     const navigate = useNavigate();
-    const toast = React.useRef<Toast>(null);
     const { control, register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormInputs>();
+
+    const { showToast } = useToastContext();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
+        showToast({
+            severity: severity,
+            summary: summary,
+            detail: detail
+        });
+    }
 
     const onSubmitRegister: SubmitHandler<RegisterFormInputs> = async (data) => {
         try {
             await authServices.register({
-                username: data.name,
+                fullname: data.fullname,
+                username: data.username,
                 email: state.email,
                 password: data.password,
                 password_confirmation: data.confirmPassword
             });
 
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Registration Successful',
-                detail: 'Your account has been created.',
-            });
-
-            navigate('/client/dashboard');
+            callToast(showToast, 'success', 'Registrasi Berhasil', 'Login melalui username/email dan password');
+            navigate('/login');
         } catch (error: any) {
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Registration Failed',
-                detail: error.response?.data?.message || 'Something went wrong.',
-            });
+            callToast(showToast, 'error', 'Registrasi Gagal', 'cekk');
         }
     };
 
@@ -50,7 +52,6 @@ const RegisterPage = () => {
 
     return (
         <div className="min-h-screen flex align-items-center justify-content-center">
-            <Toast ref={toast} />
             <div
                 style={{
                     borderRadius: '56px',
@@ -69,17 +70,30 @@ const RegisterPage = () => {
                     <form onSubmit={handleSubmit(onSubmitRegister)}>
                         <div className="flex flex-column mb-3">
                             <label htmlFor="name" className="block text-900 text-xl font-medium mb-2">
-                                Name
+                                Full Name
                             </label>
                             <InputText
                                 id="name"
                                 placeholder="Full Name"
-                                defaultValue={state?.name || ''}
-                                className={`w-full md:w-30rem mb-2 ${errors.name ? 'p-invalid' : ''}`}
+                                defaultValue={state?.fullname || ''}
+                                className={`w-full md:w-30rem mb-2 ${errors.fullname ? 'p-invalid' : ''}`}
                                 style={{ padding: '1rem' }}
-                                {...register('name', { required: 'Name is required' })}
+                                {...register('fullname', { required: 'Name is required' })}
                             />
-                            {errors.name && <small className="p-error">{errors.name.message}</small>}
+                            {errors.fullname && <small className="p-error">{errors.fullname.message}</small>}
+                        </div>
+                        <div className="flex flex-column mb-3">
+                            <label htmlFor="name" className="block text-900 text-xl font-medium mb-2">
+                                Username
+                            </label>
+                            <InputText
+                                id="name"
+                                placeholder="Username"
+                                className={`w-full md:w-30rem mb-2 ${errors.username ? 'p-invalid' : ''}`}
+                                style={{ padding: '1rem' }}
+                                {...register('username', { required: 'Name is required' })}
+                            />
+                            {errors.username && <small className="p-error">{errors.username.message}</small>}
                         </div>
 
                         <div className="flex flex-column mb-3">

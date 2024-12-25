@@ -6,8 +6,13 @@ class AuthService {
         return response.data;
     }
 
-    async register(payload: { username: string; email: string; password: string, password_confirmation: string }) {
+    async register(payload: { fullname: string, username: string; email: string; password: string, password_confirmation: string }) {
         const response = await axiosClient.post('/register', payload);
+        return response.data;
+    }
+
+    async getProfile() {
+        const response = await axiosClient.get('/user/show-by-token');
         return response.data;
     }
 

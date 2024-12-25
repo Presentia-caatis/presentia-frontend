@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { SubmitHandler, useForm, Controller } from 'react-hook-form';
 import authServices from '../../services/authServices';
 import { useToastContext } from '../../context/ToastContext';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 
 interface LoginFormInputs {
@@ -21,6 +22,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
@@ -39,9 +41,9 @@ const LoginPage = () => {
 
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(user));
-            navigate('/client/dashboard');
-
+            setIsLoggedIn(true);
             callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+            navigate('/client/dashboard');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             callToast(showToast, 'error', 'Login Gagal', 'Email atau Password salah');
@@ -60,104 +62,146 @@ const LoginPage = () => {
         const status = queryParams.get('status');
         const token = queryParams.get('token');
 
-        if (status === 'new_user') {
-            const name = queryParams.get('name');
-            const email = queryParams.get('email');
-            navigate('/register', { state: { name, email } });
-        } else if (status === 'existing_user') {
-            if (token) {
-                localStorage.setItem('token', token);
-                navigate('/client/dashboard');
+        const handleLoginFlow = async () => {
+            if (status === 'new_user') {
+                const fullname = queryParams.get('name');
+                const email = queryParams.get('email');
+                navigate('/register', { state: { fullname, email } });
+            } else if (status === 'existing_user') {
+                if (token) {
+                    localStorage.setItem('token', token);
+                    try {
+                        const response = await authServices.getProfile();
+                        localStorage.setItem('user', JSON.stringify(response.data));
+                        callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+                        navigate('/client/dashboard');
+                    } catch (error) {
+                        callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
+                    }
+                }
+            } else if (status === 'error') {
+                const message = queryParams.get('message');
+                callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
             }
-        } else if (status === 'error') {
-            const message = queryParams.get('message');
-            callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
+        };
+
+        handleLoginFlow();
+    }, [navigate, showToast]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const checkTokenValidity = async () => {
+                try {
+                    const response = await authCheck();
+                    if (response.status === "success") {
+                        setIsLoggedIn(true);
+                        navigate('/client/dashboard');
+                    } else {
+                        localStorage.clear();
+                        setIsLoggedIn(false);
+                    }
+                } catch (error) {
+                    console.error('Error during token validation', error);
+                    localStorage.clear();
+                    setIsLoggedIn(false);
+                }
+            };
+
+            checkTokenValidity();
+        } else {
+            setIsLoggedIn(false);
         }
-    }, [location, navigate]);
+    }, [navigate]);
+
+
+    const authCheck = async () => {
+        const response = await authServices.getProfile()
+        return response;
+    }
 
 
     return (
-        <>
-            <div className="min-h-screen flex align-items-center justify-content-center">
-                <div className="flex">
-                    <div
-                        style={{
-                            borderRadius: '56px',
-                            padding: '0.3rem',
-                            background: 'linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)',
-                        }}
-                    >
-                        <Card className="w-full p-4 md:p-5" style={{ borderRadius: '53px' }}>
-                            <div className="text-center mb-3">
-                                <h2 className="text-900 text-3xl font-medium mb-3">Selamat Datang!</h2>
-                                <p className="text-600 font-medium">
-                                    Silahkan Log In Untuk Melanjutkan Ke Dashboard
-                                </p>
-                            </div>
+        <> <div className="min-h-screen flex align-items-center justify-content-center">
+            {!isLoggedIn ? <div className="flex">
+                <div
+                    style={{
+                        borderRadius: '56px',
+                        padding: '0.3rem',
+                        background: 'linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)',
+                    }}
+                >
+                    <Card className="w-full p-4 md:p-5" style={{ borderRadius: '53px' }}>
+                        <div className="text-center mb-3">
+                            <h2 className="text-900 text-3xl font-medium mb-3">Selamat Datang!</h2>
+                            <p className="text-600 font-medium">
+                                Silahkan Log In Untuk Melanjutkan Ke Dashboard
+                            </p>
+                        </div>
 
-                            <form onSubmit={handleSubmit(onSubmitLogin)}>
-                                <div>
-                                    <div className='flex flex-column mb-3'>
-                                        <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
-                                            Email
-                                        </label>
-                                        <InputText
-                                            id="email"
-                                            placeholder="Email address"
-                                            className={`w-full md:w-30rem mb-2 ${errors.email_or_username ? 'p-invalid' : ''}`}
-                                            style={{ padding: '1rem' }}
-                                            {...register('email_or_username', { required: 'Email or username is required' })}
-                                        />
-                                        {errors.email_or_username && <small className="p-error">{errors.email_or_username.message}</small>}
-                                    </div>
-
-                                    <div className='flex flex-column mb-3'>
-                                        <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
-                                            Password
-                                        </label>
-                                        <Controller
-                                            name="password"
-                                            control={control}
-                                            rules={{ required: 'Password is required' }}
-                                            render={({ field }) => (
-                                                <Password
-                                                    id="password"
-                                                    placeholder="Password"
-                                                    className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
-                                                    inputClassName="w-full"
-                                                    inputStyle={{ padding: '1rem' }}
-                                                    feedback={false}
-                                                    value={field.value || ''}
-                                                    onChange={(e) => field.onChange(e.target.value)}
-                                                />
-                                            )}
-                                        />
-
-                                        {errors.password && <small className="p-error">{errors.password.message}</small>}
-                                    </div>
-                                    <div className="flex align-items-center justify-content-between mb-4 mt-2 gap-3">
-                                        <div className="flex align-items-center">
-                                            <Checkbox checked={false}
-                                                className="mr-2"
-                                            />
-                                            <label htmlFor="Remember Password">Save Password?</label>
-                                        </div>
-                                    </div>
-
-                                    <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" loading={loading} />
+                        <form onSubmit={handleSubmit(onSubmitLogin)}>
+                            <div>
+                                <div className='flex flex-column mb-3'>
+                                    <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
+                                        Email
+                                    </label>
+                                    <InputText
+                                        id="email"
+                                        placeholder="Email address"
+                                        className={`w-full md:w-30rem mb-2 ${errors.email_or_username ? 'p-invalid' : ''}`}
+                                        style={{ padding: '1rem' }}
+                                        {...register('email_or_username', { required: 'Email or username is required' })}
+                                    />
+                                    {errors.email_or_username && <small className="p-error">{errors.email_or_username.message}</small>}
                                 </div>
-                            </form>
-                            <Button
-                                type='button'
-                                label="Sign in with Google"
-                                icon="pi pi-google"
-                                className="w-full p-3 text-xl p-button-outlined"
-                                onClick={handleGoogleLogin}
-                            />
-                        </Card>
-                    </div>
+
+                                <div className='flex flex-column mb-3'>
+                                    <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
+                                        Password
+                                    </label>
+                                    <Controller
+                                        name="password"
+                                        control={control}
+                                        rules={{ required: 'Password is required' }}
+                                        render={({ field }) => (
+                                            <Password
+                                                id="password"
+                                                placeholder="Password"
+                                                className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
+                                                inputClassName="w-full"
+                                                inputStyle={{ padding: '1rem' }}
+                                                feedback={false}
+                                                value={field.value || ''}
+                                                onChange={(e) => field.onChange(e.target.value)}
+                                            />
+                                        )}
+                                    />
+
+                                    {errors.password && <small className="p-error">{errors.password.message}</small>}
+                                </div>
+                                <div className="flex align-items-center justify-content-between mb-4 mt-2 gap-3">
+                                    <div className="flex align-items-center">
+                                        <Checkbox checked={false}
+                                            className="mr-2"
+                                        />
+                                        <label htmlFor="Remember Password">Save Password?</label>
+                                    </div>
+                                </div>
+
+                                <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" loading={loading} />
+                            </div>
+                        </form>
+                        <Button
+                            type='button'
+                            label="Sign in with Google"
+                            icon="pi pi-google"
+                            className="w-full p-3 text-xl p-button-outlined"
+                            onClick={handleGoogleLogin}
+                        />
+                    </Card>
                 </div>
-            </div>
+            </div> : <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />}
+        </div>
         </>
     );
 };
