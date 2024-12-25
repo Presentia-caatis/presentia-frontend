@@ -1,148 +1,294 @@
-import { useState } from 'react';
-import { Card } from 'primereact/card';
+import { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
-import { Divider } from 'primereact/divider';
 import { useNavigate } from 'react-router-dom';
+import { Card } from 'primereact/card';
+import { Divider } from 'primereact/divider';
+import { Tag } from 'primereact/tag';
+import { Tooltip } from 'primereact/tooltip';
+import { Panel } from 'primereact/panel';
 import ClientCreateSchoolModal from '../../../../components/client/ClientCreateSchoolModal';
+
+
+type SchoolData = {
+    id: number;
+    name: string;
+    plan: string;
+    dueDate: string;
+    status: string;
+    address: string;
+    totalStudents: number;
+    registeredAt: string;
+};
+
+type UserData = {
+    id: number;
+    school_id: number | null;
+    role: string;
+    email: string;
+    username: string;
+    email_verified_at: string;
+    created_at: string;
+    updated_at: string;
+};
+
 
 const ClientDashboardPage = () => {
     const navigate = useNavigate();
-    const [school, setSchool] = useState<{
-        id: number;
-        name: string;
-        plan: string;
-        dueDate: string;
-        role: string;
-        status: string;
-        packageDetails?: {
-            name: string;
-            pricePerMonth: number;
-            pricePerYear: number;
-            features: string[];
-        };
-    } | null>({
-        id: 1,
-        name: 'SMK Negeri 1',
-        plan: 'Premium',
-        dueDate: '2024-12-31',
-        role: 'Owner',
-        status: 'Active',
-        packageDetails: {
-            name: "Premium",
-            pricePerMonth: 500000,
-            pricePerYear: 5000000,
-            features: ["Priority Support", "100GB Storage", "Custom Reports"],
-        },
-    });
+    const token = localStorage.getItem('token');
+    const [userData, setUserData] = useState<UserData | null>(null);
+    const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
     const [isModalVisible, setModalVisible] = useState(false);
 
+    useEffect(() => {
+        if (!token) {
+            localStorage.removeItem('token');
+            navigate('/login');
+            return;
+        }
+
+        const dummyUserData: UserData = {
+            id: 1,
+            school_id: 1,
+            role: 'Admin',
+            email: 'user@example.com',
+            username: 'JohnDoe',
+            email_verified_at: '2024-01-01T00:00:00Z',
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
+        };
+
+        const dummySchoolData: SchoolData = {
+            id: 1,
+            name: 'Sekolah Harapan Bangsa',
+            plan: 'Premium',
+            dueDate: '2024-02-01',
+            status: 'Active',
+            address: 'Jl. Merdeka No. 1, Jakarta',
+            totalStudents: 1200,
+            registeredAt: '2023-01-01',
+        };
+
+        setTimeout(() => {
+            setUserData(dummyUserData);
+            if (dummyUserData.school_id) {
+                setSchoolData(dummySchoolData);
+            }
+        }, 1000);
+    }, [token]);
+
     const handleDashboard = () => {
-        if (school) navigate(`/school/${school.id}/mainpage`);
+        if (schoolData) navigate(`/school/${schoolData.id}/mainpage`);
     };
 
     const handleAttendanceIn = () => {
-        if (school) navigate(`/school/${school.id}/student/attendance/in`);
+        if (schoolData) navigate(`/school/${schoolData.id}/student/attendance/in`);
     };
 
     const handleAttendanceOut = () => {
-        if (school) navigate(`/school/${school.id}/student/attendance/out`);
+        if (schoolData) navigate(`/school/${schoolData.id}/student/attendance/out`);
     };
 
-    const addSchool = (newSchool: {
-        id: number;
-        name: string;
-        plan: string;
-        dueDate: string;
-        role: string;
-        status: string;
-        packageDetails?: {
-            name: string;
-            pricePerMonth: number;
-            pricePerYear: number;
-            features: string[];
-        };
-    }) => {
-        setSchool(newSchool);
-        setModalVisible(false);
+    const eventDetail = {
+        isEvent: true,
+        name: 'Pekan Kreativitas',
+        startTime: '08:00',
+        endTime: '12:00',
     };
+
+    const studentAttendance = [
+        { name: 'John Doe', time: '08:10' },
+        { name: 'Jane Smith', time: '08:20' },
+        { name: 'Alice Johnson', time: '08:30' },
+        { name: 'Alice Johnson', time: '08:30' },
+        { name: 'Alice Johnson', time: '08:30' },
+        { name: 'Alice Johnson', time: '08:30' },
+        { name: 'Alice Johnson', time: '08:30' },
+        { name: 'Alice Johnson', time: '08:30' },
+        { name: 'Alice Johnson', time: '08:30' },
+    ];
+
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    const formattedDate = currentTime.toLocaleDateString();
+    const formattedTime = currentTime.toLocaleTimeString();
+
 
     return (
-        <div className="p-4">
-            <h2 className="mb-3 text-center">Dashboard Sekolah</h2>
-            <Divider />
+        <div className="grid gap-4">
+            {schoolData ? (
+                <>
+                    <div className="col-12">
+                        <Panel header="Sekolah yang dikelola">
+                            <div className="grid grid-nogutter">
+                                <div className="col-12 md:col-6 p-6">
+                                    <div className="flex gap-4 items-center">
+                                        <h1 className="text-4xl font-bold ml-2">{schoolData.name}</h1>
+                                    </div>
+                                    <div className="mt-4 text-lg">
+                                        <p className="mb-3 flex">
+                                            <i className="pi pi-info-circle text-xl mr-2"></i>
+                                            <div className='flex'>
+                                                <strong className='mr-2'>Status:</strong>
+                                                <span>{schoolData.status}</span>
+                                            </div>
+                                        </p>
+                                        <p className="mb-3 flex">
+                                            <i className="pi pi-map-marker text-xl mr-2"></i>
+                                            <div className='flex sm:flex-row flex-column'>
+                                                <strong className='mr-2'>Alamat:</strong>
+                                                <span>{schoolData.address}</span>
+                                            </div>
+                                        </p>
+                                        <p className="mb-3 flex">
+                                            <i className="pi pi-calendar text-xl mr-2"></i>
+                                            <div className='flex sm:flex-row flex-column'>
+                                                <strong className='mr-2'>Terdaftar Sejak:</strong>
+                                                <span>{new Date(schoolData.registeredAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </p>
+                                        <p className="mb-3 flex">
+                                            <i className="pi pi-calendar-times text-xl mr-2"></i>
+                                            <div className='flex sm:flex-row flex-column'>
+                                                <strong className='mr-2'>Jatuh Tempo Paket:</strong>
+                                                <span>{new Date(schoolData.dueDate).toLocaleDateString()}</span>
+                                            </div>
+                                        </p>
+                                        <p className="mb-3">
+                                            <i className="pi pi-box text-xl mr-2"></i>
+                                            <strong>Paket:</strong>
+                                            <Tag
+                                                id="package-tooltip"
+                                                value={schoolData.plan}
+                                                severity="info"
+                                                className="cursor-pointer text-lg ml-2"
+                                                data-pr-tooltip={
+                                                    "Fitur yang Didapatkan:\n" +
+                                                    "- Manajemen Presensi Siswa\n" +
+                                                    "- Rekap Data Kehadiran\n" +
+                                                    "- Dashboard Statistik\n" +
+                                                    "- Laporan Otomatis"
+                                                }
+                                            />
+                                            <Tooltip target="#package-tooltip" position="right" />
+                                        </p>
+                                    </div>
+                                </div>
 
-            {!school ? (
-                <div className="flex align-items-center justify-content-center flex-column gap-3">
-                    <p className="text-center text-secondary">Anda belum memiliki sekolah terdaftar.</p>
-                    <Button
-                        icon="pi pi-plus"
-                        label="Tambah Sekolah"
-                        severity="success"
-                        onClick={() => setModalVisible(true)}
-                        className="p-button-lg"
-                    />
-                </div>
-            ) : (
-                <div className="flex flex-column align-items-center">
-                    <Card
-                        title={school.name}
-                        subTitle={<span><strong>Paket:</strong> {school.plan}</span>}
-                        style={{ width: '90%', maxWidth: '600px' }}
-                        className="mb-3 shadow-2"
-                        footer={
-                            <div className="flex justify-content-center gap-2">
+                                <div className="col-12 md:col-6 p-4">
+                                    <div className="grid">
+                                        <div className="col-12 flex flex-column gap-3">
+                                            <div className="grid gap-4">
+                                                <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
+                                                    <i className="pi pi-users text-orange-500 text-4xl"></i>
+                                                    <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
+                                                    <label className="text-lg">Total Siswa Aktif</label>
+                                                </Card>
+                                                <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
+                                                    <i className="pi pi-users text-blue-500 text-4xl"></i>
+                                                    <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
+                                                    <label className="text-lg">Total Siswa Baru</label>
+                                                </Card>
+                                                <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
+                                                    <i className="pi pi-users text-green-500 text-4xl"></i>
+                                                    <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
+                                                    <label className="text-lg">Total Kelas Baru</label>
+                                                </Card>
+                                            </div>
+                                            <div className='grid mt-2'>
+                                                <Card className="text-center shadow-1 col-12 py-0">
+                                                    <div className="flex justify-content-between align-items-center mb-4">
+                                                        <div>
+                                                            <h5>{formattedDate}</h5>
+                                                            <p>{formattedTime}</p>
+                                                        </div>
+                                                        <div className="sm:block hidden">
+                                                            <h4>Daftar Absen Masuk Siswa</h4>
+                                                            <p className="text-sm text-secondary">Batas waktu absen masuk: 07:00</p>
+                                                        </div>
+                                                        <div>
+                                                            {eventDetail.isEvent ? (
+                                                                <Tag
+                                                                    value="Sedang Event"
+                                                                    severity="info"
+                                                                    id="event-tooltip"
+                                                                    className="cursor-pointer"
+                                                                    data-pr-tooltip={`Event: ${eventDetail.name}\nJam Masuk: ${eventDetail.startTime}\nJam Keluar: ${eventDetail.endTime}`}
+                                                                />
+                                                            ) : (
+                                                                <Tag value="Tidak Ada Event" severity="secondary" />
+                                                            )}
+                                                            <Tooltip target="#event-tooltip" position="left" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="sm:hidden block mb-2">
+                                                        <h4>Daftar Absen Masuk Siswa</h4>
+                                                        <p className="text-sm text-secondary">Batas waktu absen masuk: 07:00</p>
+                                                    </div>
+                                                    <ul
+                                                        className="list-none p-2 m-0"
+                                                        style={{ maxHeight: '180px', overflowY: 'auto' }}
+                                                    >
+                                                        {studentAttendance.map((student, index) => (
+                                                            <li
+                                                                key={index}
+                                                                className="py-1 flex justify-content-between align-items-center text-sm surface-border"
+                                                            >
+                                                                <span className="font-bold">{index + 1}. {student.name}</span>
+                                                                <span>{student.time}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </Card>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <Divider />
+                            <div className="flex gap-3 sm:flex-row flex-column">
                                 <Button
+                                    label="Dashboard Sekolah"
                                     icon="pi pi-home"
-                                    label="Dashboard"
-                                    className="p-button-outlined"
+                                    className="p-button p-button-primary"
                                     onClick={handleDashboard}
                                 />
                                 <Button
-                                    icon="pi pi-sign-in"
                                     label="Absen Masuk"
-                                    severity="info"
-                                    className="p-button-outlined"
+                                    icon="pi pi-sign-in"
+                                    className="p-button p-button-success"
                                     onClick={handleAttendanceIn}
                                 />
                                 <Button
-                                    icon="pi pi-sign-out"
                                     label="Absen Keluar"
-                                    severity="warning"
-                                    className="p-button-outlined"
+                                    icon="pi pi-sign-out"
+                                    className="p-button p-button-warning"
                                     onClick={handleAttendanceOut}
                                 />
                             </div>
-                        }
-                    >
-                        <div className="flex flex-column gap-3">
-                            <div className="flex justify-content-between align-items-center">
-                                <div>
-                                    <p><strong>Pembayaran Selanjutnya:</strong> {school.dueDate || '-'}</p>
-                                    <p><strong>Role:</strong> {school.role}</p>
-                                </div>
-                                <Tag
-                                    value={school.status}
-                                    severity={school.status === 'Active' ? 'success' : 'danger'}
-                                    style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}
-                                />
-                            </div>
-
-                            {school.packageDetails && (
-                                <div className="surface-50 p-3 border-round">
-                                    <h4 className="text-primary">Detail Paket</h4>
-                                    <p><strong>Nama Paket:</strong> {school.packageDetails.name}</p>
-                                    <p><strong>Harga per Bulan:</strong> Rp{school.packageDetails.pricePerMonth.toLocaleString()}</p>
-                                    <p><strong>Harga per Tahun:</strong> Rp{school.packageDetails.pricePerYear.toLocaleString()}</p>
-                                    <p><strong>Fitur:</strong></p>
-                                    <ul className="pl-3">
-                                        {school.packageDetails.features.map((feature, index) => (
-                                            <li key={index}>{feature}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
+                        </Panel>
+                    </div>
+                </>
+            ) : (
+                <div className="col-12">
+                    <Card title="Selamat Datang di Presentia">
+                        <p className="text-sm mb-4">
+                            Anda belum memiliki sekolah yang terdaftar. Buat sekolah untuk memulai pengelolaan presensi.
+                        </p>
+                        <Button
+                            icon="pi pi-plus"
+                            label="Buat Sekolah"
+                            className="p-button-success"
+                            onClick={() => setModalVisible(true)}
+                        />
                     </Card>
                 </div>
             )}
@@ -150,9 +296,13 @@ const ClientDashboardPage = () => {
             <ClientCreateSchoolModal
                 visible={isModalVisible}
                 onClose={() => setModalVisible(false)}
-                onSave={(newSchool) => addSchool(newSchool)}
+                onSave={(newSchool: SchoolData) => {
+                    setSchoolData(newSchool);
+                    setModalVisible(false);
+                }}
             />
         </div>
+
     );
 };
 
