@@ -7,6 +7,8 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authServices from '../../services/authServices';
 import { useToastContext } from '../../context/ToastContext';
+import { useState } from 'react';
+import { Divider } from 'primereact/divider';
 
 interface RegisterFormInputs {
     fullname: string;
@@ -18,8 +20,8 @@ interface RegisterFormInputs {
 const RegisterPage = () => {
     const { state }: any = useLocation();
     const navigate = useNavigate();
-    const { control, register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormInputs>();
-
+    const { control, register, handleSubmit, setError, watch, formState: { errors } } = useForm<RegisterFormInputs>();
+    const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,20 +35,64 @@ const RegisterPage = () => {
 
     const onSubmitRegister: SubmitHandler<RegisterFormInputs> = async (data) => {
         try {
+            setLoading(true);
             await authServices.register({
                 fullname: data.fullname,
                 username: data.username,
                 email: state.email,
                 password: data.password,
-                password_confirmation: data.confirmPassword
+                password_confirmation: data.confirmPassword,
             });
 
-            callToast(showToast, 'success', 'Registrasi Berhasil', 'Login melalui username/email dan password');
-            navigate('/login');
+            const loginResponse = await authServices.login({
+                email_or_username: state.email,
+                password: data.password,
+            });
+
+            if (loginResponse?.token) {
+                localStorage.setItem('token', loginResponse.token);
+                localStorage.setItem('user', JSON.stringify(loginResponse.user));
+
+                callToast(showToast, 'success', 'Registrasi Berhasil', 'Berhasil login dengan akun yang didaftarkan');
+                setLoading(false);
+
+                navigate('/client/dashboard');
+            } else {
+                setLoading(false);
+                callToast(showToast, 'error', 'Login Gagal', 'Terjadi masalah saat login setelah registrasi.');
+                navigate('/login');
+            }
         } catch (error: any) {
-            callToast(showToast, 'error', 'Registrasi Gagal', 'cekk');
+            if (error.response?.data?.errors) {
+                const apiErrors = error.response.data.errors;
+                Object.keys(apiErrors).forEach((field) => {
+                    const messages = apiErrors[field];
+                    setError(field as keyof RegisterFormInputs, {
+                        type: 'server',
+                        message: messages.join(', '),
+                    });
+                });
+                setLoading(false);
+            } else {
+                setLoading(false);
+                callToast(showToast, 'error', 'Registrasi Gagal', 'Terjadi kesalahan pada server.');
+            }
         }
     };
+
+    const passwordHeader = <div className="font-bold mb-3">Buat Password</div>;
+    const passwordFooter = (
+        <>
+            <Divider />
+            <p className="mt-2 font-medium">Kata sandi harus mengandung:</p>
+            <ul className="pl-2 ml-2 mt-0 line-height-3">
+                <li>Minimal satu huruf kecil</li>
+                <li>Minimal satu huruf kapital</li>
+                <li>Minimal satu angka</li>
+                <li>Panjang minimal 8 karakter</li>
+            </ul>
+        </>
+    );
 
     const password = watch('password');
 
@@ -120,12 +166,13 @@ const RegisterPage = () => {
                                 render={({ field }) => (
                                     <Password
                                         id="password"
-                                        placeholder="Password"
                                         {...field}
                                         className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
                                         inputClassName="w-full"
                                         inputStyle={{ padding: '1rem' }}
-                                        feedback={false}
+                                        header={passwordHeader}
+                                        footer={passwordFooter}
+                                        toggleMask
                                     />
                                 )}
                             />
@@ -146,12 +193,12 @@ const RegisterPage = () => {
                                 render={({ field }) => (
                                     <Password
                                         id="confirmPassword"
-                                        placeholder="Confirm Password"
                                         {...field}
                                         className={`w-full md:w-30rem mb-2 ${errors.confirmPassword ? 'p-invalid' : ''}`}
                                         inputClassName="w-full"
                                         inputStyle={{ padding: '1rem' }}
                                         feedback={false}
+                                        toggleMask
                                     />
                                 )}
                             />
@@ -160,7 +207,7 @@ const RegisterPage = () => {
                             )}
                         </div>
 
-                        <Button type="submit" label="Complete Registration" className="w-full p-3 text-xl mb-3" />
+                        <Button loading={loading} type="submit" label="Complete Registration" className="w-full p-3 text-xl mb-3" />
                     </form>
                 </Card>
             </div>

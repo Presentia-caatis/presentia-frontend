@@ -21,6 +21,10 @@ class AuthService {
         return response.data;
     }
 
+    async authenticated() {
+        return axiosClient.get('/authenticated').then((response) => response.data);
+    }
+
     googleLogin() {
         window.location.href = `${axiosClient.defaults.baseURL}/auth/google`;
     }

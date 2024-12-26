@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
@@ -37,14 +38,31 @@ const LoginPage = () => {
         setLoading(true);
         try {
             const response = await authServices.login(data);
-            const { token, user } = response;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            setIsLoggedIn(true);
-            callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-            navigate('/client/dashboard');
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (response.status === 200) {
+                const { token, user } = response;
+
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+
+                setIsLoggedIn(true);
+                callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+                navigate('/client/dashboard');
+            } else {
+                try {
+                    const redirectResponse = await authServices.authenticated();
+                    const { token, user } = redirectResponse;
+
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('user', JSON.stringify(user));
+
+                    setIsLoggedIn(true);
+                    callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+                    navigate('/client/dashboard');
+                } catch (authError) {
+                    callToast(showToast, 'error', 'Login Gagal', 'Gagal mendapatkan data user');
+                }
+            }
         } catch (error: any) {
             callToast(showToast, 'error', 'Login Gagal', 'Email atau Password salah');
         } finally {
@@ -90,7 +108,12 @@ const LoginPage = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (token) {
+
+        if (!token || token === 'undefined') {
+            localStorage.clear();
+            setIsLoggedIn(false);
+            navigate('/login');
+        } else {
             const checkTokenValidity = async () => {
                 try {
                     const response = await authCheck();
@@ -100,19 +123,20 @@ const LoginPage = () => {
                     } else {
                         localStorage.clear();
                         setIsLoggedIn(false);
+                        navigate('/login');
                     }
                 } catch (error) {
                     console.error('Error during token validation', error);
                     localStorage.clear();
                     setIsLoggedIn(false);
+                    navigate('/login');
                 }
             };
 
             checkTokenValidity();
-        } else {
-            setIsLoggedIn(false);
         }
     }, [navigate]);
+
 
 
     const authCheck = async () => {
@@ -173,6 +197,7 @@ const LoginPage = () => {
                                                 feedback={false}
                                                 value={field.value || ''}
                                                 onChange={(e) => field.onChange(e.target.value)}
+                                                toggleMask
                                             />
                                         )}
                                     />

@@ -39,5 +39,23 @@ a {
 }
 
 .text-secondary {
-    color: var(--text-secondary-color, #6c757d); 
+    color: var(--text-secondary-color, #6c757d);
+}
+
+#password .p-icon-field {
+    width: 100%;
+}
+
+#confirmPassword .p-icon-field {
+    width: 100%;
+}
+
+.p-input-icon:focus {
+    outline: none;
+    box-shadow: none;
+    border: none;
+}
+
+.p-input-icon:active {
+    transform: none;
 }
