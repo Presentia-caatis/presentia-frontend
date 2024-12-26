@@ -12,7 +12,7 @@ class AuthService {
     }
 
     async getProfile() {
-        const response = await axiosClient.get('/user/show-by-token');
+        const response = await axiosClient.get('/user/get-by-token');
         return response.data;
     }
 
