@@ -40,6 +40,7 @@ const RegisterPage = () => {
                 fullname: data.fullname,
                 username: data.username,
                 email: state.email,
+                google_id : state.googleId,
                 password: data.password,
                 password_confirmation: data.confirmPassword,
             });
