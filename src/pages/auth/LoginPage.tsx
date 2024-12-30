@@ -23,7 +23,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
@@ -37,10 +37,9 @@ const LoginPage = () => {
     const onSubmitLogin: SubmitHandler<LoginFormInputs> = async (data) => {
         setLoading(true);
         try {
-            const response = await authServices.login(data);
-
-            if (response.status === 200) {
-                const { token, user } = response;
+            const { responseData, status } = await authServices.login(data);
+            if (status === 200) {
+                const { token, user } = responseData;
 
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(user));
@@ -48,21 +47,21 @@ const LoginPage = () => {
                 setIsLoggedIn(true);
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
                 navigate('/client/dashboard');
-            } else {
-                try {
-                    const redirectResponse = await authServices.authenticated();
-                    const { token, user } = redirectResponse;
+            } 
+            //     try {
+            //         const redirectResponse = await authServices.authenticated();
+            //         const { token, user } = redirectResponse;
 
-                    localStorage.setItem('token', token);
-                    localStorage.setItem('user', JSON.stringify(user));
+            //         localStorage.setItem('token', token);
+            //         localStorage.setItem('user', JSON.stringify(user));
 
-                    setIsLoggedIn(true);
-                    callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-                    navigate('/client/dashboard');
-                } catch (authError) {
-                    callToast(showToast, 'error', 'Login Gagal', 'Gagal mendapatkan data user');
-                }
-            }
+            //         setIsLoggedIn(true);
+            //         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+            //         navigate('/client/dashboard');
+            //     } catch (authError) {
+            //         callToast(showToast, 'error', 'Login Gagal', 'Gagal mendapatkan data user');
+            //     }
+            // }
         } catch (error: any) {
             callToast(showToast, 'error', 'Login Gagal', 'Email atau Password salah');
         } finally {
@@ -71,7 +70,7 @@ const LoginPage = () => {
     };
 
 
-    const handleGoogleLogin = () => {
+    const handleGoogleLogin = async () => {
         authServices.googleLogin();
     };
 
@@ -84,7 +83,8 @@ const LoginPage = () => {
             if (status === 'new_user') {
                 const fullname = queryParams.get('name');
                 const email = queryParams.get('email');
-                navigate('/register', { state: { fullname, email } });
+                const googleId = queryParams.get('google_id');
+                navigate('/register', { state: { fullname, email, googleId}});
             } else if (status === 'existing_user') {
                 if (token) {
                     localStorage.setItem('token', token);
@@ -106,36 +106,36 @@ const LoginPage = () => {
         handleLoginFlow();
     }, [navigate, showToast]);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
+    // useEffect(() => {
+    //     const token = localStorage.getItem('token');
 
-        if (!token || token === 'undefined') {
-            localStorage.clear();
-            setIsLoggedIn(false);
-            navigate('/login');
-        } else {
-            const checkTokenValidity = async () => {
-                try {
-                    const response = await authCheck();
-                    if (response.status === "success") {
-                        setIsLoggedIn(true);
-                        navigate('/client/dashboard');
-                    } else {
-                        localStorage.clear();
-                        setIsLoggedIn(false);
-                        navigate('/login');
-                    }
-                } catch (error) {
-                    console.error('Error during token validation', error);
-                    localStorage.clear();
-                    setIsLoggedIn(false);
-                    navigate('/login');
-                }
-            };
+    //     if (!token || token === 'undefined') {
+    //         localStorage.clear();
+    //         setIsLoggedIn(false);
+    //         navigate('/login');
+    //     } else {
+    //         const checkTokenValidity = async () => {
+    //             try {
+    //                 const response = await authCheck();
+    //                 if (response.status === "success") {
+    //                     setIsLoggedIn(true);
+    //                     navigate('/client/dashboard');
+    //                 } else {
+    //                     localStorage.clear();
+    //                     setIsLoggedIn(false);
+    //                     navigate('/login');
+    //                 }
+    //             } catch (error) {
+    //                 console.error('Error during token validation', error);
+    //                 localStorage.clear();
+    //                 setIsLoggedIn(false);
+    //                 navigate('/login');
+    //             }
+    //         };
 
-            checkTokenValidity();
-        }
-    }, [navigate]);
+    //         checkTokenValidity();
+    //     }
+    // }, [navigate]);
 
 
 
