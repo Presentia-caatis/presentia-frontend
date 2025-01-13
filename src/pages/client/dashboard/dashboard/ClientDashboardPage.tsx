@@ -7,6 +7,7 @@ import { Tag } from 'primereact/tag';
 import { Tooltip } from 'primereact/tooltip';
 import { Panel } from 'primereact/panel';
 import ClientCreateSchoolModal from '../../../../components/client/ClientCreateSchoolModal';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 
 type SchoolData = {
@@ -39,6 +40,7 @@ const ClientDashboardPage = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
     const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
     const [isModalVisible, setModalVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!token) {
@@ -74,6 +76,7 @@ const ClientDashboardPage = () => {
             if (dummyUserData.school_id) {
                 setSchoolData(dummySchoolData);
             }
+            setLoading(false);
         }, 1000);
     }, [token]);
 
@@ -280,7 +283,7 @@ const ClientDashboardPage = () => {
                 </>
             ) : (
                 <div className="col-12">
-                    <Card title="Selamat Datang di Presentia">
+                    {!loading ? <Card className='shadow-1' title="Selamat Datang di Presentia">
                         <p className="text-sm mb-4">
                             Anda belum memiliki sekolah yang terdaftar. Buat sekolah untuk memulai pengelolaan presensi.
                         </p>
@@ -290,7 +293,14 @@ const ClientDashboardPage = () => {
                             className="p-button-success"
                             onClick={() => setModalVisible(true)}
                         />
-                    </Card>
+                    </Card> :
+                        <Card className='shadow-1'>
+                            <div className="col-12 flex justify-content-center align-items-center" style={{ height: '70vh' }}>
+                                <ProgressSpinner />
+                            </div>
+                        </Card>
+                    }
+
                 </div>
             )}
 
@@ -303,7 +313,6 @@ const ClientDashboardPage = () => {
                 }}
             />
         </div>
-
     );
 };
 

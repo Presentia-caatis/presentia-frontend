@@ -50,7 +50,7 @@ const LandingPage = () => {
                     </section>
                 </div>
                 <div className="col-12 md:col-6 overflow-hidden">
-                    <img src="https://media.istockphoto.com/id/1139837519/id/foto/audiens-yang-tidak-fokus-kabur-di-ruang-presentasi-kuliah-konferensi-presentasi-perusahaan-di.jpg?s=1024x1024&w=is&k=20&c=T-B6zbcdHFC2BSB5J1htCGrYkIDnvKecEE7Mb_vUqwM=" alt="hero-1" className="md:ml-auto block md:h-full" style={{ clipPath: 'polygon(8% 0, 100% 0%, 100% 100%, 0 100%)' }} />
+                    <img src="https://www.menit.co.id/wp-content/uploads/2022/06/Telkom-University-Bandung.jpg" alt="hero-1" className="md:ml-auto block md:h-full" style={{ clipPath: 'polygon(8% 0, 100% 0%, 100% 100%, 0 100%)' }} />
                 </div>
             </div>
 
@@ -61,27 +61,27 @@ const LandingPage = () => {
             <div className="surface-section px-4 py-8 md:px-6 lg:px-8 text-center">
                 <div className="mb-3 font-bold text-3xl">
                     <span className="text-900">Mengapa Memilih </span>
-                    <span className="text-blue-600">Presentia?</span>
+                    <span className="text-primary">Presentia?</span>
                 </div>
                 <div className="text-700 mb-6">Solusi presensi modern yang mempermudah sekolah dalam mengelola kehadiran siswa dan staf.</div>
                 <div className="grid">
                     <div className="col-12 md:col-4 mb-4 px-5">
                         <span className="p-3 shadow-2 mb-3 inline-block" style={{ borderRadius: '10px' }}>
-                            <i className="pi pi-desktop text-4xl text-blue-500"></i>
+                            <i className="pi pi-desktop text-4xl text-primary"></i>
                         </span>
                         <div className="text-900 text-xl mb-3 font-medium">Berbasis Web</div>
                         <span className="text-700 line-height-3">Akses dari mana saja dan kapan saja tanpa harus bergantung pada perangkat tertentu.</span>
                     </div>
                     <div className="col-12 md:col-4 mb-4 px-5">
                         <span className="p-3 shadow-2 mb-3 inline-block" style={{ borderRadius: '10px' }}>
-                            <i className="pi pi-lock text-4xl text-blue-500"></i>
+                            <i className="pi pi-lock text-4xl text-primary"></i>
                         </span>
                         <div className="text-900 text-xl mb-3 font-medium">Data Aman</div>
                         <span className="text-700 line-height-3">Data kehadiran dilindungi dengan enkripsi untuk menjaga privasi.</span>
                     </div>
                     <div className="col-12 md:col-4 mb-4 px-5">
                         <span className="p-3 shadow-2 mb-3 inline-block" style={{ borderRadius: '10px' }}>
-                            <i className="pi pi-check-circle text-4xl text-blue-500"></i>
+                            <i className="pi pi-check-circle text-4xl text-primary"></i>
                         </span>
                         <div className="text-900 text-xl mb-3 font-medium">Mudah Digunakan</div>
                         <span className="text-700 line-height-3">Antarmuka yang sederhana dan intuitif memudahkan siapa saja untuk menggunakannya.</span>
@@ -203,7 +203,7 @@ const LandingPage = () => {
 
             {!isLoggedIn && (<div>
                 <div className="surface-0 text-700 text-center px-4 py-8 md:px-6 lg:px-8">
-                    <div className="text-blue-600 font-bold mb-3"><i className="pi pi-user"></i>&nbsp;PILIH PRESENTIA</div>
+                    <div className="text-primary font-bold mb-3"><i className="pi pi-user"></i>&nbsp;PILIH PRESENTIA</div>
                     <div className="text-900 font-bold text-5xl mb-3">Daftar Akun Sekarang</div>
                     <div className="text-700 text-2xl mb-5">Bergabunglah dengan sekolah lain yang telah beralih ke sistem presensi modern kami.</div>
                     <Button label="Daftar Akun" onClick={() => {

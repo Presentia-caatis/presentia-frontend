@@ -13,8 +13,8 @@ const SchoolSideBar = () => {
                 {
                     label: 'Halaman Utama',
                     icon: 'pi pi-fw pi-home',
-                    command: () => navigate('/school/mainpage'),
-                    className: currentPath === '/school/mainpage' ? 'active-route' : 'menu-item'
+                    command: () => navigate('/school/dashboard'),
+                    className: currentPath === '/school/dashboard' ? 'active-route' : 'menu-item'
                 }
             ]
         },
@@ -55,21 +55,21 @@ const SchoolSideBar = () => {
             label: 'Kelas',
             items: [{ label: 'Daftar Kelas', icon: 'pi pi-book', command: () => navigate('/school/classroom'), className: currentPath === '/school/classroom' ? 'active-route' : 'menu-item' }]
         },
-        {
-            label: 'Pencapaian',
-            items: [
-                { label: 'Daftar Pencapaian', icon: 'pi pi-book', command: () => navigate('/school/achievement'), className: currentPath === '/school/achievement' ? 'active-route' : 'menu-item' },
-                { label: 'Daftar Pencapaian Siswa', icon: 'pi pi-book', command: () => navigate('/school/achievement/student'), className: currentPath === '/school/achievement/student' ? 'active-route' : 'menu-item' }
-            ]
-        },
-        {
-            label: 'Pelanggaran',
-            items: [
-                { label: 'Daftar Pelanggaran', icon: 'pi pi-book', command: () => navigate('/school/violation'), className: currentPath === '/school/violation' ? 'active-route' : 'menu-item' },
-                { label: 'Data Pelanggaran Siswa', icon: 'pi pi-book', command: () => navigate('/school/violation/student'), className: currentPath === '/school/violation/student' ? 'active-route' : 'menu-item' },
-                { label: 'Lapor Poin Siswa', icon: 'pi pi-book', command: () => navigate('/school/violation/student-point-report'), className: currentPath === '/school/violation/student-point-report' ? 'active-route' : 'menu-item' },
-            ]
-        },
+        // {
+        //     label: 'Pencapaian',
+        //     items: [
+        //         { label: 'Daftar Pencapaian', icon: 'pi pi-book', command: () => navigate('/school/achievement'), className: currentPath === '/school/achievement' ? 'active-route' : 'menu-item' },
+        //         { label: 'Daftar Pencapaian Siswa', icon: 'pi pi-book', command: () => navigate('/school/achievement/student'), className: currentPath === '/school/achievement/student' ? 'active-route' : 'menu-item' }
+        //     ]
+        // },
+        // {
+        //     label: 'Pelanggaran',
+        //     items: [
+        //         { label: 'Daftar Pelanggaran', icon: 'pi pi-book', command: () => navigate('/school/violation'), className: currentPath === '/school/violation' ? 'active-route' : 'menu-item' },
+        //         { label: 'Data Pelanggaran Siswa', icon: 'pi pi-book', command: () => navigate('/school/violation/student'), className: currentPath === '/school/violation/student' ? 'active-route' : 'menu-item' },
+        //         { label: 'Lapor Poin Siswa', icon: 'pi pi-book', command: () => navigate('/school/violation/student-point-report'), className: currentPath === '/school/violation/student-point-report' ? 'active-route' : 'menu-item' },
+        //     ]
+        // },
     ];
 
     return (

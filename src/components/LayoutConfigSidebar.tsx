@@ -12,7 +12,7 @@ const LayoutConfigSidebar: React.FC = () => {
 
     return (
         <>
-            <button className="layout-config-button p-link" onClick={toggleSidebar}>
+            {/* <button className="layout-config-button p-link" onClick={toggleSidebar}>
                 <i className="pi pi-cog"></i>
             </button>
 
@@ -34,7 +34,7 @@ const LayoutConfigSidebar: React.FC = () => {
 
                 <h5>Dark Mode</h5>
                 <InputSwitch checked={darkMode} onChange={(e) => setDarkMode(e.value)} />
-            </Sidebar>
+            </Sidebar> */}
         </>
     );
 };

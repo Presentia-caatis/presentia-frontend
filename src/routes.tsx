@@ -3,7 +3,7 @@ import Login from './pages/auth/LoginPage';
 import AdminLayout from './layout/AdminLayout';
 import SchoolLayout from './layout/SchoolLayout';
 import NotFoundPage from './pages/NotFoundPage';
-import MainPage from './pages/school/dashboard/dashboard/SchoolMainPage';
+import Dashboard from './pages/school/dashboard/dashboard/SchoolDashboardPage';
 import StudentListPage from './pages/school/dashboard/student/SchoolStudentPage';
 import StudentAttendanceInPage from './pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceInPage';
 import StudentAttendanceOutPage from './pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceOutPage';
@@ -59,7 +59,7 @@ const AppRoutes = () => {
                 </Route>
 
                 <Route path="/school/*" element={<SchoolLayout />}>
-                    <Route path="mainpage" element={<MainPage />} />
+                    <Route path="dashboard" element={<Dashboard />} />
                     <Route path="profile" element={<SchoolProfilePage />} />
 
                     <Route path="student">

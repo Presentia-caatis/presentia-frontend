@@ -146,7 +146,15 @@ const LoginPage = () => {
 
 
     return (
-        <> <div className="min-h-screen flex align-items-center justify-content-center">
+        <> <div className="min-h-screen flex align-items-center justify-content-center relative">
+            <div className='absolute top-0 left-0 mt-5 ml-5'>
+                <Button
+                    icon="pi pi-arrow-left"
+                    className="p-button-text p-button-plain p-2 mb-4"
+                    onClick={() => navigate('/')}
+                    aria-label="Back"
+                />
+            </div>
             {!isLoggedIn ? <div className="flex">
                 <div
                     style={{

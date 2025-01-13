@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
 import smkTelkomlogo from '../../assets/logo-smk-telkom-bdg.png';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const SchoolTopbar = () => {
 
@@ -16,7 +16,15 @@ const SchoolTopbar = () => {
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
 
-    
+    const [user, setUser] = useState<{ fullname: string } | null>(null);
+
+    useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            setUser(JSON.parse(userData));
+        }
+    }, []);
+
 
     const profileItems = [
         {
@@ -76,6 +84,9 @@ const SchoolTopbar = () => {
                 aria-controls="popup_profile_menu"
                 aria-haspopup
             >
+                <div className='lg:white-space-nowrap'>
+                    {user?.fullname || 'Guest'}
+                </div>
                 <div>
                     <i className='pi pi-user'></i>
                 </div>
