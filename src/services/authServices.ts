@@ -3,10 +3,10 @@ import axiosClient from '../utils/axiosClient';
 class AuthService {
     async login(payload: { email_or_username: string; password: string }) {
         const response = await axiosClient.post('/login', payload);
-        return response.data;
+        return { responseData: response.data, status: response.status };
     }
 
-    async register(payload: { fullname: string, username: string; email: string; password: string, password_confirmation: string }) {
+    async register(payload: { fullname: string, username: string; email: string; google_id: string, password: string, password_confirmation: string}) {
         const response = await axiosClient.post('/register', payload);
         return response.data;
     }
@@ -21,9 +21,9 @@ class AuthService {
         return response.data;
     }
 
-    async authenticated() {
-        return axiosClient.get('/authenticated').then((response) => response.data);
-    }
+    // async authenticated() {
+    //     return axiosClient.get('/authenticated').then((response) => response.data);
+    // }
 
     googleLogin() {
         window.location.href = `${axiosClient.defaults.baseURL}/auth/google`;

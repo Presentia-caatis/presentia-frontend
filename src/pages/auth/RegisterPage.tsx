@@ -40,18 +40,19 @@ const RegisterPage = () => {
                 fullname: data.fullname,
                 username: data.username,
                 email: state.email,
+                google_id : state.googleId,
                 password: data.password,
                 password_confirmation: data.confirmPassword,
             });
 
-            const loginResponse = await authServices.login({
+            const {responseData} = await authServices.login({
                 email_or_username: state.email,
                 password: data.password,
             });
 
-            if (loginResponse?.token) {
-                localStorage.setItem('token', loginResponse.token);
-                localStorage.setItem('user', JSON.stringify(loginResponse.user));
+            if (responseData?.token) {
+                localStorage.setItem('token', responseData.token);
+                localStorage.setItem('user', JSON.stringify(responseData.user));
 
                 callToast(showToast, 'success', 'Registrasi Berhasil', 'Berhasil login dengan akun yang didaftarkan');
                 setLoading(false);
