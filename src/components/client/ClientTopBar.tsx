@@ -1,14 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
-import authServices from '../../services/authServices';
+import authServices from '../../services/authService';
 import { useToastContext } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 const ClientTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = React.useRef<Toast>(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
+    const { logout } = useAuth();
 
     const [user, setUser] = useState<{ fullname: string } | null>(null);
 
@@ -32,10 +34,7 @@ const ClientTopBar = () => {
 
     const handleLogout = async () => {
         try {
-            await authServices.logout();
-            localStorage.removeItem('user');
-            localStorage.removeItem('token');
-            localStorage.clear();
+            logout();
 
             callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             navigate('/');
@@ -91,7 +90,7 @@ const ClientTopBar = () => {
 
     return (
         <div className="layout-topbar flex justify-content-between">
-            <Link to={"dashboard"} className="layout-topbar-logo">
+            <Link to={"/"} className="layout-topbar-logo">
                 <span>My Presentia</span>
             </Link>
             <Toast ref={toast} />

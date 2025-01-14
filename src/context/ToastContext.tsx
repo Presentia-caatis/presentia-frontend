@@ -5,7 +5,6 @@ import "primereact/resources/primereact.css";
 import { Toast } from "primereact/toast";
 import { createContext, useContext, useRef } from "react";
 
-// create context
 const ToastContext = createContext(undefined);
 
 export const ToastContextProvider = ({ children }) => {

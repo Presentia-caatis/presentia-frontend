@@ -1,18 +1,48 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState } from 'react';
 import { TabMenu } from 'primereact/tabmenu';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { Divider } from 'primereact/divider';
+import { useAuth } from '../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useToastContext } from '../../../context/ToastContext';
 
 const ClientProfilePage = () => {
     const [activeIndex, setActiveIndex] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { logout } = useAuth();
 
     const items = [
         { label: 'Profile Kamu', icon: 'pi pi-user' },
         { label: 'Ganti Password', icon: 'pi pi-lock' },
         { label: 'Logout', icon: 'pi pi-sign-out' },
     ];
+
+    const { showToast } = useToastContext();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
+        showToast({
+            severity: severity,
+            summary: summary,
+            detail: detail
+        });
+    }
+
+    const handleLogout = async () => {
+        try {
+            logout();
+
+            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
+            navigate('/');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            callToast(showToast, 'error', 'Logout Gagal', 'Tidak bisa logout');
+        }
+    };
 
     const renderContent = () => {
         switch (activeIndex) {
@@ -68,7 +98,7 @@ const ClientProfilePage = () => {
                     <div className="flex justify-content-center align-items-center flex-column" style={{ height: '70vh' }}>
                         <h2>Logout</h2>
                         <p>Apakah Anda yakin ingin logout?</p>
-                        <Button label="Logout" icon="pi pi-sign-out" className="p-button-danger" />
+                        <Button label="Logout" loading={loading} onClick={handleLogout} icon="pi pi-sign-out" className="p-button-danger" />
                     </div>
                 );
             default:

@@ -8,9 +8,11 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useNavigate } from 'react-router-dom';
 import { SubmitHandler, useForm, Controller } from 'react-hook-form';
-import authServices from '../../services/authServices';
+import authServices from '../../services/authService';
 import { useToastContext } from '../../context/ToastContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Helmet } from 'react-helmet';
+import { useAuth } from '../../context/AuthContext';
 
 
 interface LoginFormInputs {
@@ -24,8 +26,8 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [rememberMe, setRememberMe] = useState<boolean>(false);
+    const { setAuth } = useAuth();
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
         showToast({
             severity: severity,
@@ -41,13 +43,12 @@ const LoginPage = () => {
             if (status === 200) {
                 const { token, user } = responseData;
 
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(user));
+                setAuth(user, token);
 
                 setIsLoggedIn(true);
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
                 navigate('/client/dashboard');
-            } 
+            }
             //     try {
             //         const redirectResponse = await authServices.authenticated();
             //         const { token, user } = redirectResponse;
@@ -84,7 +85,7 @@ const LoginPage = () => {
                 const fullname = queryParams.get('name');
                 const email = queryParams.get('email');
                 const googleId = queryParams.get('google_id');
-                navigate('/register', { state: { fullname, email, googleId}});
+                navigate('/register', { state: { fullname, email, googleId } });
             } else if (status === 'existing_user') {
                 if (token) {
                     localStorage.setItem('token', token);
@@ -146,95 +147,101 @@ const LoginPage = () => {
 
 
     return (
-        <> <div className="min-h-screen flex align-items-center justify-content-center relative">
-            <div className='absolute top-0 left-0 mt-5 ml-5'>
-                <Button
-                    icon="pi pi-arrow-left"
-                    className="p-button-text p-button-plain p-2 mb-4"
-                    onClick={() => navigate('/')}
-                    aria-label="Back"
-                />
-            </div>
-            {!isLoggedIn ? <div className="flex">
-                <div
-                    style={{
-                        borderRadius: '56px',
-                        padding: '0.3rem',
-                        background: 'linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)',
-                    }}
-                >
-                    <Card className="w-full p-4 md:p-5" style={{ borderRadius: '53px' }}>
-                        <div className="text-center mb-3">
-                            <h2 className="text-900 text-3xl font-medium mb-3">Selamat Datang!</h2>
-                            <p className="text-600 font-medium">
-                                Silahkan Log In Untuk Melanjutkan Ke Dashboard
-                            </p>
-                        </div>
-
-                        <form onSubmit={handleSubmit(onSubmitLogin)}>
-                            <div>
-                                <div className='flex flex-column mb-3'>
-                                    <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
-                                        Email
-                                    </label>
-                                    <InputText
-                                        id="email"
-                                        placeholder="Email address"
-                                        className={`w-full md:w-30rem mb-2 ${errors.email_or_username ? 'p-invalid' : ''}`}
-                                        style={{ padding: '1rem' }}
-                                        {...register('email_or_username', { required: 'Email or username is required' })}
-                                    />
-                                    {errors.email_or_username && <small className="p-error">{errors.email_or_username.message}</small>}
-                                </div>
-
-                                <div className='flex flex-column mb-3'>
-                                    <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
-                                        Password
-                                    </label>
-                                    <Controller
-                                        name="password"
-                                        control={control}
-                                        rules={{ required: 'Password is required' }}
-                                        render={({ field }) => (
-                                            <Password
-                                                id="password"
-                                                placeholder="Password"
-                                                className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
-                                                inputClassName="w-full"
-                                                inputStyle={{ padding: '1rem' }}
-                                                feedback={false}
-                                                value={field.value || ''}
-                                                onChange={(e) => field.onChange(e.target.value)}
-                                                toggleMask
-                                            />
-                                        )}
-                                    />
-
-                                    {errors.password && <small className="p-error">{errors.password.message}</small>}
-                                </div>
-                                <div className="flex align-items-center justify-content-between mb-4 mt-2 gap-3">
-                                    <div className="flex align-items-center">
-                                        <Checkbox checked={false}
-                                            className="mr-2"
-                                        />
-                                        <label htmlFor="Remember Password">Save Password?</label>
-                                    </div>
-                                </div>
-
-                                <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" loading={loading} />
-                            </div>
-                        </form>
-                        <Button
-                            type='button'
-                            label="Sign in with Google"
-                            icon="pi pi-google"
-                            className="w-full p-3 text-xl p-button-outlined"
-                            onClick={handleGoogleLogin}
-                        />
-                    </Card>
+        <>
+            <div className="min-h-screen flex align-items-center justify-content-center relative">
+                <Helmet>
+                    <title>Login | Presentia</title>
+                </Helmet>
+                <div className='absolute top-0 left-0 mt-5 ml-5'>
+                    <Button
+                        icon="pi pi-arrow-left"
+                        className="p-button-text p-button-plain p-2 mb-4"
+                        onClick={() => navigate('/')}
+                        aria-label="Back"
+                    />
                 </div>
-            </div> : <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />}
-        </div>
+                {!isLoggedIn ? <div className="flex">
+                    <div
+                        style={{
+                            borderRadius: '56px',
+                            padding: '0.3rem',
+                            background: 'linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)',
+                        }}
+                    >
+                        <Card className="w-full p-4 md:p-5" style={{ borderRadius: '53px' }}>
+                            <div className="text-center mb-3">
+                                <h2 className="text-900 text-3xl font-medium mb-3">Selamat Datang!</h2>
+                                <p className="text-600 font-medium">
+                                    Silahkan Log In Untuk Melanjutkan Ke Dashboard
+                                </p>
+                            </div>
+
+                            <form onSubmit={handleSubmit(onSubmitLogin)}>
+                                <div>
+                                    <div className='flex flex-column mb-3'>
+                                        <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
+                                            Email
+                                        </label>
+                                        <InputText
+                                            id="email"
+                                            placeholder="Email address"
+                                            className={`w-full md:w-30rem mb-2 ${errors.email_or_username ? 'p-invalid' : ''}`}
+                                            style={{ padding: '1rem' }}
+                                            {...register('email_or_username', { required: 'Email or username is required' })}
+                                        />
+                                        {errors.email_or_username && <small className="p-error">{errors.email_or_username.message}</small>}
+                                    </div>
+
+                                    <div className='flex flex-column mb-3'>
+                                        <label htmlFor="password" className="block font-medium text-900 text-xl mb-2">
+                                            Password
+                                        </label>
+                                        <Controller
+                                            name="password"
+                                            control={control}
+                                            rules={{ required: 'Password is required' }}
+                                            render={({ field }) => (
+                                                <Password
+                                                    id="password"
+                                                    placeholder="Password"
+                                                    className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
+                                                    inputClassName="w-full"
+                                                    inputStyle={{ padding: '1rem' }}
+                                                    feedback={false}
+                                                    value={field.value || ''}
+                                                    onChange={(e) => field.onChange(e.target.value)}
+                                                    toggleMask
+                                                />
+                                            )}
+                                        />
+
+                                        {errors.password && <small className="p-error">{errors.password.message}</small>}
+                                    </div>
+                                    <div className="flex align-items-center justify-content-between mb-4 mt-2 gap-3">
+                                        <div className="flex align-items-center">
+                                            <Checkbox
+                                                checked={rememberMe}
+                                                onChange={e => setRememberMe(e.checked)}
+                                                className="mr-2"
+                                            />
+                                            <label htmlFor="Remember Password">Save Password?</label>
+                                        </div>
+                                    </div>
+
+                                    <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" loading={loading} />
+                                </div>
+                            </form>
+                            <Button
+                                type='button'
+                                label="Sign in with Google"
+                                icon="pi pi-google"
+                                className="w-full p-3 text-xl p-button-outlined"
+                                onClick={handleGoogleLogin}
+                            />
+                        </Card>
+                    </div>
+                </div> : <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />}
+            </div>
         </>
     );
 };

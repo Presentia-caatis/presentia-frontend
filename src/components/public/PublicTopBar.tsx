@@ -1,30 +1,40 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
-import AuthServices from '../../services/authServices';
 import { Toast } from 'primereact/toast';
+import { useToastContext } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 const PublicTopbar = () => {
     const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [hovered, setHovered] = useState(false);
     const [userEmail, setUserEmail] = useState('');
     const toast = React.useRef<Toast>(null);
+    const { user, logout } = useAuth();
 
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            const parsedData = JSON.parse(userData);
-            setUserEmail(parsedData.email);
-            setIsLoggedIn(true);
+        if (user) {
+            setUserEmail(user.email);
         }
     }, []);
 
+    const { showToast } = useToastContext();
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
+        showToast({
+            severity: severity,
+            summary: summary,
+            detail: detail
+        });
+    }
+
     const handleLogout = async () => {
         try {
-            await AuthServices.logout();
+            setLoading(true);
+            logout();
 
-            setIsLoggedIn(false);
+            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             setUserEmail('');
 
             navigate('/');
@@ -40,6 +50,8 @@ const PublicTopbar = () => {
                 summary: 'Logout Gagal',
                 detail: 'Something went wrong.',
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -49,7 +61,7 @@ const PublicTopbar = () => {
                 Presentia
             </Link>
 
-            {!isLoggedIn ? (
+            {!user ? (
                 <Button
                     onClick={() => {
                         navigate('/login')
@@ -98,6 +110,7 @@ const PublicTopbar = () => {
                                     label="Logout"
                                     className="p-button-danger p-button-sm mt-2 w-full"
                                     onClick={handleLogout}
+                                    loading={loading}
                                 />
                             </div>
                         </div>

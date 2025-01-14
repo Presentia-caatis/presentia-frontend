@@ -33,7 +33,7 @@ export const LayoutConfigProvider: React.FC<LayoutConfigProps> = ({ children }) 
 
     return (
         <LayoutConfigContext.Provider value={{ darkMode, setDarkMode, scale, setScale, menuMode, setMenuMode, ripple, setRipple }}>
-            {children}  {/* Render the children */}
+            {children}
         </LayoutConfigContext.Provider>
     );
 };

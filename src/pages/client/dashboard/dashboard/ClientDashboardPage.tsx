@@ -8,6 +8,8 @@ import { Tooltip } from 'primereact/tooltip';
 import { Panel } from 'primereact/panel';
 import ClientCreateSchoolModal from '../../../../components/client/ClientCreateSchoolModal';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import schoolService from '../../../../services/schoolService';
+import { useAuth } from '../../../../context/AuthContext';
 
 
 type SchoolData = {
@@ -21,64 +23,50 @@ type SchoolData = {
     registeredAt: string;
 };
 
-type UserData = {
-    id: number;
-    school_id: number | null;
-    role: string;
-    email: string;
-    username: string;
-    email_verified_at: string;
-    created_at: string;
-    updated_at: string;
-};
-
 
 const ClientDashboardPage = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [userData, setUserData] = useState<UserData | null>(null);
     const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
     const [isModalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
 
     useEffect(() => {
-        if (!token) {
+        if (!user) {
             localStorage.removeItem('token');
             navigate('/login');
             return;
         }
 
-        const dummyUserData: UserData = {
-            id: 1,
-            school_id: 1,
-            role: 'Admin',
-            email: 'user@example.com',
-            username: 'JohnDoe',
-            email_verified_at: '2024-01-01T00:00:00Z',
-            created_at: '2024-01-01T00:00:00Z',
-            updated_at: '2024-01-01T00:00:00Z',
-        };
-
-        const dummySchoolData: SchoolData = {
-            id: 1,
-            name: 'Sekolah Harapan Bangsa',
-            plan: 'Premium',
-            dueDate: '2024-02-01',
-            status: 'Active',
-            address: 'Jl. Merdeka No. 1, Jakarta',
-            totalStudents: 1200,
-            registeredAt: '2023-01-01',
-        };
-
-        setTimeout(() => {
-            setUserData(dummyUserData);
-            if (dummyUserData.school_id) {
-                setSchoolData(dummySchoolData);
+        const fetchUserAndSchoolData = async () => {
+            try {
+                console.log(user.school_id);
+                if (user.school_id) {
+                    const school = await schoolService.getById(user.school_id!);
+                    setSchoolData({
+                        id: school.id!,
+                        name: school.school_name,
+                        plan: 'Premium',
+                        dueDate: school.end_subscription,
+                        status: 'Active',
+                        address: school.address,
+                        totalStudents: 1200,
+                        registeredAt: school.created_at!,
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                navigate('/login');
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
-        }, 1000);
-    }, [token]);
+        };
+
+        fetchUserAndSchoolData();
+    }, [token, navigate]);
+
 
     const handleDashboard = () => {
         if (schoolData) navigate(`/school/${schoolData.id}/mainpage`);

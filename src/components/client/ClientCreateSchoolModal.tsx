@@ -32,6 +32,9 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
         string | null
     >(null);
+    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
+    const [confirmDialogType, setConfirmDialogType] = useState<"cancel" | "purchase">("cancel");
+
 
     const plans = [
         { label: 'Free', value: 'Free', price: 0, features: ['Basic support', 'Limited features'] },
@@ -50,7 +53,6 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
         { label: "Bank Transfer", value: "Bank Transfer" },
     ];
 
-
     const getSelectedPlanFeatures = () => plans.find(plan => plan.value === selectedPlan)?.features || [];
     const getPlanPrice = () => plans.find(plan => plan.value === selectedPlan)?.price || 0;
     const calculateTotalPrice = () => {
@@ -58,9 +60,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
         return pricePerMonth * (selectedDuration || 0);
     };
 
-
     const handleSave = () => {
-
         if (currentStep === "purchase") {
             if (selectedPlan !== "Free") {
                 setCurrentStep("payment");
@@ -78,7 +78,6 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
             };
 
             onSave(newSchool);
-
             resetState();
         }
     };
@@ -91,168 +90,219 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
         setCurrentStep("purchase");
     };
 
+    const handleConfirmDialog = (type: "cancel" | "purchase") => {
+        setConfirmDialogType(type);
+        if (selectedPlan === "Free" || type === "cancel") {
+            setConfirmDialogVisible(true);
+        } else {
+            setCurrentStep('payment');
+        }
+
+        if (currentStep === "payment" && type === "purchase") {
+            setConfirmDialogVisible(true);
+        }
+    };
+
+    const handleConfirmAction = () => {
+        if (confirmDialogType === "cancel") {
+            resetState();
+            onClose();
+        } else if (confirmDialogType === "purchase") {
+            handleSave();
+            onClose();
+        }
+        setConfirmDialogVisible(false);
+    };
+
+    const confirmDialogHeader = confirmDialogType === "cancel" ? "Konfirmasi Pembatalan" : "Konfirmasi Pembelian";
+    const confirmDialogMessage = confirmDialogType === "cancel"
+        ? "Apakah Anda yakin ingin membatalkan proses ini?"
+        : "Apakah Anda yakin ingin menyelesaikan proses pembelian ini?";
+    const confirmDialogFooter = (
+        <div>
+            <Button label="Tidak" icon="pi pi-times" onClick={() => setConfirmDialogVisible(false)} className="p-button-text" />
+            <Button label="Ya" icon="pi pi-check" onClick={handleConfirmAction} autoFocus />
+        </div>
+    );
+
     return (
-        <Dialog
-            header={currentStep === "purchase" ? "Tambah Sekolah Baru" : "Pembayaran"}
-            visible={visible}
-            style={{ width: "60vw" }}
-            breakpoints={{ "960px": "75vw", "641px": "100vw" }}
-            modal
-            onHide={() => {
-                resetState();
-                onClose();
-            }}
-            footer={
-                <div className="flex justify-content-end">
-                    <Button
-                        label="Batal"
-                        icon="pi pi-times"
-                        className="p-button-text"
-                        onClick={() => {
-                            resetState();
-                            onClose();
-                        }}
-                    />
-                    {currentStep === "purchase" ? (
-                        <Button
-                            label="Lanjutkan"
-                            icon="pi pi-arrow-right"
-                            className="p-button"
-                            onClick={handleSave}
-                            disabled={
-                                !schoolName ||
-                                !selectedPlan ||
-                                (selectedPlan !== "Free" && !selectedDuration)
-                            }
-                        />
-                    ) : (
-                        <Button
-                            label="Selesaikan dan Bayar"
-                            icon="pi pi-check"
-                            className="p-button"
-                            onClick={() => {
-                                handleSave();
-                                onClose();
-                            }}
-                            disabled={!selectedPaymentMethod}
-                        />
-                    )}
-                </div>
-            }
-        >
-            {currentStep === "purchase" ? (
-                <div className="grid">
-                    <div className="col-12 ">
-                        <label htmlFor="name" className="block mb-2">
-                            Nama Sekolah
-                        </label>
-                        <InputText
-                            id="name"
-                            value={schoolName}
-                            onChange={(e) => setSchoolName(e.target.value)}
-                            className="w-full"
-                            placeholder="Masukkan nama sekolah"
-                        />
+        <>
+            <Dialog
+                header={currentStep === "purchase" ? "Tambah Sekolah Baru" : "Pembayaran"}
+                visible={visible}
+                style={{ width: "60vw" }}
+                breakpoints={{ "960px": "75vw", "641px": "100vw" }}
+                modal
+                onHide={() => {
+                    handleConfirmDialog("cancel")
+                }}
+                footer={
+                    <div className="flex justify-content-end">
+
+                        {currentStep === "payment" ? (
+                            <Button
+                                label="Kembali"
+                                icon="pi pi-arrow-left"
+                                className="p-button-text"
+                                onClick={() => setCurrentStep("purchase")}
+                            />
+                        ) : (<Button
+                            label="Batal"
+                            icon="pi pi-times"
+                            className="p-button-text"
+                            onClick={() => handleConfirmDialog("cancel")}
+                        />)}
+
+
+                        {currentStep === "purchase" ? (
+                            <Button
+                                label={selectedPlan === "Free" ? "Buat Sekolah" : "Lanjutkan"}
+                                icon="pi pi-arrow-right"
+                                className="p-button"
+                                onClick={() => handleConfirmDialog("purchase")}
+                                disabled={
+                                    !schoolName ||
+                                    !selectedPlan ||
+                                    (selectedPlan !== "Free" && !selectedDuration)
+                                }
+                            />
+                        ) : (
+                            <Button
+                                label="Selesaikan dan Bayar"
+                                icon="pi pi-check"
+                                className="p-button"
+                                onClick={() => handleConfirmDialog("purchase")}
+                                disabled={!selectedPaymentMethod}
+                            />
+                        )}
                     </div>
-                    <div className="col-12 ">
-                        <label htmlFor="plan" className="block mb-2">
-                            Pilih Paket
-                        </label>
-                        <Dropdown
-                            id="plan"
-                            value={selectedPlan}
-                            options={plans}
-                            onChange={(e) => setSelectedPlan(e.value)}
-                            placeholder="Pilih paket"
-                            className="w-full"
-                        />
-                    </div>
-                    <div className="col-12 ">
-                        <label htmlFor="duration" className="block mb-2">
-                            Pilih Durasi
-                        </label>
-                        <Dropdown
-                            id="duration"
-                            value={selectedDuration}
-                            options={durations}
-                            onChange={(e) => setSelectedDuration(e.value)}
-                            placeholder="Pilih durasi"
-                            className="w-full"
-                            disabled={selectedPlan === "Free"}
-                        />
-                    </div>
-                    {selectedPlan && (
+                }
+            >
+                {currentStep === "purchase" ? (
+                    <div className="grid">
+                        <div className="col-12 ">
+                            <label htmlFor="name" className="block mb-2">
+                                Nama Sekolah
+                            </label>
+                            <InputText
+                                id="name"
+                                value={schoolName}
+                                onChange={(e) => setSchoolName(e.target.value)}
+                                className="w-full"
+                                placeholder="Masukkan nama sekolah"
+                            />
+                        </div>
+                        <div className="col-12 ">
+                            <label htmlFor="plan" className="block mb-2">
+                                Pilih Paket
+                            </label>
+                            <Dropdown
+                                id="plan"
+                                value={selectedPlan}
+                                options={plans}
+                                onChange={(e) => setSelectedPlan(e.value)}
+                                placeholder="Pilih paket"
+                                className="w-full"
+                            />
+                        </div>
+                        <div className="col-12 ">
+                            <label htmlFor="duration" className="block mb-2">
+                                Pilih Durasi
+                            </label>
+                            <Dropdown
+                                id="duration"
+                                value={selectedDuration}
+                                options={durations}
+                                onChange={(e) => setSelectedDuration(e.value)}
+                                placeholder="Pilih durasi"
+                                className="w-full"
+                                disabled={selectedPlan === "Free"}
+                            />
+                        </div>
+                        {selectedPlan && (
+                            <div className="col-12">
+                                <div className="p-3 border-1 border-round surface-border">
+                                    <h5>Fitur Paket {selectedPlan}</h5>
+                                    <ul className="list-none m-0 p-0">
+                                        {getSelectedPlanFeatures().map((feature, index) => (
+                                            <li key={index} className="flex align-items-center mb-2">
+                                                <Checkbox
+                                                    checked
+                                                    className="mr-2"
+                                                    style={{ color: 'var(--primary-color)' }}
+                                                />
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        )}
                         <div className="col-12">
                             <div className="p-3 border-1 border-round surface-border">
-                                <h5>Fitur Paket {selectedPlan}</h5>
-                                <ul className="list-none m-0 p-0">
-                                    {getSelectedPlanFeatures().map((feature, index) => (
-                                        <li key={index} className="flex align-items-center mb-2">
-                                            <Checkbox
-                                                checked
-                                                className="mr-2"
-                                                style={{ color: 'var(--primary-color)' }}
-                                            />
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
+                                <h5>Ringkasan</h5>
+                                <div className="flex justify-content-between">
+                                    <span>Harga Paket</span>
+                                    <span>{`Rp ${getPlanPrice().toLocaleString()} / bulan`}</span>
+                                </div>
+                                <div className="flex justify-content-between mt-2">
+                                    <span>Durasi</span>
+                                    <span>{selectedPlan === 'Free' ? '-' : `${selectedDuration || '-'} bulan`}</span>
+                                </div>
+                                <div className="flex justify-content-between mt-2 font-bold">
+                                    <span>Total Harga</span>
+                                    <span>{selectedPlan === 'Free' ? 'Gratis' : `Rp ${calculateTotalPrice().toLocaleString()}`}</span>
+                                </div>
                             </div>
                         </div>
-                    )}
-                    <div className="col-12">
+                    </div>
+                ) : (
+                    <div>
+                        <div className="p-3 border-1 mb-3 border-round surface-border">
+                            <h5>Detail Sekolah</h5>
+                            <p>Nama: {schoolName}</p>
+                            <p>Paket: {selectedPlan}</p>
+                            <p>Durasi: {selectedDuration} bulan</p>
+                        </div>
                         <div className="p-3 border-1 border-round surface-border">
                             <h5>Ringkasan</h5>
                             <div className="flex justify-content-between">
-                                <span>Harga Paket</span>
+                                <span>Subtotal</span>
                                 <span>{`Rp ${getPlanPrice().toLocaleString()} / bulan`}</span>
                             </div>
-                            <div className="flex justify-content-between mt-2">
-                                <span>Durasi</span>
-                                <span>{selectedPlan === 'Free' ? '-' : `${selectedDuration || '-'} bulan`}</span>
-                            </div>
                             <div className="flex justify-content-between mt-2 font-bold">
-                                <span>Total Harga</span>
-                                <span>{selectedPlan === 'Free' ? 'Gratis' : `Rp ${calculateTotalPrice().toLocaleString()}`}</span>
+                                <span>Total</span>
+                                <span>{`Rp ${calculateTotalPrice().toLocaleString()}`}</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            ) : (
-                <div>
-                    <div className="p-3 border-1 border-round surface-border">
-                        <h5>Detail Sekolah</h5>
-                        <p>Nama: {schoolName}</p>
-                        <p>Paket: {selectedPlan}</p>
-                        <p>Durasi: {selectedDuration} bulan</p>
-                    </div>
-                    <div className="p-3 border-1 border-round surface-border">
-                        <h5>Ringkasan</h5>
-                        <div className="flex justify-content-between">
-                            <span>Subtotal</span>
-                            <span>{`Rp ${getPlanPrice().toLocaleString()} / bulan`}</span>
-                        </div>
-                        <div className="flex justify-content-between mt-2 font-bold">
-                            <span>Total</span>
-                            <span>{`Rp ${calculateTotalPrice().toLocaleString()}`}</span>
+                        <div className="col-12 mt-3">
+                            <label htmlFor="payment" className="block mb-2">
+                                Pilih Metode Pembayaran
+                            </label>
+                            <Dropdown
+                                id="payment"
+                                value={selectedPaymentMethod}
+                                options={paymentMethods}
+                                onChange={(e) => setSelectedPaymentMethod(e.value)}
+                                placeholder="Pilih metode pembayaran"
+                                className="w-full"
+                            />
                         </div>
                     </div>
-                    <div className="col-12 mt-3">
-                        <label htmlFor="payment" className="block mb-2">
-                            Pilih Metode Pembayaran
-                        </label>
-                        <Dropdown
-                            id="payment"
-                            value={selectedPaymentMethod}
-                            options={paymentMethods}
-                            onChange={(e) => setSelectedPaymentMethod(e.value)}
-                            placeholder="Pilih metode pembayaran"
-                            className="w-full"
-                        />
-                    </div>
-                </div>
-            )}
-        </Dialog>
+                )}
+            </Dialog>
+
+            <Dialog
+                header={confirmDialogHeader}
+                visible={confirmDialogVisible}
+                style={{ width: '30vw' }}
+                modal
+                footer={confirmDialogFooter}
+                onHide={() => setConfirmDialogVisible(false)}
+            >
+                <p>{confirmDialogMessage}</p>
+            </Dialog>
+        </>
     );
 };
 

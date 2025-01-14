@@ -5,7 +5,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
-import authServices from '../../services/authServices';
+import authServices from '../../services/authService';
 import { useToastContext } from '../../context/ToastContext';
 import { useState } from 'react';
 import { Divider } from 'primereact/divider';
@@ -40,12 +40,12 @@ const RegisterPage = () => {
                 fullname: data.fullname,
                 username: data.username,
                 email: state.email,
-                google_id : state.googleId,
+                google_id: state.googleId,
                 password: data.password,
                 password_confirmation: data.confirmPassword,
             });
 
-            const {responseData} = await authServices.login({
+            const { responseData } = await authServices.login({
                 email_or_username: state.email,
                 password: data.password,
             });

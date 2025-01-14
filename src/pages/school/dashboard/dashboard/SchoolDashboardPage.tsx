@@ -93,33 +93,33 @@ const SchoolDashboardPage = () => {
         },
     });
 
-    const [studentAchVlnChart] = useState({
-        labels: ['Pelanggaran Siswa', 'Pencapaian Siswa'],
-        datasets: [
-            {
-                data: [dummyData.student_violation, dummyData.student_achievement],
-                backgroundColor: [
-                    documentStyle.getPropertyValue('--indigo-500'),
-                    documentStyle.getPropertyValue('--purple-500'),
-                ],
-                hoverBackgroundColor: [
-                    documentStyle.getPropertyValue('--indigo-400'),
-                    documentStyle.getPropertyValue('--purple-400'),
-                ],
-            },
-        ],
-    });
+    // const [studentAchVlnChart] = useState({
+    //     labels: ['Pelanggaran Siswa', 'Pencapaian Siswa'],
+    //     datasets: [
+    //         {
+    //             data: [dummyData.student_violation, dummyData.student_achievement],
+    //             backgroundColor: [
+    //                 documentStyle.getPropertyValue('--indigo-500'),
+    //                 documentStyle.getPropertyValue('--purple-500'),
+    //             ],
+    //             hoverBackgroundColor: [
+    //                 documentStyle.getPropertyValue('--indigo-400'),
+    //                 documentStyle.getPropertyValue('--purple-400'),
+    //             ],
+    //         },
+    //     ],
+    // });
 
-    const [studentAchVlnChartOption] = useState({
-        plugins: {
-            legend: {
-                labels: {
-                    usePointStyle: true,
-                    color: textColor,
-                },
-            },
-        },
-    });
+    // const [studentAchVlnChartOption] = useState({
+    //     plugins: {
+    //         legend: {
+    //             labels: {
+    //                 usePointStyle: true,
+    //                 color: textColor,
+    //             },
+    //         },
+    //     },
+    // });
 
     const [studentAttendanceChart] = useState({
         labels: ['Tepat Waktu', 'Terlambat'],

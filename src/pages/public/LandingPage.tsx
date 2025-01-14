@@ -1,15 +1,10 @@
 import { Button } from "primereact/button"
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext";
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        setIsLoggedIn(!!token);
-    }, []);
+    const { user } = useAuth();
     return (
         <div>
             <div className="grid grid-nogutter surface-0 text-800">
@@ -18,7 +13,7 @@ const LandingPage = () => {
                         <span className="block text-6xl font-bold mb-1">Presentia</span>
                         <div className="text-6xl text-primary font-bold mb-3">Digitalisasi Absensi Sekolah Anda</div>
                         <p className="mt-0 mb-4 text-700 line-height-3">Optimalkan pengelolaan kehadiran siswa dengan sistem presensi berbasis web yang cepat, aman, dan terintegrasi.</p>
-                        {isLoggedIn ? (
+                        {user ? (
                             <div>
                                 <Button
                                     label="Dashboard"
@@ -201,7 +196,7 @@ const LandingPage = () => {
             <br />
             <br />
 
-            {!isLoggedIn && (<div>
+            {!user && (<div>
                 <div className="surface-0 text-700 text-center px-4 py-8 md:px-6 lg:px-8">
                     <div className="text-primary font-bold mb-3"><i className="pi pi-user"></i>&nbsp;PILIH PRESENTIA</div>
                     <div className="text-900 font-bold text-5xl mb-3">Daftar Akun Sekarang</div>
