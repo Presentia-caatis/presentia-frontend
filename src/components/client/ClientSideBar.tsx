@@ -16,18 +16,18 @@ const ClientSideBar = () => {
                     command: () => navigate('/client/dashboard'),
                     className: currentPath === '/client/dashboard' ? 'active-route' : 'menu-item'
                 },
-                {
-                    label: 'Pembayaran',
-                    icon: 'pi pi-fw pi-receipt',
-                    command: () => navigate('/client/dashboard/billing'),
-                    className: currentPath === '/client/dashboard/billing' ? 'active-route' : 'menu-item'
-                },
-                {
-                    label: 'Support',
-                    icon: 'pi pi-fw pi-headphones',
-                    command: () => navigate('/client/dashboard/support'),
-                    className: currentPath === '/client/dashboard/support' ? 'active-route' : 'menu-item'
-                }
+                // {
+                //     label: 'Pembayaran',
+                //     icon: 'pi pi-fw pi-receipt',
+                //     command: () => navigate('/client/dashboard/billing'),
+                //     className: currentPath === '/client/dashboard/billing' ? 'active-route' : 'menu-item'
+                // },
+                // {
+                //     label: 'Support',
+                //     icon: 'pi pi-fw pi-headphones',
+                //     command: () => navigate('/client/dashboard/support'),
+                //     className: currentPath === '/client/dashboard/support' ? 'active-route' : 'menu-item'
+                // }
             ]
         },
     ];

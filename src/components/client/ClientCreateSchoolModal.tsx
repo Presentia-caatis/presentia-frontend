@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
+import subscriptionService from "../../services/subscriptionService";
 
 type ClientCreateSchoolModalProps = {
     onClose: () => void;
@@ -29,18 +30,38 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
     const [schoolName, setSchoolName] = useState("");
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState< 
         string | null
     >(null);
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
     const [confirmDialogType, setConfirmDialogType] = useState<"cancel" | "purchase">("cancel");
+    const [plans, setPlans] = useState();
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
+    useEffect(() => {
+        const fetchPlans = async () => {
+            try {
+                setLoading(true);
+                const response = await subscriptionService.getSubscriptionPlans();
+                console.log(response);
+                setPlans(response.data);
+            } catch (err) {
+                setError('Failed to load subscription plans');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const plans = [
-        { label: 'Free', value: 'Free', price: 0, features: ['Basic support', 'Limited features'] },
-        { label: 'Standard', value: 'Standard', price: 100000, features: ['Priority support', 'All features', '10 GB storage'] },
-        { label: 'Premium', value: 'Premium', price: 200000, features: ['24/7 support', 'Unlimited features', '100 GB storage', 'Custom branding'] },
-    ];
+        fetchPlans();
+    }, []);
+
+    // const plans = [
+    //     { label: 'Free', value: 'Free', price: 0, features: ['Basic support', 'Limited features'] },
+    //     { label: 'Standard', value: 'Standard', price: 100000, features: ['Priority support', 'All features', '10 GB storage'] },
+    //     { label: 'Premium', value: 'Premium', price: 200000, features: ['24/7 support', 'Unlimited features', '100 GB storage', 'Custom branding'] },
+    // ];
 
     const durations = [
         { label: "1 Bulan", value: 1 },
@@ -53,8 +74,8 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
         { label: "Bank Transfer", value: "Bank Transfer" },
     ];
 
-    const getSelectedPlanFeatures = () => plans.find(plan => plan.value === selectedPlan)?.features || [];
-    const getPlanPrice = () => plans.find(plan => plan.value === selectedPlan)?.price || 0;
+    // const getSelectedPlanFeatures = () => plans.find(plan => plan.value === selectedPlan)?.features || [];
+    // const getPlanPrice = () => plans.find(plan => plan.value === selectedPlan)?.price || 0;
     const calculateTotalPrice = () => {
         const pricePerMonth = getPlanPrice();
         return pricePerMonth * (selectedDuration || 0);
@@ -193,6 +214,18 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                             />
                         </div>
                         <div className="col-12 ">
+                            <label htmlFor="name" className="block mb-2">
+                                Alamat Sekolah
+                            </label>
+                            <InputText
+                                id="name"
+                                value={schoolName}
+                                onChange={(e) => setSchoolName(e.target.value)}
+                                className="w-full"
+                                placeholder="Masukkan nama sekolah"
+                            />
+                        </div>
+                        <div className="col-12 ">
                             <label htmlFor="plan" className="block mb-2">
                                 Pilih Paket
                             </label>
@@ -205,7 +238,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                                 className="w-full"
                             />
                         </div>
-                        <div className="col-12 ">
+                        {/* <div className="col-12 ">
                             <label htmlFor="duration" className="block mb-2">
                                 Pilih Durasi
                             </label>
@@ -218,13 +251,13 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                                 className="w-full"
                                 disabled={selectedPlan === "Free"}
                             />
-                        </div>
+                        </div> */}
                         {selectedPlan && (
                             <div className="col-12">
                                 <div className="p-3 border-1 border-round surface-border">
                                     <h5>Fitur Paket {selectedPlan}</h5>
                                     <ul className="list-none m-0 p-0">
-                                        {getSelectedPlanFeatures().map((feature, index) => (
+                                        {/* {getSelectedPlanFeatures().map((feature, index) => (
                                             <li key={index} className="flex align-items-center mb-2">
                                                 <Checkbox
                                                     checked
@@ -233,12 +266,12 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                                                 />
                                                 {feature}
                                             </li>
-                                        ))}
+                                        ))} */}
                                     </ul>
                                 </div>
                             </div>
                         )}
-                        <div className="col-12">
+                        {/* <div className="col-12">
                             <div className="p-3 border-1 border-round surface-border">
                                 <h5>Ringkasan</h5>
                                 <div className="flex justify-content-between">
@@ -254,7 +287,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                                     <span>{selectedPlan === 'Free' ? 'Gratis' : `Rp ${calculateTotalPrice().toLocaleString()}`}</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 ) : (
                     <div>
@@ -266,10 +299,10 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
                         </div>
                         <div className="p-3 border-1 border-round surface-border">
                             <h5>Ringkasan</h5>
-                            <div className="flex justify-content-between">
+                            {/* <div className="flex justify-content-between">
                                 <span>Subtotal</span>
                                 <span>{`Rp ${getPlanPrice().toLocaleString()} / bulan`}</span>
-                            </div>
+                            </div> */}
                             <div className="flex justify-content-between mt-2 font-bold">
                                 <span>Total</span>
                                 <span>{`Rp ${calculateTotalPrice().toLocaleString()}`}</span>

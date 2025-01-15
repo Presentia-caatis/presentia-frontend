@@ -9,7 +9,7 @@ import { Card } from 'primereact/card';
 import { useNavigate } from 'react-router-dom';
 import { SubmitHandler, useForm, Controller } from 'react-hook-form';
 import authServices from '../../services/authService';
-import { useToastContext } from '../../context/ToastContext';
+import { useToastContext } from '../../layout/ToastContext';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '../../context/AuthContext';

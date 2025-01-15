@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import authServices from '../../services/authService';
-import { useToastContext } from '../../context/ToastContext';
+import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 const ClientTopBar = () => {
@@ -11,6 +11,7 @@ const ClientTopBar = () => {
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
     const { logout } = useAuth();
+    
 
     const [user, setUser] = useState<{ fullname: string } | null>(null);
 

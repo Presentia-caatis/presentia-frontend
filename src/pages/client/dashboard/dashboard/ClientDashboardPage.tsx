@@ -10,7 +10,8 @@ import ClientCreateSchoolModal from '../../../../components/client/ClientCreateS
 import { ProgressSpinner } from 'primereact/progressspinner';
 import schoolService from '../../../../services/schoolService';
 import { useAuth } from '../../../../context/AuthContext';
-
+import SchoolStudentAttendanceList from '../../../../components/school/SchoolStudentAttendanceList';
+import logoImage from '../../../../assets/Logo-SMK-10-Bandung.png';
 
 type SchoolData = {
     id: number;
@@ -21,6 +22,7 @@ type SchoolData = {
     address: string;
     totalStudents: number;
     registeredAt: string;
+    logoImagePath: string,
 };
 
 
@@ -46,16 +48,27 @@ const ClientDashboardPage = () => {
                 if (user.school_id) {
                     const school = await schoolService.getById(user.school_id!);
                     setSchoolData({
-                        id: school.id!,
-                        name: school.school_name,
+                        id: school.data.id!,
+                        name: school.data.school_name,
                         plan: 'Premium',
-                        dueDate: school.end_subscription,
+                        dueDate: school.data.end_subscription,
                         status: 'Active',
-                        address: school.address,
+                        address: school.data.address,
                         totalStudents: 1200,
-                        registeredAt: school.created_at!,
+                        registeredAt: school.data.created_at!,
+                        logoImagePath: school.data.logo_image_path!,
                     });
                 }
+                // setSchoolData({
+                //     id: 1,
+                //     name: "sekolah SMK",
+                //     plan: 'Premium',
+                //     dueDate: "05-05-2025",
+                //     status: 'Active',
+                //     address: "jalan bojonmgsoang",
+                //     totalStudents: 1200,
+                //     registeredAt: "05-05-2023",
+                // });
             } catch (error) {
                 console.error('Error fetching data:', error);
                 navigate('/login');
@@ -69,7 +82,7 @@ const ClientDashboardPage = () => {
 
 
     const handleDashboard = () => {
-        if (schoolData) navigate(`/school/${schoolData.id}/mainpage`);
+        if (schoolData) navigate(`/school/${schoolData.id}/dashboard`);
     };
 
     const handleAttendanceIn = () => {
@@ -80,37 +93,6 @@ const ClientDashboardPage = () => {
         if (schoolData) navigate(`/school/${schoolData.id}/student/attendance/out`);
     };
 
-    const eventDetail = {
-        isEvent: true,
-        name: 'Pekan Kreativitas',
-        startTime: '08:00',
-        endTime: '12:00',
-    };
-
-    const studentAttendance = [
-        { name: 'John Doe', time: '08:10' },
-        { name: 'Jane Smith', time: '08:20' },
-        { name: 'Alice Johnson', time: '08:30' },
-        { name: 'Alice Johnson', time: '08:30' },
-        { name: 'Alice Johnson', time: '08:30' },
-        { name: 'Alice Johnson', time: '08:30' },
-        { name: 'Alice Johnson', time: '08:30' },
-        { name: 'Alice Johnson', time: '08:30' },
-        { name: 'Alice Johnson', time: '08:30' },
-    ];
-
-    const [currentTime, setCurrentTime] = useState(new Date());
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, []);
-
-    const formattedDate = currentTime.toLocaleDateString();
-    const formattedTime = currentTime.toLocaleTimeString();
 
 
     return (
@@ -122,7 +104,12 @@ const ClientDashboardPage = () => {
                             <div className="grid grid-nogutter">
                                 <div className="col-12 md:col-6 p-6">
                                     <div className="flex gap-4 items-center">
-                                        <h1 className="text-4xl font-bold ml-2">{schoolData.name}</h1>
+                                        <img
+                                            src={logoImage}
+                                            alt={`${schoolData.name} logo`}
+                                            className="h-4rem  w-4rem object-cover rounded-full"
+                                        />
+                                        <h1 className="text-4xl font-bold my-auto">{schoolData.name}</h1>
                                     </div>
                                     <div className="mt-4 text-lg">
                                         <div className="mb-3 flex">
@@ -181,65 +168,21 @@ const ClientDashboardPage = () => {
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-users text-orange-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
-                                                    <label className="text-lg">Total Siswa Aktif</label>
+                                                    <label className="text-lg">Siswa Aktif</label>
                                                 </Card>
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
-                                                    <i className="pi pi-users text-blue-500 text-4xl"></i>
+                                                    <i className="pi pi-address-book text-blue-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
-                                                    <label className="text-lg">Total Siswa Baru</label>
+                                                    <label className="text-lg">Absen Hari Ini</label>
                                                 </Card>
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-users text-green-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
-                                                    <label className="text-lg">Total Kelas Baru</label>
+                                                    <label className="text-lg">Siswa Belum Absen</label>
                                                 </Card>
                                             </div>
                                             <div className='grid mt-2'>
-                                                <Card className="text-center shadow-1 col-12 py-0">
-                                                    <div className="flex justify-content-between align-items-center mb-4">
-                                                        <div>
-                                                            <h5>{formattedDate}</h5>
-                                                            <p>{formattedTime}</p>
-                                                        </div>
-                                                        <div className="sm:block hidden">
-                                                            <h4>Daftar Absen Masuk Siswa</h4>
-                                                            <p className="text-sm text-secondary">Batas waktu absen masuk: 07:00</p>
-                                                        </div>
-                                                        <div>
-                                                            {eventDetail.isEvent ? (
-                                                                <Tag
-                                                                    value="Sedang Event"
-                                                                    severity="info"
-                                                                    id="event-tooltip"
-                                                                    className="cursor-pointer"
-                                                                    data-pr-tooltip={`Event: ${eventDetail.name}\nJam Masuk: ${eventDetail.startTime}\nJam Keluar: ${eventDetail.endTime}`}
-                                                                />
-                                                            ) : (
-                                                                <Tag value="Tidak Ada Event" severity="secondary" />
-                                                            )}
-                                                            <Tooltip target="#event-tooltip" position="left" />
-                                                        </div>
-                                                    </div>
-                                                    <div className="sm:hidden block mb-2">
-                                                        <h4>Daftar Absen Masuk Siswa</h4>
-                                                        <p className="text-sm text-secondary">Batas waktu absen masuk: 07:00</p>
-                                                    </div>
-                                                    <ul
-                                                        className="list-none p-2 m-0"
-                                                        style={{ maxHeight: '180px', overflowY: 'auto' }}
-                                                    >
-                                                        {studentAttendance.map((student, index) => (
-                                                            <li
-                                                                key={index}
-                                                                className="py-1 flex justify-content-between align-items-center text-sm surface-border"
-                                                            >
-                                                                <span className="font-bold">{index + 1}. {student.name}</span>
-                                                                <span>{student.time}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </Card>
-
+                                                <SchoolStudentAttendanceList />
                                             </div>
                                         </div>
                                     </div>

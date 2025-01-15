@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { Chart } from 'primereact/chart';
 import { ToggleButton } from 'primereact/togglebutton';
+// import { useParams } from 'react-router-dom';
+import { useSchool } from '../../../../context/SchoolContext';
 
 interface DashboardData {
     student_active: number;
@@ -16,8 +19,11 @@ interface DashboardData {
 }
 
 const SchoolDashboardPage = () => {
+    // const { schoolId } = useParams();
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-color');
+
+    const { schoolData } = useSchool();
 
     const dummyData: DashboardData = {
         student_active: 150,
@@ -34,8 +40,8 @@ const SchoolDashboardPage = () => {
 
     const [dataHome] = useState<DashboardData>(dummyData);
 
-    const [isFingerprintOn, setIsFingerprintOn] = useState(false);
-    const [isFaceRecognitionOn, setIsFaceRecognitionOn] = useState(false);
+    const [isFingerprintOn, setIsFingerprintOn] = useState(true);
+    // const [isFaceRecognitionOn, setIsFaceRecognitionOn] = useState(false);
 
     const [studentActiveChart] = useState({
         labels: ['Siswa Aktif', 'Siswa Tidak Aktif'],
@@ -152,8 +158,8 @@ const SchoolDashboardPage = () => {
     return (
         <>
             <div className="card">
-                <h1>Selamat Datang Di Dashboard SMK Telkom Bandung</h1>
-                <p>Jl. Radio Palasari Road, Citeureup, Kec. Dayeuhkolot, Kabupaten Bandung, Jawa Barat 40257</p>
+                <h1>{`Selamat Datang Di Dashboard ${schoolData ? schoolData.school_name : 'Loading...'}`}</h1>
+                <p>{schoolData ? schoolData.address : 'Loading...'}</p>
             </div>
             <div className="grid">
                 <div className="col-12 lg:col-4 p-3">
@@ -208,7 +214,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-4 p-3">
                     <div className="card h-full flex flex-column align-items-center gap-4">
                         <h5 className="text-left w-full">Fitur absensi</h5>
-                        <div className="w-full text-center flex gap-3 justify-content-between">
+                        {/* <div className="w-full text-center flex gap-3 justify-content-between">
                             <span className="block text-500 font-medium mb-3 my-auto">Face Recognition</span>
                             <ToggleButton
                                 checked={isFaceRecognitionOn}
@@ -219,7 +225,7 @@ const SchoolDashboardPage = () => {
                                 offLabel="OFF"
                                 style={{ width: '10rem' }}
                             />
-                        </div>
+                        </div> */}
                         <div className="w-full text-center flex gap-3 justify-content-between">
                             <span className="block text-500 font-medium mb-3 my-auto">Fingerprint</span>
                             <ToggleButton

@@ -3,6 +3,8 @@ import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
 import smkTelkomlogo from '../../assets/logo-smk-telkom-bdg.png';
 import { useEffect, useRef, useState } from 'react';
+import { useSchool } from '../../context/SchoolContext';
+import logoImage from '../../assets/Logo-SMK-10-Bandung.png';
 
 const SchoolTopbar = () => {
 
@@ -10,13 +12,13 @@ const SchoolTopbar = () => {
     const onTopBarMenuButton = () => { };
     const handleLogout = () => { };
 
-
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = useRef(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
 
     const [user, setUser] = useState<{ fullname: string } | null>(null);
+    const { schoolData, loading } = useSchool();
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
@@ -24,7 +26,6 @@ const SchoolTopbar = () => {
             setUser(JSON.parse(userData));
         }
     }, []);
-
 
     const profileItems = [
         {
@@ -73,8 +74,8 @@ const SchoolTopbar = () => {
     return (
         <div className="layout-topbar  flex justify-content-between">
             <Link to="/school/mainpage" className="layout-topbar-logo">
-                <img src={smkTelkomlogo} alt="logo" />
-                <span>SMK Telkom Bandung</span>
+                <img src={logoImage} alt="logo" />
+                <span>{schoolData?.school_name || 'Loading...'}</span>
             </Link>
 
             <div

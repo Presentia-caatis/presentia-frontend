@@ -1,18 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { RadioButton } from 'primereact/radiobutton';
 import { Tooltip } from 'primereact/tooltip';
+import classGroupService from '../../../../services/classGroupService';
 
 type ClassroomData = {
     id: number;
-    name: string;
+    class_name: string;
     status: string;
-    studentCount: number;
+    amount_of_students: number;
     maleCount: number;
     femaleCount: number;
 };
@@ -21,17 +23,39 @@ const SchoolClassroomPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [classroomData, setClassroomData] = useState<ClassroomData>({
         id: 0,
-        name: '',
+        class_name: '',
         status: '',
-        studentCount: 0,
+        amount_of_students: 0,
         maleCount: 0,
         femaleCount: 0,
     });
-    const [selectedClassrooms, setSelectedClassrooms] = useState<ClassroomData[] | undefined>(undefined);
-    const [classroomList, setClassroomList] = useState<ClassroomData[]>([
-        { id: 1, name: 'Kelas A', status: 'Active', studentCount: 30, maleCount: 15, femaleCount: 15 },
-        { id: 2, name: 'Kelas B', status: 'Inactive', studentCount: 20, maleCount: 10, femaleCount: 10 }
-    ]);
+    const [classroomList, setClassroomList] = useState<any[]>([]);
+    const [selectedClassrooms, setSelectedClassrooms] = useState<any[]>([]);
+
+    useEffect(() => {
+        fetchClassrooms();
+    }, []);
+
+    const fetchClassrooms = async () => {
+        try {
+            const { responseData } = await classGroupService.getClassGroups();
+            setClassroomList(responseData.data);
+        } catch (error: any) {
+            console.error('Failed to fetch classrooms:', error);
+        }
+    };
+
+    const handleDeleteClassroom = async () => {
+        try {
+            for (const classroom of selectedClassrooms) {
+                await classGroupService.deleteClassGroup(classroom.id);
+            }
+            setSelectedClassrooms([]);
+            fetchClassrooms();
+        } catch (error: any) {
+            console.error('Failed to delete classrooms:', error);
+        }
+    };
 
     const renderStudentCount = (rowData: ClassroomData) => (
         <span
@@ -39,7 +63,7 @@ const SchoolClassroomPage = () => {
             data-pr-tooltip={`Laki-Laki: ${rowData.maleCount}, Perempuan: ${rowData.femaleCount}`}
             data-pr-position="top"
         >
-            {rowData.studentCount}
+            {rowData.amount_of_students}
         </span>
     );
 
@@ -80,8 +104,8 @@ const SchoolClassroomPage = () => {
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} classes"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                    <Column field="name" header="Name" sortable />
-                    <Column field="status" header="Status" sortable />
+                    <Column field="class_name" header="Name" sortable />
+                    {/* <Column field="status" header="Status" sortable /> */}
                     <Column
                         field="studentCount"
                         header="Jumlah Murid"
@@ -135,8 +159,8 @@ const SchoolClassroomPage = () => {
                         <label htmlFor="name">Nama</label>
                         <InputText
                             id="className"
-                            value={classroomData.name}
-                            onChange={(e) => setClassroomData({ ...classroomData, name: e.target.value })}
+                            value={classroomData.class_name}
+                            onChange={(e) => setClassroomData({ ...classroomData, class_name: e.target.value })}
                             required
                             autoFocus
                         />

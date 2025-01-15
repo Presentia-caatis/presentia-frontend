@@ -7,7 +7,7 @@ import { Password } from 'primereact/password';
 import { Divider } from 'primereact/divider';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useToastContext } from '../../../context/ToastContext';
+import { useToastContext } from '../../../layout/ToastContext';
 
 const ClientProfilePage = () => {
     const [activeIndex, setActiveIndex] = useState(0);

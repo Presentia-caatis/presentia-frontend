@@ -9,30 +9,31 @@ export interface School {
   end_subscription: string;
   created_at?: string;
   updated_at?: string;
+  logoImagePath?: string,
 }
 
 class SchoolService {
-  async getAll(): Promise<School[]> {
-    const response = await axiosClient.get<School[]>('/school');
+  async getAll() {
+    const response = await axiosClient.get('/school');
     return response.data;
   }
 
-  async getById(id: number): Promise<School> {
-    const response = await axiosClient.get<School>(`/school/${id}`);
+  async getById(id: number) {
+    const response = await axiosClient.get(`/school/${id}`);
     return response.data;
   }
 
-  async create(school: Omit<School, 'id'>): Promise<School> {
-    const response = await axiosClient.post<School>('/school', school);
+  async create(school: Omit<School, 'id'>) {
+    const response = await axiosClient.post('/school', school);
     return response.data;
   }
 
-  async update(id: number, school: Partial<Omit<School, 'id'>>): Promise<School> {
-    const response = await axiosClient.put<School>(`/school/${id}`, school);
+  async update(id: number, school: Partial<Omit<School, 'id'>>) {
+    const response = await axiosClient.put(`/school/${id}`, school);
     return response.data;
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: number) {
     await axiosClient.delete(`/school/${id}`);
   }
 }

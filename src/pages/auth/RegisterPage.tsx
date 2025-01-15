@@ -6,7 +6,7 @@ import { Card } from 'primereact/card';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authServices from '../../services/authService';
-import { useToastContext } from '../../context/ToastContext';
+import { useToastContext } from '../../layout/ToastContext';
 import { useState } from 'react';
 import { Divider } from 'primereact/divider';
 

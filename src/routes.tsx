@@ -32,6 +32,7 @@ import ClientSupportPage from './pages/client/dashboard/support/ClientSupportPag
 import ClientSupportDetailPage from './pages/client/dashboard/support/ClientSupportDetailPage';
 import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import SchoolStudentAttendanceListPage from './pages/school/dashboard/student/SchoolAttendanceListPage';
 
 const AppRoutes = () => {
     return (
@@ -58,7 +59,7 @@ const AppRoutes = () => {
                     <Route path="subscriptions" element={<AdminSubscribtionPage />} />
                 </Route>
 
-                <Route path="/school/*" element={<SchoolLayout />}>
+                <Route path="/school/:schoolId/*" element={<SchoolLayout />}>
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="profile" element={<SchoolProfilePage />} />
 
@@ -81,6 +82,7 @@ const AppRoutes = () => {
                     <Route path='violation/student-point-report' element={<ViolationStudentPointReport />} />
                 </Route>
 
+                <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
                 <Route path="/school/student/attendance/in" element={<StudentAttendanceInPage />} />
                 <Route path="/school/student/attendance/out" element={<StudentAttendanceOutPage />} />
 

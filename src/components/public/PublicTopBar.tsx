@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { useToastContext } from '../../context/ToastContext';
+import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 const PublicTopbar = () => {
@@ -33,6 +33,7 @@ const PublicTopbar = () => {
         try {
             setLoading(true);
             logout();
+            localStorage.clear();
 
             callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             setUserEmail('');
