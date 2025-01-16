@@ -9,6 +9,7 @@ import { useSchool } from '../../../../context/SchoolContext';
 import logo from "../../../../assets/Logo-SMK-10-Bandung.png"
 import AttendanceService from '../../../../services/attendanceService';
 import { Helmet } from 'react-helmet';
+import { formatTime } from '../../../../utils/formatTime';
 
 
 const SchoolStudentAttendanceListPage = () => {
@@ -18,8 +19,9 @@ const SchoolStudentAttendanceListPage = () => {
     const [loading, setLoading] = useState(true);
     const [countdown, setCountdown] = useState(30);
     const [currentTime, setCurrentTime] = useState(new Date());
-    const formattedDate = currentTime.toLocaleDateString();
-    const formattedTime = currentTime.toLocaleTimeString();
+    const formattedDate = currentTime.toLocaleDateString('id-ID');
+    const formattedTime = currentTime.toLocaleTimeString('id-ID', { hour12: false });
+
     const eventDetail = {
         isEvent: false,
         name: 'Pekan Kreativitas',
@@ -27,18 +29,36 @@ const SchoolStudentAttendanceListPage = () => {
         endTime: '12:00',
     };
 
+    const isWithinTimeRange = (time: string): boolean => {
+        const [hours, minutes] = time.split(':').map(Number);
+        const attendanceTime = hours * 60 + minutes;
+        const startTime = 7 * 60;
+        const endTime = 8 * 60;
+        return attendanceTime >= startTime && attendanceTime <= endTime;
+    };
+
+
     const fetchAttendance = async () => {
         try {
             setLoading(true);
             const response: any = await AttendanceService.getAttendances();
             setAttendanceData(response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error fetching attendance data", error);
+            if (error.response?.status === 401 || error.response?.data?.error === "Unauthenticated.") {
+                localStorage.clear();
+
+                navigate("/login");
+            } else {
+                console.error("Unexpected error:", error);
+            }
         } finally {
             setCountdown(30);
             setLoading(false);
         }
     };
+
+
 
     // const studentAttendance = [
     //     { name: 'John Doe', time: '08:10' },
@@ -118,7 +138,7 @@ const SchoolStudentAttendanceListPage = () => {
                             value={countdown.toString()}
                             severity="info"
                             id="countdown-tooltip"
-                            className="w-3rem"
+                            className="w-3rem text-xl"
                             data-pr-tooltip={`Countdown`}
                             rounded
                             style={{
@@ -177,27 +197,35 @@ const SchoolStudentAttendanceListPage = () => {
                         <span className='font-bold text-lg'>Waktu</span>
                     </div>
                     <ul
-                        className="list-none p-2 m-0 h-full max-h-full lg:max-h-70vh " style={{ overflowY: 'auto' }}
+                        className="list-none p-2 m-0 h-full max-h-full lg:max-h-70vh"
+                        style={{ overflowY: 'auto' }}
                     >
                         {loading ? (
                             <li className="py-1 text-center text-xl text-secondary">Loading...</li>
                         ) : attendanceData.length > 0 ? (
-                            attendanceData.map((attendance: any, index: any) => (
-                                <li
-                                    key={index}
-                                    className=" flex justify-content-between align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left"
-                                >
-                                    <div>
-                                        <span className="font-bold">{index + 1}. </span>
-                                        <span className="font-bold">{attendance.student.student_name}</span>
-                                    </div>
-                                    <span>{attendance.check_in_time}</span>
-                                </li>
-                            ))
+                            attendanceData.map((attendance: any, index: any) => {
+                                const checkInTime = formatTime(attendance.check_in_time);
+                                const isOnTime = isWithinTimeRange(checkInTime);
+                                const bgColor = isOnTime ? 'bg-green-100' : 'bg-red-100';
+
+                                return (
+                                    <li
+                                        key={index}
+                                        className={`flex justify-content-between ${bgColor} align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
+                                    >
+                                        <div>
+                                            <span className="font-bold">{index + 1}. </span>
+                                            <span className="font-bold">{attendance.student.student_name}</span>
+                                        </div>
+                                        <span>{checkInTime}</span>
+                                    </li>
+                                );
+                            })
                         ) : (
                             <li className="py-1 text-center text-xl text-secondary">Belum ada yang absen</li>
                         )}
                     </ul>
+
                 </div>
 
             </Card>

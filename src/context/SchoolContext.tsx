@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 
 interface SchoolContextProps {
     schoolData: any;
+    attendance: any;
     loading: boolean;
 }
 
@@ -39,6 +40,8 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
 
         fetchSchoolData();
     }, [schoolId]);
+
+    
 
     return (
         <SchoolContext.Provider value={{ schoolData, loading }}>

@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Chart } from 'primereact/chart';
 import { ToggleButton } from 'primereact/togglebutton';
 // import { useParams } from 'react-router-dom';
 import { useSchool } from '../../../../context/SchoolContext';
+import attendanceService from '../../../../services/attendanceService';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardData {
     student_active: number;
@@ -20,13 +22,16 @@ interface DashboardData {
 
 const SchoolDashboardPage = () => {
     // const { schoolId } = useParams();
+    const navigate = useNavigate();
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-color');
-
+    const [attendanceData, setAttendanceData] = useState<any>([]);
+    const [loading, setLoading] = useState(true);
+    const [countdown, setCountdown] = useState(30);
     const { schoolData } = useSchool();
 
     const dummyData: DashboardData = {
-        student_active: 150,
+        student_active: 200,
         student_nonactive: 50,
         student_gender_male: 80,
         student_gender_female: 70,
@@ -98,6 +103,49 @@ const SchoolDashboardPage = () => {
             },
         },
     });
+
+
+
+    const fetchAttendance = async () => {
+        try {
+            setLoading(true);
+            const response: any = await attendanceService.getAttendances();
+            setAttendanceData(response.data);
+        } catch (error: any) {
+            console.error("Error fetching attendance data", error);
+            if (error.response?.status === 401 || error.response?.data?.error === "Unauthenticated.") {
+                localStorage.clear();
+
+                navigate("/login");
+            } else {
+                console.error("Unexpected error:", error);
+            }
+        } finally {
+            setCountdown(30);
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+        fetchAttendance();
+
+        const countdownInterval = setInterval(() => {
+            setCountdown((prevCountdown) => {
+                if (prevCountdown === 1) {
+                    fetchAttendance();
+                    return 30;
+                }
+                return prevCountdown - 1;
+            });
+        }, 1000);
+
+
+        return () => {
+            clearInterval(countdownInterval);
+        };
+    }, []);
+
 
     // const [studentAchVlnChart] = useState({
     //     labels: ['Pelanggaran Siswa', 'Pencapaian Siswa'],
@@ -183,7 +231,7 @@ const SchoolDashboardPage = () => {
                         <div className="flex justify-content-between mb-3">
                             <div>
                                 <span className="block text-500 font-medium mb-3">Total Absen Hari Ini</span>
-                                <div className="text-900 font-medium text-xl">{dataHome.student_active}</div>
+                                <div className="text-900 font-medium text-xl">{attendanceData ? attendanceData.length : 0}</div>
                             </div>
                             <div
                                 className="flex align-items-center justify-content-center bg-orange-100 border-round"

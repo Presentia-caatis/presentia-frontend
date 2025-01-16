@@ -34,6 +34,11 @@ const ClientDashboardPage = () => {
     const [isModalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
+    const [totalAttendance, setTotalAttendance] = useState(0);
+
+    const handleAttendanceUpdate = (total: number) => {
+        setTotalAttendance(total);
+    };
 
     useEffect(() => {
         if (!user) {
@@ -54,7 +59,7 @@ const ClientDashboardPage = () => {
                         dueDate: school.data.end_subscription,
                         status: 'Active',
                         address: school.data.address,
-                        totalStudents: 1200,
+                        totalStudents: 200,
                         registeredAt: school.data.created_at!,
                         logoImagePath: school.data.logo_image_path!,
                     });
@@ -86,7 +91,7 @@ const ClientDashboardPage = () => {
     };
 
     const handleAttendanceIn = () => {
-        if (schoolData) navigate(`/school/${schoolData.id}/student/attendance/in`);
+        if (schoolData) navigate(`/school/attendance`);
     };
 
     const handleAttendanceOut = () => {
@@ -166,23 +171,23 @@ const ClientDashboardPage = () => {
                                         <div className="col-12 flex flex-column gap-3">
                                             <div className="grid gap-4">
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
-                                                    <i className="pi pi-users text-orange-500 text-4xl"></i>
+                                                    <i className="pi pi-users text-blue-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
                                                     <label className="text-lg">Siswa Aktif</label>
                                                 </Card>
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
-                                                    <i className="pi pi-address-book text-blue-500 text-4xl"></i>
-                                                    <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
+                                                    <i className="pi pi-address-book text-green-500 text-4xl"></i>
+                                                    <p className="text-3xl font-bold">{totalAttendance}</p>
                                                     <label className="text-lg">Absen Hari Ini</label>
                                                 </Card>
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
-                                                    <i className="pi pi-users text-green-500 text-4xl"></i>
-                                                    <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
+                                                    <i className="pi pi-user-minus text-orange-500 text-4xl"></i>
+                                                    <p className="text-3xl font-bold">{schoolData.totalStudents - totalAttendance}</p>
                                                     <label className="text-lg">Siswa Belum Absen</label>
                                                 </Card>
                                             </div>
                                             <div className='grid mt-2'>
-                                                <SchoolStudentAttendanceList />
+                                                <SchoolStudentAttendanceList onAttendanceUpdate={handleAttendanceUpdate} />
                                             </div>
                                         </div>
                                     </div>
@@ -197,6 +202,12 @@ const ClientDashboardPage = () => {
                                     onClick={handleDashboard}
                                 />
                                 <Button
+                                    label="Daftar Absen Hari Ini"
+                                    icon="pi pi-sign-in"
+                                    className="p-button p-button-success"
+                                    onClick={handleAttendanceIn}
+                                />
+                                {/* <Button
                                     label="Absen Masuk"
                                     icon="pi pi-sign-in"
                                     className="p-button p-button-success"
@@ -207,7 +218,7 @@ const ClientDashboardPage = () => {
                                     icon="pi pi-sign-out"
                                     className="p-button p-button-warning"
                                     onClick={handleAttendanceOut}
-                                />
+                                /> */}
                             </div>
                         </Panel>
                     </div>
