@@ -31,7 +31,7 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolId}/student` ? 'active-route' : 'menu-item'
                 },
                 {
-                    label: 'Daftar Absensi Siswa Hari Ini',
+                    label: 'Daftar Presensi Siswa Hari Ini',
                     icon: 'pi pi-users',
                     command: () => window.open(`${window.origin}/school/attendance`, '_blank'),
                     className: currentPath === `/school/${schoolId}/attendance` ? 'active-route' : 'menu-item'
@@ -78,7 +78,7 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolId}/default-attendance-time` ? 'active-route' : 'menu-item'
                 },
                 {
-                    label: 'Daftar Status Presensi',
+                    label: 'Daftar Status Absensi',
                     icon: 'pi pi-list',
                     command: () => navigate(`/school/${schoolId}/attendance/status`),
                     className: currentPath === `/school/${schoolId}/attendance/status` ? 'active-route' : 'menu-item'
@@ -95,7 +95,18 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolId}/classroom` ? 'active-route' : 'menu-item'
                 }
             ]
-        }
+        },
+        {
+            label: 'Admin',
+            items: [
+                {
+                    label: 'Mendaftarkan Sidik Jari',
+                    icon: 'pi pi-book',
+                    command: () => navigate(`/school/${schoolId}/fingerprint`),
+                    className: currentPath === `/school/${schoolId}/fingerprint` ? 'active-route' : 'menu-item'
+                }
+            ]
+        },
         // {
         //     label: 'Pencapaian',
         //     items: [

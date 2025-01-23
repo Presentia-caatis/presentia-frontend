@@ -6,7 +6,7 @@ class AuthService {
         return { responseData: response.data, status: response.status };
     }
 
-    async register(payload: { fullname: string, username: string; email: string; google_id: string, password: string, password_confirmation: string}) {
+    async register(payload: { fullname: string, username: string; email: string; google_id: string, password: string, password_confirmation: string }) {
         const response = await axiosClient.post('/register', payload);
         return response.data;
     }

@@ -41,7 +41,7 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
         fetchSchoolData();
     }, [schoolId]);
 
-    
+
 
     return (
         <SchoolContext.Provider value={{ schoolData, loading }}>

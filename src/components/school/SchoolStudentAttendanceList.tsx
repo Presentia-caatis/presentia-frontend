@@ -6,6 +6,7 @@ import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
 import AttendanceService from '../../services/attendanceService';
 import { formatTime } from '../../utils/formatTime';
+import { useAuth } from '../../context/AuthContext';
 
 const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdate: (total: number) => void }) => {
     const [attendanceData, setAttendanceData] = useState<any>([]);
@@ -14,6 +15,7 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
     const [currentTime, setCurrentTime] = useState(new Date());
     const formattedDate = currentTime.toLocaleDateString();
     const formattedTime = currentTime.toLocaleTimeString();
+    const { user } = useAuth();
 
     const eventDetail = {
         isEvent: false,
@@ -23,9 +25,13 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
     };
 
     const fetchAttendance = async () => {
+        if (!user?.school_id) {
+            return;
+        }
+
         try {
             setLoading(true);
-            const response = await AttendanceService.getAttendances();
+            const response = await AttendanceService.getAttendances(user.school_id!);
             setAttendanceData(response.data);
             onAttendanceUpdate(response.data.length);
         } catch (error) {
@@ -66,8 +72,8 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
                     <p>{formattedTime}</p>
                 </div>
                 <div className="sm:block hidden">
-                    <h4>Absen Masuk Siswa</h4>
-                    <p className="text-sm text-secondary">Waktu absen masuk: 07:00 - 08:00</p>
+                    <h4>Presensi Masuk Siswa</h4>
+                    <p className="text-sm text-secondary">Waktu Presensi masuk: 07:00 - 08:00</p>
                 </div>
                 <div>
                     {eventDetail.isEvent ? (
@@ -84,8 +90,8 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
                 </div>
             </div>
             <div className="sm:hidden block mb-2">
-                <h4>Daftar Absen Masuk Siswa</h4>
-                <p className="text-sm text-secondary">Waktu absen masuk: 07:00 - 08:00</p>
+                <h4>Daftar Presensi Masuk Siswa</h4>
+                <p className="text-sm text-secondary">Waktu Presensi masuk: 07:00 - 08:00</p>
             </div>
             <ul className="list-none p-2 m-0" style={{ maxHeight: '180px', overflowY: 'auto' }}>
                 {loading ? (
@@ -103,7 +109,7 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
                         </li>
                     ))
                 ) : (
-                    <li className="py-1 text-center text-sm text-secondary">Belum ada yang absen</li>
+                    <li className="py-1 text-center text-sm text-secondary">Belum ada yang presensi</li>
                 )}
             </ul>
             <div className="flex justify-content-center gap-2 mt-4">

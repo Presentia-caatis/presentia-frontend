@@ -2,8 +2,8 @@
 import axiosClient from '../utils/axiosClient';
 
 class ClassGroupService {
-    async getClassGroups(): Promise<any> {
-        const response = await axiosClient.get('/class-group');
+    async getClassGroups(schoolId: number): Promise<any> {
+        const response = await axiosClient.get(`/${schoolId}/class-group`);
         return { responseData: response.data, status: response.status };
     }
 

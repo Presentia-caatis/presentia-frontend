@@ -10,11 +10,13 @@ import logo from "../../../../assets/Logo-SMK-10-Bandung.png"
 import AttendanceService from '../../../../services/attendanceService';
 import { Helmet } from 'react-helmet';
 import { formatTime } from '../../../../utils/formatTime';
+import { useAuth } from '../../../../context/AuthContext';
 
 
 const SchoolStudentAttendanceListPage = () => {
     const navigate = useNavigate();
     const { schoolData } = useSchool();
+    const { user } = useAuth();
     const [attendanceData, setAttendanceData] = useState<any>([]);
     const [loading, setLoading] = useState(true);
     const [countdown, setCountdown] = useState(30);
@@ -39,9 +41,12 @@ const SchoolStudentAttendanceListPage = () => {
 
 
     const fetchAttendance = async () => {
+        if (!user?.school_id) {
+            return;
+        }
         try {
             setLoading(true);
-            const response: any = await AttendanceService.getAttendances();
+            const response: any = await AttendanceService.getAttendances(user.school_id);
             setAttendanceData(response.data);
         } catch (error: any) {
             console.error("Error fetching attendance data", error);
@@ -111,7 +116,7 @@ const SchoolStudentAttendanceListPage = () => {
     return (
         <div className='flex flex-column align-items-center'>
             <Helmet>
-                <title>{schoolData ? schoolData.school_name : "Presentia"}</title>
+                <title>{schoolData ? schoolData.name : "Presentia"}</title>
             </Helmet>
             <div className='flex h-8rem justify-content-between w-full px-4 gap-1'>
                 <div className='my-auto flex'>
@@ -130,7 +135,7 @@ const SchoolStudentAttendanceListPage = () => {
                         className='w-4rem h-4rem hidden lg:block'
                         onError={(e) => e.currentTarget.style.display = 'none'}
                     />
-                    <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{schoolData ? schoolData.school_name : "Loading..."}</div>
+                    <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{schoolData ? schoolData.name : "Loading..."}</div>
                 </div>
                 <div className='my-auto'>
                     <div className='flex justify-content-center gap-2 align-content-end'>
@@ -165,8 +170,8 @@ const SchoolStudentAttendanceListPage = () => {
                         <p>{formattedTime}</p>
                     </div>
                     <div className="sm:block hidden text-center w-full lg:pl-3">
-                        <h3>Daftar Absen Masuk Siswa</h3>
-                        <p className="text-base text-secondary">Waktu absen masuk: 07:00 - 08:00</p>
+                        <h3>Daftar presensi masuk siswa</h3>
+                        <p className="text-base text-secondary">Waktu presensi masuk: 07:00 - 08:00</p>
                     </div>
                     <div>
                         {eventDetail?.isEvent ? (
@@ -188,8 +193,8 @@ const SchoolStudentAttendanceListPage = () => {
                     </div>
                 </div>
                 <div className="sm:hidden block mb-2">
-                    <h4>Daftar Absen Masuk Siswa</h4>
-                    <p className="text-base text-secondary">Waktu absen masuk: <br /> 07:00 - 08:00</p>
+                    <h4>Daftar presensi masuk siswa</h4>
+                    <p className="text-base text-secondary">Waktu presensi masuk: <br /> 07:00 - 08:00</p>
                 </div>
                 <div className='mt-4'>
                     <div className='flex justify-content-between py-2 px-3 border-bottom-1 surface-border'>
@@ -222,7 +227,7 @@ const SchoolStudentAttendanceListPage = () => {
                                 );
                             })
                         ) : (
-                            <li className="py-1 text-center text-xl text-secondary">Belum ada yang absen</li>
+                            <li className="py-1 text-center text-xl text-secondary">Belum ada yang presensi</li>
                         )}
                     </ul>
 

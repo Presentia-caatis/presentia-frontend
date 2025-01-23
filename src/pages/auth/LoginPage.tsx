@@ -75,10 +75,28 @@ const LoginPage = () => {
         authServices.googleLogin();
     };
 
+
+    const authCheck = async () => {
+        const response = await authServices.getProfile()
+        return response;
+    }
+
     useEffect(() => {
+        const checkAuthData = async () => {
+            const authData = await authCheck();
+            console.log(authData);
+            if (authData) {
+                navigate('/client/dashboard');
+            }
+        };
+
+        checkAuthData();
         const queryParams = new URLSearchParams(location.search);
         const status = queryParams.get('status');
         const token = queryParams.get('token');
+
+        const authData = authCheck();
+        console.log(authData);
 
         const handleLoginFlow = async () => {
             if (status === 'new_user') {
@@ -140,10 +158,6 @@ const LoginPage = () => {
 
 
 
-    const authCheck = async () => {
-        const response = await authServices.getProfile()
-        return response;
-    }
 
 
     return (

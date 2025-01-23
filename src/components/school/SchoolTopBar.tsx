@@ -32,7 +32,7 @@ const SchoolTopbar = () => {
             label: 'Profile',
             icon: 'pi pi-user',
             action: () => {
-                navigate('/school/profile');
+                navigate('/school/1/profile');
             },
         },
         {
@@ -75,7 +75,7 @@ const SchoolTopbar = () => {
         <div className="layout-topbar  flex justify-content-between">
             <Link to="/school/mainpage" className="layout-topbar-logo">
                 <img src={logoImage} alt="logo" />
-                <span>{schoolData?.school_name || 'Loading...'}</span>
+                <span>{schoolData?.name || 'Loading...'}</span>
             </Link>
 
             <div

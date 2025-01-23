@@ -173,17 +173,17 @@ const ClientDashboardPage = () => {
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-users text-blue-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
-                                                    <label className="text-lg">Siswa Aktif</label>
+                                                    <label className="text-lg">Jumlah siswa aktif</label>
                                                 </Card>
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-address-book text-green-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{totalAttendance}</p>
-                                                    <label className="text-lg">Absen Hari Ini</label>
+                                                    <label className="text-lg">Jumlah presensi hari ini</label>
                                                 </Card>
                                                 <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-user-minus text-orange-500 text-4xl"></i>
                                                     <p className="text-3xl font-bold">{schoolData.totalStudents - totalAttendance}</p>
-                                                    <label className="text-lg">Siswa Belum Absen</label>
+                                                    <label className="text-lg">Jumlah absensi hari ini</label>
                                                 </Card>
                                             </div>
                                             <div className='grid mt-2'>
@@ -202,7 +202,7 @@ const ClientDashboardPage = () => {
                                     onClick={handleDashboard}
                                 />
                                 <Button
-                                    label="Daftar Absen Hari Ini"
+                                    label="Daftar Presensi Hari Ini"
                                     icon="pi pi-sign-in"
                                     className="p-button p-button-success"
                                     onClick={handleAttendanceIn}

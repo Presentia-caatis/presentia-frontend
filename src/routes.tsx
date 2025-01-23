@@ -33,6 +33,7 @@ import ClientSupportDetailPage from './pages/client/dashboard/support/ClientSupp
 import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SchoolStudentAttendanceListPage from './pages/school/dashboard/student/SchoolAttendanceListPage';
+import FingerprintPage from './pages/school/dashboard/admin/fingerprintRegisterPage';
 
 const AppRoutes = () => {
     return (
@@ -74,12 +75,13 @@ const AppRoutes = () => {
 
                     <Route path='classroom' element={<ClassroomListPage />} />
 
-                    <Route path='achievement' element={<AchievementListPage />} />
+                    {/* <Route path='achievement' element={<AchievementListPage />} />
                     <Route path='achievement/student' element={<StudentAchievementListPage />} />
 
                     <Route path='violation' element={<ViolationPage />} />
                     <Route path='violation/student' element={<StudentViolationPage />} />
-                    <Route path='violation/student-point-report' element={<ViolationStudentPointReport />} />
+                    <Route path='violation/student-point-report' element={<ViolationStudentPointReport />} /> */}
+                    <Route path='fingerprint' element={<FingerprintPage />} />
                 </Route>
 
                 <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
