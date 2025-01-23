@@ -154,7 +154,6 @@ const SchoolDashboardPage = () => {
     });
 
 
-
     const fetchAttendance = async () => {
         if (!user?.school_id) {
             return;
@@ -164,6 +163,7 @@ const SchoolDashboardPage = () => {
             setLoading(true);
             const response: any = await attendanceService.getAttendances(user.school_id);
             setAttendanceData(response.data);
+            console.log(response.data);
         } catch (error: any) {
             console.error("Error fetching attendance data", error);
             if (error.response?.status === 401 || error.response?.data?.error === "Unauthenticated.") {
@@ -267,8 +267,8 @@ const SchoolDashboardPage = () => {
                     <div className="card h-full">
                         <div className="flex justify-content-between mb-3">
                             <div>
-                                <span className="block text-500 font-medium mb-3">Total Presensi Hari Ini</span>
-                                <div className="text-900 font-medium text-xl">{dataHome.student_active}</div>
+                                <span className="block text-500 font-medium mb-3">Total Hadir Hari Ini</span>
+                                <div className="text-900 font-medium text-xl">{attendanceData.length}</div>
                             </div>
                             <div
                                 className="flex align-items-center justify-content-center bg-blue-100 border-round"
@@ -284,7 +284,7 @@ const SchoolDashboardPage = () => {
                         <div className="flex justify-content-between mb-3">
                             <div>
                                 <span className="block text-500 font-medium mb-3">Total Absen Hari Ini</span>
-                                <div className="text-900 font-medium text-xl">{attendanceData ? attendanceData.length : 0}</div>
+                                <div className="text-900 font-medium text-xl">{attendanceData ? staticData.active_students - attendanceData.length : 0}</div>
                             </div>
                             <div
                                 className="flex align-items-center justify-content-center bg-orange-100 border-round"

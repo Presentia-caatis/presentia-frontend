@@ -12,6 +12,7 @@ import schoolService from '../../../../services/schoolService';
 import { useAuth } from '../../../../context/AuthContext';
 import SchoolStudentAttendanceList from '../../../../components/school/SchoolStudentAttendanceList';
 import logoImage from '../../../../assets/Logo-SMK-10-Bandung.png';
+import dashboardService from '../../../../services/dashboardService';
 
 type SchoolData = {
     id: number;
@@ -52,6 +53,10 @@ const ClientDashboardPage = () => {
                 console.log(user.school_id);
                 if (user.school_id) {
                     const school = await schoolService.getById(user.school_id!);
+
+                    const staticSchoolData = await dashboardService.getStaticStatistics(user.school_id!);
+                    console.log(staticSchoolData.data);
+
                     setSchoolData({
                         id: school.data.id!,
                         name: school.data.school_name,
@@ -59,21 +64,11 @@ const ClientDashboardPage = () => {
                         dueDate: school.data.end_subscription,
                         status: 'Active',
                         address: school.data.address,
-                        totalStudents: 200,
+                        totalStudents: staticSchoolData.data.active_students,
                         registeredAt: school.data.created_at!,
                         logoImagePath: school.data.logo_image_path!,
                     });
                 }
-                // setSchoolData({
-                //     id: 1,
-                //     name: "sekolah SMK",
-                //     plan: 'Premium',
-                //     dueDate: "05-05-2025",
-                //     status: 'Active',
-                //     address: "jalan bojonmgsoang",
-                //     totalStudents: 1200,
-                //     registeredAt: "05-05-2023",
-                // });
             } catch (error) {
                 console.error('Error fetching data:', error);
                 navigate('/login');
@@ -246,14 +241,14 @@ const ClientDashboardPage = () => {
                 </div>
             )}
 
-            <ClientCreateSchoolModal
+            {/* <ClientCreateSchoolModal
                 visible={isModalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={(newSchool: SchoolData) => {
                     setSchoolData(newSchool);
                     setModalVisible(false);
                 }}
-            />
+            /> */}
         </div>
     );
 };

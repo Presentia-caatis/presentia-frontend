@@ -13,6 +13,7 @@ import studentService from '../../../../services/studentService';
 import { useAuth } from '../../../../context/AuthContext';
 import classGroupService from '../../../../services/classGroupService';
 import { Toast } from 'primereact/toast';
+import { Skeleton } from 'primereact/skeleton';
 
 
 type StudentData = {
@@ -56,18 +57,19 @@ const SchoolStudentPage = () => {
     useEffect(() => {
         fetchStudents();
         fetchKelas();
-        console.log(studentData);
-        console.log(listKelas);
     }, []);
 
     const fetchStudents = async () => {
         try {
+            setLoading(true);
             if (!user?.school_id) return;
             const response = await studentService.getStudent(user.school_id);
             setStudentData(response.data);
 
         } catch (error) {
             console.error('Error fetching students:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -163,35 +165,92 @@ const SchoolStudentPage = () => {
                                 <InputText className='py-2 pl-5' placeholder="Search..." />
                             </span>
                         </div>
-                    } rows={10} rowsPerPageOptions={[10, 50, 75, 100]} emptyMessage="Belum ada siswa" tableStyle={{ minWidth: '50rem' }}
+                    } rows={10} rowsPerPageOptions={[10, 50, 75, 100]} emptyMessage={
+                        loading ? (
+                            <div className="flex flex-column align-items-sm-start">
+                                <div className="py-1 text-start text-sm text-secondary">Loading...</div>
+                            </div>
+                        ) : "Belum ada siswa"
+                    } tableStyle={{ minWidth: '50rem' }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students" stripedRows
-                    value={studentData}>
-                    <Column selectionMode='multiple' headerStyle={{ width: '3rem' }}></Column>
-                    <Column sortable field="student_name" header="Nama"></Column>
-                    <Column sortable field="nis" header="NIS"></Column>
-                    <Column sortable field="nisn" header="NISN"></Column>
-                    <Column sortable field="gender" header="gender"></Column>
-                    <Column sortable field="class_group.class_name" header="Kelas"></Column>
-                    <Column sortable field="is_active" body={(rowData) => rowData.is_active === 1 ? 'Aktif' : 'Tidak Aktif'} header="Status"></Column>
-                    <Column body={() => (
-                        <div className='flex gap-2'>
-                            <Button
-                                icon="pi pi-pencil"
-                                className="p-button-success p-button-rounded"
-                                tooltip="Edit"
-                                tooltipOptions={{ position: 'top' }}
-                                onClick={() => alert('Open student list for this class')}
-                            />
-                            <Button
-                                icon="pi pi-trash"
-                                className="p-button-danger p-button-rounded"
-                                tooltip="Hapus"
-                                tooltipOptions={{ position: 'top' }}
-                                onClick={() => alert('Open student list for this class')}
-                            />
-                        </div>
-                    )} />
+                    value={studentData} >
+                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                    <Column
+                        field="student_name"
+                        header="Nama"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name
+                        }
+                    ></Column>
+                    <Column
+                        field="nis"
+                        header="NIS"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nis
+                        }
+                    ></Column>
+                    <Column
+                        field="nisn"
+                        header="NISN"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nisn
+                        }
+                    ></Column>
+                    <Column
+                        field="gender"
+                        header="Gender"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="40%" height="1.5rem" /> : rowData.gender
+                        }
+                    ></Column>
+                    <Column
+                        field="class_group.class_name"
+                        header="Kelas"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name
+                        }
+                    ></Column>
+                    <Column
+                        field="is_active"
+                        header="Status"
+                        body={(rowData) =>
+                            loading ? (
+                                <Skeleton width="40%" height="1.5rem" />
+                            ) : rowData.is_active === 1 ? (
+                                'Aktif'
+                            ) : (
+                                'Tidak Aktif'
+                            )
+                        }
+                    ></Column>
+                    <Column
+                        body={(rowData) =>
+                            loading ? (
+                                <div className="flex gap-2">
+                                    <Skeleton width="2rem" height="2rem" shape="circle" />
+                                    <Skeleton width="2rem" height="2rem" shape="circle" />
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Button
+                                        icon="pi pi-pencil"
+                                        className="p-button-success p-button-rounded"
+                                        tooltip="Edit"
+                                        tooltipOptions={{ position: 'top' }}
+                                        onClick={() => alert('Open student list for this class')}
+                                    />
+                                    <Button
+                                        icon="pi pi-trash"
+                                        className="p-button-danger p-button-rounded"
+                                        tooltip="Hapus"
+                                        tooltipOptions={{ position: 'top' }}
+                                        onClick={() => alert('Open student list for this class')}
+                                    />
+                                </div>
+                            )
+                        }
+                    ></Column>
                 </DataTable>
 
                 <Dialog visible={showAddDialog} style={{ width: '450px' }} onHide={() => { setShowAddDialog(false) }} header="Penambahan Data Siswa" footer={
@@ -268,7 +327,7 @@ const SchoolStudentPage = () => {
                         </div>
                     </div>
                 </Dialog>
-            </div>
+            </div >
         </>
     );
 };

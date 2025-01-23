@@ -156,7 +156,7 @@ const FingerprintPage = () => {
                 <span>
                     {option.student_name} - {option.class_group?.class_name || 'Tanpa Kelas'}
                 </span>
-                {isRegistered && <i className="pi pi-check text-green-500"></i>}
+                {isRegistered && <i className="ml-2 pi pi-check text-green-500"></i>}
             </div>
         );
     };
