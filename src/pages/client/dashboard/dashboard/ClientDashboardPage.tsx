@@ -86,7 +86,7 @@ const ClientDashboardPage = () => {
     };
 
     const handleAttendanceIn = () => {
-        if (schoolData) navigate(`/school/attendance`);
+        if (schoolData) navigate(`/school/${schoolData.id}/attendance`);
     };
 
     const handleAttendanceOut = () => {

@@ -33,7 +33,7 @@ const SchoolSideBar = () => {
                 {
                     label: 'Daftar Presensi Siswa Hari Ini',
                     icon: 'pi pi-users',
-                    command: () => window.open(`${window.origin}/school/attendance`, '_blank'),
+                    command: () => window.open(`${window.origin}/school/${schoolId}/attendance`, '_blank'),
                     className: currentPath === `/school/${schoolId}/attendance` ? 'active-route' : 'menu-item'
                 },
                 // {
