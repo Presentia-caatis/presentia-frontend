@@ -25,7 +25,7 @@ const FingerprintPage = () => {
 
     const [students, setStudents] = useState<any[]>([]);
     const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
-    const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+    const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
 
     const [selectedFinger, setSelectedFinger] = useState<number>(7);
@@ -140,7 +140,8 @@ const FingerprintPage = () => {
         }
         setRegisterLoading(true);
         try {
-            await enrollFingerprint(selectedStudent, selectedFinger, retryCount, machineNumber);
+            const studentId = selectedStudent.id;
+            await enrollFingerprint(studentId, selectedFinger, retryCount, machineNumber);
             toast.current?.show({ severity: 'success', summary: 'Pendaftaran Berhasil', detail: 'Segera daftarkan sidik jari pada mesin.', life: 8000 });
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Pendaftaran Gagal', detail: 'Gagal mendaftarkan sidik jari.', life: 3000 });
@@ -154,7 +155,7 @@ const FingerprintPage = () => {
         return (
             <div className="flex align-items-center justify-content-between">
                 <span>
-                    {option.student_name} - {option.class_group?.class_name || 'Tanpa Kelas'}
+                    {option.student_name} - {option.class_group?.class_name || 'Tanpa Kelas'} - {option.id}
                 </span>
                 {isRegistered && <i className="ml-2 pi pi-check text-green-500"></i>}
             </div>

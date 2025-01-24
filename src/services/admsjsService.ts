@@ -48,7 +48,7 @@ export const logoutADMSJS = async () => {
     }
 };
 
-export const enrollFingerprint = async (studentId: string, fingerId: number, retry: number, machineNumber: string) => {
+export const enrollFingerprint = async (studentId: number, fingerId: number, retry: number, machineNumber: string) => {
     try {
         await admsjsClient.post(`/adms/command?include=${machineNumber}`, {
             header: ['ENROLL_FP'],
