@@ -46,16 +46,16 @@ const FingerprintPage = () => {
     });
 
     const fingerOptions = [
-        { label: 'Kelingking Kiri', value: 1 },
-        { label: 'Jari Manis Kiri', value: 2 },
-        { label: 'Jari Tengah Kiri', value: 3 },
+        // { label: 'Kelingking Kiri', value: 1 },
+        // { label: 'Jari Manis Kiri', value: 2 },
+        // { label: 'Jari Tengah Kiri', value: 3 },
         { label: 'Telunjuk Kiri', value: 4 },
         { label: 'Jempol Kiri', value: 5 },
         { label: 'Jempol Kanan', value: 6 },
         { label: 'Telunjuk Kanan', value: 7 },
-        { label: 'Jari Tengah Kanan', value: 8 },
-        { label: 'Jari Manis Kanan', value: 9 },
-        { label: 'Kelingking Kanan', value: 10 }
+        // { label: 'Jari Tengah Kanan', value: 8 },
+        // { label: 'Jari Manis Kanan', value: 9 },
+        // { label: 'Kelingking Kanan', value: 10 }
     ];
     useEffect(() => {
         const token = localStorage.getItem('admsjs_token');
