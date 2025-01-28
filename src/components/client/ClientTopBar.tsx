@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
@@ -11,7 +12,7 @@ const ClientTopBar = () => {
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
     const { logout } = useAuth();
-    
+    const [loading, setLoading] = useState(false);
 
     const [user, setUser] = useState<{ fullname: string } | null>(null);
 
@@ -35,13 +36,19 @@ const ClientTopBar = () => {
 
     const handleLogout = async () => {
         try {
-            logout();
+
+            callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
+            setLoading(true);
+
+            await logout();
 
             callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             navigate('/');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             callToast(showToast, 'error', 'Logout Gagal', 'Tidak bisa logout');
+        } finally {
+            setLoading(false);
         }
     };
 

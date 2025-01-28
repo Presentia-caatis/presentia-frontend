@@ -1,24 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Link, useNavigate } from 'react-router-dom';
-import { Button } from 'primereact/button';
-import { Tooltip } from 'primereact/tooltip';
-import smkTelkomlogo from '../../assets/logo-smk-telkom-bdg.png';
 import { useEffect, useRef, useState } from 'react';
 import { useSchool } from '../../context/SchoolContext';
 import logoImage from '../../assets/Logo-SMK-10-Bandung.png';
+import { logoutADMSJS } from '../../services/admsjsService';
+import { Toast } from 'primereact/toast';
+import { formatSchoolName } from '../../utils/formatSchoolName';
 
 const SchoolTopbar = () => {
 
-    const onMenuToggle = () => { };
-    const onTopBarMenuButton = () => { };
-    const handleLogout = () => { };
-
     const containerRef = useRef<HTMLDivElement>(null);
-    const toast = useRef(null);
+    const toast = useRef<Toast>(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
 
     const [user, setUser] = useState<{ fullname: string } | null>(null);
-    const { schoolData, loading } = useSchool();
+    const { school, loading } = useSchool();
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
@@ -32,24 +29,30 @@ const SchoolTopbar = () => {
             label: 'Profile',
             icon: 'pi pi-user',
             action: () => {
-                navigate('/school/1/profile');
+                navigate(`/school/${formatSchoolName(school.name)}/profile`);
             },
         },
-        {
-            label: 'Settings',
-            icon: 'pi pi-cog',
-            action: () => {
-                console.log('Open Settings');
-            },
-        },
+        // {
+        //     label: 'Settings',
+        //     icon: 'pi pi-cog',
+        //     action: () => {
+        //         console.log('Open Settings');
+        //     },
+        // },
         {
             label: 'Keluar Dashboard Sekolah',
             icon: 'pi pi-sign-out',
             action: () => {
-                navigate('/client/dashboard');
+                handleLogoutSchool();
             },
         },
     ];
+
+    const handleLogoutSchool = async () => {
+        await logoutADMSJS();
+        localStorage.removeItem('admsjs_token');
+        navigate('/client/dashboard');
+    }
 
     const handleToggleMenu = () => {
         setProfileOpen((prev) => !prev);
@@ -73,9 +76,9 @@ const SchoolTopbar = () => {
 
     return (
         <div className="layout-topbar  flex justify-content-between">
-            <Link to="/school/mainpage" className="layout-topbar-logo">
+            <Link to={`/school/${formatSchoolName(school?.name) || 'default-school'}/dashboard`} className="layout-topbar-logo">
                 <img src={logoImage} alt="logo" />
-                <span>{schoolData?.name || 'Loading...'}</span>
+                <span>{school?.name || 'Loading...'}</span>
             </Link>
 
             <div

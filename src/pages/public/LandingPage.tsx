@@ -1,10 +1,16 @@
 import { Button } from "primereact/button"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext";
+import { useEffect } from "react";
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, checkAuth } = useAuth();
+
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
     return (
         <div>
             <div className="grid grid-nogutter surface-0 text-800">

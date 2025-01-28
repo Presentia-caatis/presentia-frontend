@@ -46,12 +46,14 @@ const SchoolDashboardPage = () => {
     const [attendanceData, setAttendanceData] = useState<any>([]);
     const [loading, setLoading] = useState(true);
     const [countdown, setCountdown] = useState(30);
-    const { schoolData } = useSchool();
+    const { school } = useSchool();
     const { user } = useAuth();
     const [staticData, setStaticData] = useState<StaticData>({
         active_students: 0,
         inactive_students: 0,
     });
+    const today = new Date();
+    const todayString = today.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -258,9 +260,14 @@ const SchoolDashboardPage = () => {
 
     return (
         <>
-            <div className="card">
-                <h1>{`Selamat Datang Di Dashboard ${schoolData ? schoolData.name : 'Loading...'}`}</h1>
-                <p>{schoolData ? schoolData.address : 'Loading...'}</p>
+            <div className="card flex justify-content-between">
+                <div>
+                    <h1>{`Selamat Datang di Dashboard ${school ? school.name : 'Loading...'}`}</h1>
+                    <p>{school ? school.address : 'Loading...'}</p>
+                </div>
+                <div className="my-auto">
+                    <h3>{todayString}</h3>
+                </div>
             </div>
             <div className="grid">
                 <div className="col-12 lg:col-4 p-3">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
 
 import { useLayoutConfig } from '../context/LayoutConfigContext';
 import LayoutConfigSidebar from '../components/LayoutConfigSidebar';
@@ -10,14 +10,25 @@ import { Helmet } from 'react-helmet';
 import { useAuth } from '../context/AuthContext';
 import { useSchool } from '../context/SchoolContext';
 import logoImage from '../assets/Logo-SMK-10-Bandung.png';
+import { formatSchoolName } from '../utils/formatSchoolName';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 const SchoolLayout = () => {
     const { darkMode } = useLayoutConfig();
     const [containerClass, setContainerClass] = useState('');
-    const { user } = useAuth();
-    const { schoolData } = useSchool();
+    const { checkAuth } = useAuth();
+    const { school, loading } = useSchool();
+    const { schoolName } = useParams();
+    const navigate = useNavigate();
 
-    const schoolId = user?.school_id;
+    useEffect(() => {
+        const authenticate = async () => {
+            await checkAuth();
+        };
+
+        authenticate();
+    }, []);
+
 
     useEffect(() => {
         setContainerClass(
@@ -25,19 +36,43 @@ const SchoolLayout = () => {
         );
     }, [darkMode]);
 
+    useEffect(() => {
+        if (school && schoolName && formatSchoolName(school.name) !== schoolName) {
+            navigate('/404');
+        }
+    }, [school, schoolName, navigate]);
+
+    if (loading) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
+                <ProgressSpinner />
+            </div>
+        );
+    }
+
+    if (!school) {
+        return <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
+            <ProgressSpinner />
+        </div>;
+    }
+
+
+    const formatedSchoolName = formatSchoolName(school.name);
+    const schoolNameTitle = school.name || 'Presentia';
+
+
     const getTitle = () => {
-        const schoolName = schoolData?.school_name || 'Presentia';
         switch (location.pathname) {
-            case `/school/${schoolId}/dashboard`:
-                return `Dashboard - ${schoolName}`;
-            case `/school/${schoolId}/student`:
-                return `Daftar Siswa - ${schoolName}`;
-            case `/school/${schoolId}/attendance-record`:
-                return `Rekam Presensi Siswa - ${schoolName}`;
-            case `/school/${schoolId}/classroom`:
-                return `Daftar Kelas - ${schoolName}`;
+            case `/school/${formatedSchoolName}/dashboard`:
+                return `Dashboard - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/student`:
+                return `Daftar Siswa - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/attendance-record`:
+                return `Rekam Presensi Siswa - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/classroom`:
+                return `Daftar Kelas - ${schoolNameTitle}`;
             default:
-                return `${schoolName}`;
+                return `${schoolNameTitle}`;
         }
     };
 

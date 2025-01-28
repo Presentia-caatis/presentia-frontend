@@ -5,7 +5,7 @@ import schoolService from '../services/schoolService';
 import { useAuth } from './AuthContext';
 
 interface SchoolContextProps {
-    schoolData: any;
+    school: any;
     attendance: any;
     loading: boolean;
 }
@@ -13,15 +13,16 @@ interface SchoolContextProps {
 const SchoolContext = createContext<SchoolContextProps | undefined>(undefined);
 
 export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
-    const [schoolData, setSchoolData] = useState<any>(null);
+    const [school, setSchool] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [attendance, setAttendance] = useState<any>(null);
 
     const { user } = useAuth();
 
     const schoolId = user?.school_id;
 
     useEffect(() => {
-        const fetchSchoolData = async () => {
+        const fetchSchool = async () => {
             if (!schoolId) {
                 console.log('No school ID available.');
                 setLoading(false);
@@ -30,21 +31,21 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
 
             try {
                 const response = await schoolService.getById(schoolId);
-                setSchoolData(response.data);
+                setSchool(response.data);
             } catch (error) {
-                console.error('Error fetching school data:', error);
+                console.error('Error fetching school :', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchSchoolData();
+        fetchSchool();
     }, [schoolId]);
 
 
 
     return (
-        <SchoolContext.Provider value={{ schoolData, loading }}>
+        <SchoolContext.Provider value={{ school, attendance, loading }}>
             {children}
         </SchoolContext.Provider>
     );

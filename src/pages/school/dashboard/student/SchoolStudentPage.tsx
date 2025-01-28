@@ -14,6 +14,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import classGroupService from '../../../../services/classGroupService';
 import { Toast } from 'primereact/toast';
 import { Skeleton } from 'primereact/skeleton';
+import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 
 
 type StudentData = {
@@ -32,11 +33,15 @@ type StudentData = {
 const SchoolStudentPage = () => {
     const toast = useRef<Toast>(null);
     const [showAddDialog, setShowAddDialog] = useState(false);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [editStudentData, setEditStudentData] = useState<StudentData | null>(null);
+    const [tempEditStudentData, setTempEditStudentData] = useState<StudentData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
     const [listKelas, setListKelas] = useState([]);
     const [listKelamin, setListKelamin] = useState([{ label: 'Laki-Laki', value: 'male' }, { label: 'Perempuan', value: 'female' }]);
     const [studentData, setStudentData] = useState<StudentData[]>([]);
+    const [selectedStudents, setSelectedStudents] = useState<StudentData[] | undefined>(undefined);
     const [newStudentData, setNewStudentData] = useState<StudentData>({
         id: 0,
         student_name: '',
@@ -52,7 +57,7 @@ const SchoolStudentPage = () => {
     });
 
 
-    const { schoolData } = useSchool();
+    const { school } = useSchool();
     const { user } = useAuth();
     useEffect(() => {
         fetchStudents();
@@ -84,16 +89,16 @@ const SchoolStudentPage = () => {
         }
     };
 
-    const handleAddStudent = async (selectedStudent: StudentData) => {
+    const handleAddStudent = async (newStudent: StudentData) => {
         try {
             setSaveLoading(true);
             const payload = {
-                student_name: selectedStudent.student_name,
-                nis: selectedStudent.nis,
-                nisn: selectedStudent.nisn,
-                gender: selectedStudent.gender,
-                is_active: selectedStudent.is_active,
-                class_group_id: (selectedStudent.class_group_id as any).id,
+                student_name: newStudent.student_name,
+                nis: newStudent.nis,
+                nisn: newStudent.nisn,
+                gender: newStudent.gender,
+                is_active: newStudent.is_active,
+                class_group_id: (newStudent.class_group_id as any).id,
                 school_id: user?.school_id
             };
 
@@ -118,33 +123,172 @@ const SchoolStudentPage = () => {
         }
     };
 
-    const handleUpdateStudent = async (selectedStudent: StudentData) => {
+    const handleUpdateStudent = async (updatedStudent: StudentData) => {
         try {
+            setSaveLoading(true);
             const payload = {
-                student_name: selectedStudent.student_name,
-                nis: selectedStudent.nis,
-                nisn: selectedStudent.nisn,
-                gender: selectedStudent.gender,
-                is_active: selectedStudent.is_active,
-                class_group_id: selectedStudent.class_group_id
+                student_name: updatedStudent.student_name,
+                nis: updatedStudent.nis,
+                nisn: updatedStudent.nisn,
+                gender: updatedStudent.gender,
+                is_active: updatedStudent.is_active,
+                class_group_id: updatedStudent.class_group_id,
             };
 
-            // const response = await studentService.updateStudent(selectedStudent.id, payload);
-            fetchStudents();
-            setShowAddDialog(false);
+            if (user?.school_id !== undefined) {
+                if (user?.school_id !== null) {
+                    await studentService.updateStudent(user.school_id, updatedStudent.id, payload);
+                    fetchStudents();
+                    toast.current?.show({
+                        severity: 'success',
+                        summary: 'Siswa berhasil diperbarui',
+                        detail: 'Data siswa telah diperbarui.',
+                        life: 3000,
+                    });
+                } else {
+                    throw new Error('School ID is null');
+                }
+            } else {
+                throw new Error('School ID is undefined');
+            }
+
+            setShowEditDialog(false);
+
         } catch (error) {
             console.error('Error updating student:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal memperbarui siswa',
+                detail: 'Terjadi kesalahan saat memperbarui data siswa.',
+                life: 3000,
+            });
+        } finally {
+            setSaveLoading(false);
+            setShowEditDialog(false);
         }
     };
 
-    const [selectedStudents, setSelectedStudents] = useState<StudentData[] | undefined>(undefined);
+    const handleDeleteStudent = async (studentId: number) => {
+        try {
+            if (user?.school_id !== undefined && user?.school_id !== null) {
+                toast.current?.show({
+                    severity: 'info',
+                    summary: 'Menghapus siswa',
+                    detail: 'Proses menghapus sedang berlangsung...',
+                    life: 3000,
+                });
+                await studentService.deleteStudent(user.school_id, studentId);
+                fetchStudents();
+                toast.current?.show({
+                    severity: 'success',
+                    summary: 'Siswa berhasil dihapus',
+                    detail: 'Data siswa telah dihapus.',
+                    life: 3000,
+                });
+            } else {
+                throw new Error(user?.school_id === null ? 'School ID is null' : 'School ID is undefined');
+            }
+        } catch (error) {
+            console.error('Error deleting student:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal menghapus siswa',
+                detail: 'Terjadi kesalahan saat menghapus data siswa.',
+                life: 3000,
+            });
+        }
+    };
+
+
+    const confirmAddStudent = (event: React.MouseEvent, newStudent: StudentData) => {
+        confirmPopup({
+            target: event.currentTarget as HTMLElement,
+            message: 'Apakah Anda yakin ingin menambahkan siswa ini?',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-success',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: () => handleAddStudent(newStudent),
+            reject: () => { },
+        });
+    };
+
+    const confirmUpdateStudent = (event: React.MouseEvent, updatedStudent: StudentData) => {
+        confirmPopup({
+            target: event.currentTarget as HTMLElement,
+            message: 'Apakah Anda yakin ingin memperbarui data siswa ini?',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-success',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: () => handleUpdateStudent(updatedStudent),
+            reject: () => { },
+        });
+    };
+
+    const confirmDeleteStudent = (event: React.MouseEvent, studentId: number) => {
+        confirmPopup({
+            target: event.currentTarget as HTMLElement,
+            message: 'Apakah Anda yakin ingin menghapus siswa ini?',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: () => handleDeleteStudent(studentId),
+            reject: () => {
+                toast.current?.show({
+                    severity: 'info',
+                    summary: 'Dibatalkan',
+                    detail: 'Penghapusan siswa dibatalkan.',
+                    life: 3000,
+                });
+            },
+        });
+    };
+
+    const closeDialog = (type: string) => {
+        if (type === "add") {
+            setNewStudentData({
+                id: 0,
+                student_name: '',
+                nis: '',
+                nisn: '',
+                gender: '',
+                is_active: 1,
+                class_group_id: 0,
+                class_group: {
+                    id: 0,
+                    class_name: ''
+                }
+            });
+            setShowAddDialog(false);
+        } else if (type === "update") {
+            setEditStudentData({
+                id: 0,
+                student_name: '',
+                nis: '',
+                nisn: '',
+                gender: '',
+                is_active: 1,
+                class_group_id: 0,
+                class_group: {
+                    id: 0,
+                    class_name: ''
+                }
+            });
+            setShowEditDialog(false);
+        }
+    }
+
+
 
     return (
         <>
             <Toast ref={toast} />
+            <ConfirmPopup />
             <div className="card">
-                <div className='flex justify-content-between p-4 card'>
-                    <div className='flex gap-2'>
+                <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
+                    <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
                         <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
                             setShowAddDialog(true);
                         }} />
@@ -159,7 +303,7 @@ const SchoolStudentPage = () => {
                     selectionMode="multiple"
                     onSelectionChange={(e) => setSelectedStudents(e.value)} paginator header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 className="m-0">Data Siswa {schoolData ? schoolData.name : "Loading"}</h5>
+                            <h5 className="m-0">Data Siswa {school ? school.name : "Loading"}</h5>
                             <span className="block mt-2 md:mt-0 p-input-icon-left ">
                                 <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
                                 <InputText className='py-2 pl-5' placeholder="Search..." />
@@ -238,14 +382,18 @@ const SchoolStudentPage = () => {
                                         className="p-button-success p-button-rounded"
                                         tooltip="Edit"
                                         tooltipOptions={{ position: 'top' }}
-                                        onClick={() => alert('Open student list for this class')}
+                                        onClick={() => {
+                                            setTempEditStudentData(rowData);
+                                            setEditStudentData(rowData);
+                                            setShowEditDialog(true);
+                                        }}
                                     />
                                     <Button
                                         icon="pi pi-trash"
                                         className="p-button-danger p-button-rounded"
                                         tooltip="Hapus"
                                         tooltipOptions={{ position: 'top' }}
-                                        onClick={() => alert('Open student list for this class')}
+                                        onClick={(e) => confirmDeleteStudent(e, rowData.id)}
                                     />
                                 </div>
                             )
@@ -253,16 +401,17 @@ const SchoolStudentPage = () => {
                     ></Column>
                 </DataTable>
 
-                <Dialog visible={showAddDialog} style={{ width: '450px' }} onHide={() => { setShowAddDialog(false) }} header="Penambahan Data Siswa" footer={
+                <Dialog visible={showAddDialog} style={{ width: '450px' }} onHide={() => closeDialog('add')} header="Penambahan Data Siswa" footer={
                     <div>
-                        <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => setShowAddDialog(false)} />
-                        <Button label="Save" loading={saveLoading} icon="pi pi-check" className="p-button-text" onClick={() => { handleAddStudent(newStudentData) }} />
+                        <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => closeDialog('add')} />
+                        <Button label="Save" loading={saveLoading} icon="pi pi-check" className="p-button-text" onClick={(event) => confirmAddStudent(event, newStudentData)} />
                     </div>
                 } modal={true} className='p-fluid'>
                     <div className='field'>
                         <label htmlFor="nama">Nama</label>
                         <InputText
                             id="nama"
+                            placeholder='Masukkan Nama'
                             value={newStudentData.student_name}
                             onChange={(e) => setNewStudentData({ ...newStudentData, student_name: e.target.value })}
                             required
@@ -274,6 +423,7 @@ const SchoolStudentPage = () => {
                         <InputText
                             id="nis"
                             type='number'
+                            placeholder='Masukkan NIS'
                             value={newStudentData.nis}
                             onChange={(e) => setNewStudentData({ ...newStudentData, nis: e.target.value })}
                             required
@@ -285,6 +435,7 @@ const SchoolStudentPage = () => {
                         <InputText
                             id="nisn"
                             type='number'
+                            placeholder='Masukkan NISN'
                             value={newStudentData.nisn}
                             onChange={(e) => setNewStudentData({ ...newStudentData, nisn: e.target.value })}
                             required
@@ -327,6 +478,93 @@ const SchoolStudentPage = () => {
                         </div>
                     </div>
                 </Dialog>
+
+                <Dialog
+                    visible={showEditDialog}
+                    style={{ width: '450px' }}
+                    onHide={() => closeDialog('update')}
+                    header="Edit Data Siswa"
+                    footer={
+                        <div>
+                            <Button
+                                label="Cancel"
+                                icon="pi pi-times"
+                                className="p-button-text"
+                                onClick={() => closeDialog('update')}
+                            />
+                            <Button
+                                label="Update"
+                                loading={saveLoading}
+                                icon="pi pi-check"
+                                className="p-button-text"
+                                disabled={JSON.stringify(tempEditStudentData) === JSON.stringify(editStudentData)}
+                                onClick={(e) => {
+                                    if (editStudentData) confirmUpdateStudent(e, editStudentData);
+                                }}
+                            />
+
+                        </div>
+                    }
+                    modal
+                    className="p-fluid"
+                >
+                    <div className="field">
+                        <label htmlFor="edit-nama">Nama</label>
+                        <InputText
+                            id="edit-nama"
+                            value={editStudentData?.student_name}
+                            onChange={(e) =>
+                                setEditStudentData({ ...editStudentData!, student_name: e.target.value })
+                            }
+                        />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="edit-nis">NIS</label>
+                        <InputText
+                            id="edit-nis"
+                            type="number"
+                            value={editStudentData?.nis}
+                            onChange={(e) =>
+                                setEditStudentData({ ...editStudentData!, nis: e.target.value })
+                            }
+                        />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="edit-nisn">NISN</label>
+                        <InputText
+                            id="edit-nisn"
+                            type="number"
+                            value={editStudentData?.nisn}
+                            onChange={(e) =>
+                                setEditStudentData({ ...editStudentData!, nisn: e.target.value })
+                            }
+                        />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="edit-kelas">Kelas</label>
+                        <Dropdown
+                            value={editStudentData?.class_group}
+                            onChange={(e) =>
+                                setEditStudentData({ ...editStudentData!, class_group: e.value, class_group_id: e.value.id })
+                            }
+                            options={listKelas}
+                            optionLabel="class_name"
+                            placeholder="Pilih Kelas"
+                        />
+                    </div>
+                    <div className="field">
+                        <label htmlFor="edit-gender">Kelamin</label>
+                        <Dropdown
+                            value={editStudentData?.gender}
+                            onChange={(e) =>
+                                setEditStudentData({ ...editStudentData!, gender: e.value })
+                            }
+                            options={listKelamin}
+                            placeholder="Pilih Gender"
+                        />
+                    </div>
+                </Dialog>
+
             </div >
         </>
     );

@@ -13,6 +13,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import SchoolStudentAttendanceList from '../../../../components/school/SchoolStudentAttendanceList';
 import logoImage from '../../../../assets/Logo-SMK-10-Bandung.png';
 import dashboardService from '../../../../services/dashboardService';
+import { formatSchoolName } from '../../../../utils/formatSchoolName';
 
 type SchoolData = {
     id: number;
@@ -59,7 +60,7 @@ const ClientDashboardPage = () => {
 
                     setSchoolData({
                         id: school.data.id!,
-                        name: school.data.school_name,
+                        name: school.data.name,
                         plan: 'Premium',
                         dueDate: school.data.end_subscription,
                         status: 'Active',
@@ -82,15 +83,15 @@ const ClientDashboardPage = () => {
 
 
     const handleDashboard = () => {
-        if (schoolData) navigate(`/school/${schoolData.id}/dashboard`);
+        if (schoolData) navigate(`/school/${formatSchoolName(schoolData.name)}/dashboard`);
     };
 
     const handleAttendanceIn = () => {
-        if (schoolData) navigate(`/school/${schoolData.id}/attendance`);
+        if (schoolData) navigate(`/school/attendance`);
     };
 
     const handleAttendanceOut = () => {
-        if (schoolData) navigate(`/school/${schoolData.id}/student/attendance/out`);
+        if (schoolData) navigate(`/school/student/attendance/out`);
     };
 
 

@@ -25,15 +25,70 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [rememberMe, setRememberMe] = useState<boolean>(false);
-    const { setAuth } = useAuth();
+    const { setAuth, checkAuth } = useAuth();
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
         showToast({
             severity: severity,
             summary: summary,
             detail: detail
         });
+    }
+
+    useEffect(() => {
+        const authenticate = async () => {
+            const isAuth = await checkAuth();
+            if (isAuth) {
+                navigate('/client/dashboard');
+            }
+            setIsLoggedIn(false);
+        };
+
+        authenticate();
+    }, []);
+
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const status = queryParams.get('status');
+        const token = queryParams.get('token');
+
+        const handleLoginFlow = async () => {
+            if (status === 'new_user') {
+                const fullname = queryParams.get('name');
+                const email = queryParams.get('email');
+                const googleId = queryParams.get('google_id');
+                navigate('/register', { state: { fullname, email, googleId } });
+            } else if (status === 'existing_user') {
+                if (token) {
+                    localStorage.setItem('token', token);
+                    try {
+                        const response = await authServices.getProfile();
+                        localStorage.setItem('user', JSON.stringify(response.data));
+                        callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+                        navigate('/client/dashboard');
+                    } catch (error) {
+                        callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
+                    }
+                }
+            } else if (status === 'error') {
+                const message = queryParams.get('message');
+                callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
+            }
+        };
+
+        if (status && token) {
+            handleLoginFlow();
+        }
+    }, [navigate, showToast]);
+
+    if (isLoggedIn) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
+                <ProgressSpinner />
+            </div>
+        );
     }
 
     const onSubmitLogin: SubmitHandler<LoginFormInputs> = async (data) => {
@@ -45,7 +100,6 @@ const LoginPage = () => {
 
                 setAuth(user, token);
 
-                setIsLoggedIn(true);
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
                 navigate('/client/dashboard');
             }
@@ -81,49 +135,6 @@ const LoginPage = () => {
         return response;
     }
 
-    useEffect(() => {
-        const checkAuthData = async () => {
-            const authData = await authCheck();
-            console.log(authData);
-            if (authData) {
-                navigate('/client/dashboard');
-            }
-        };
-
-        checkAuthData();
-        const queryParams = new URLSearchParams(location.search);
-        const status = queryParams.get('status');
-        const token = queryParams.get('token');
-
-        const authData = authCheck();
-        console.log(authData);
-
-        const handleLoginFlow = async () => {
-            if (status === 'new_user') {
-                const fullname = queryParams.get('name');
-                const email = queryParams.get('email');
-                const googleId = queryParams.get('google_id');
-                navigate('/register', { state: { fullname, email, googleId } });
-            } else if (status === 'existing_user') {
-                if (token) {
-                    localStorage.setItem('token', token);
-                    try {
-                        const response = await authServices.getProfile();
-                        localStorage.setItem('user', JSON.stringify(response.data));
-                        callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-                        navigate('/client/dashboard');
-                    } catch (error) {
-                        callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
-                    }
-                }
-            } else if (status === 'error') {
-                const message = queryParams.get('message');
-                callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
-            }
-        };
-
-        handleLoginFlow();
-    }, [navigate, showToast]);
 
     // useEffect(() => {
     //     const token = localStorage.getItem('token');
@@ -157,9 +168,6 @@ const LoginPage = () => {
     // }, [navigate]);
 
 
-
-
-
     return (
         <>
             <div className="min-h-screen flex align-items-center justify-content-center relative">
@@ -174,7 +182,7 @@ const LoginPage = () => {
                         aria-label="Back"
                     />
                 </div>
-                {!isLoggedIn ? <div className="flex">
+                <div className="flex">
                     <div
                         style={{
                             borderRadius: '56px',
@@ -235,7 +243,7 @@ const LoginPage = () => {
                                         <div className="flex align-items-center">
                                             <Checkbox
                                                 checked={rememberMe}
-                                                onChange={e => setRememberMe(e.checked)}
+                                                onChange={e => setRememberMe(!!e.checked)}
                                                 className="mr-2"
                                             />
                                             <label htmlFor="Remember Password">Save Password?</label>
@@ -254,7 +262,7 @@ const LoginPage = () => {
                             />
                         </Card>
                     </div>
-                </div> : <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s" />}
+                </div>
             </div>
         </>
     );

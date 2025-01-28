@@ -12,11 +12,12 @@ import { Helmet } from 'react-helmet';
 import { formatTime } from '../../../../utils/formatTime';
 import { useAuth } from '../../../../context/AuthContext';
 import attendanceScheduleService from '../../../../services/attendanceScheduleService';
+import { formatSchoolName } from '../../../../utils/formatSchoolName';
 
 
 const SchoolStudentAttendanceListPage = () => {
     const navigate = useNavigate();
-    const { schoolData } = useSchool();
+    const { school } = useSchool();
     const { user } = useAuth();
     const [attendanceData, setAttendanceData] = useState<any>([]);
     const [loading, setLoading] = useState(true);
@@ -138,14 +139,14 @@ const SchoolStudentAttendanceListPage = () => {
     return (
         <div className='flex flex-column align-items-center'>
             <Helmet>
-                <title>{schoolData ? schoolData.name : "Presentia"}</title>
+                <title>{school ? school.name : "Presentia"}</title>
             </Helmet>
             <div className='flex h-8rem justify-content-between w-full px-4 gap-1'>
                 <div className='my-auto flex'>
                     <Button
                         icon="pi pi-arrow-left"
                         className="p-button-text p-button-plain "
-                        onClick={() => navigate(`/school/${schoolData.id}/dashboard`)}
+                        onClick={() => navigate(`/school/${formatSchoolName(school.name)}/dashboard`)}
                         aria-label="Back"
                     />
                     <div className='my-auto'>Kembali ke Dashboard</div>
@@ -157,7 +158,7 @@ const SchoolStudentAttendanceListPage = () => {
                         className='w-4rem h-4rem hidden lg:block'
                         onError={(e) => e.currentTarget.style.display = 'none'}
                     />
-                    <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{schoolData ? schoolData.name : "Loading..."}</div>
+                    <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{school ? school.name : "Loading..."}</div>
                 </div>
                 <div className='my-auto'>
                     <div className='flex justify-content-center gap-2 align-content-end'>
@@ -218,7 +219,7 @@ const SchoolStudentAttendanceListPage = () => {
                 </div>
                 <div className="sm:hidden block mb-2">
                     <h4>Daftar presensi siswa</h4>
-                    <p className="text-base text-secondary">Waktu presensi: <br /> 07:00 - 08:00</p>
+                    <p className="text-base text-secondary">Waktu presensi: <br /> {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}</p>
                 </div>
                 <div className='mt-4'>
                     <div className='flex justify-content-between py-2 px-3 border-bottom-1 surface-border'>
@@ -284,7 +285,7 @@ export default SchoolStudentAttendanceListPage;
 
 // const SchoolStudentAttendanceListPage = () => {
 //     const navigate = useNavigate();
-//     const { schoolData } = useSchool();
+//     const { school } = useSchool();
 //     const { user } = useAuth();
 //     const [attendanceData, setAttendanceData] = useState<any>([]);
 //     const [loading, setLoading] = useState(true);
@@ -423,14 +424,14 @@ export default SchoolStudentAttendanceListPage;
 //     return (
 //         <div className='flex flex-column align-items-center'>
 //             <Helmet>
-//                 <title>{schoolData ? schoolData.name : "Presentia"}</title>
+//                 <title>{school ? school.name : "Presentia"}</title>
 //             </Helmet>
 //             <div className='flex h-8rem justify-content-between w-full px-4 gap-1'>
 //                 <div className='my-auto flex'>
 //                     <Button
 //                         icon="pi pi-arrow-left"
 //                         className="p-button-text p-button-plain "
-//                         onClick={() => navigate(`/school/${schoolData.id}/dashboard`)}
+//                         onClick={() => navigate(`/school/${school.id}/dashboard`)}
 //                         aria-label="Back"
 //                     />
 //                     <div className='my-auto'>Kembali ke Dashboard</div>
@@ -442,7 +443,7 @@ export default SchoolStudentAttendanceListPage;
 //                         className='w-4rem h-4rem hidden lg:block'
 //                         onError={(e) => e.currentTarget.style.display = 'none'}
 //                     />
-//                     <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{schoolData ? schoolData.name : "Loading..."}</div>
+//                     <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{school ? school.name : "Loading..."}</div>
 //                 </div>
 //                 <div className='my-auto'>
 //                     <div className='flex justify-content-center gap-2 align-content-end'>

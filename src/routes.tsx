@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Login from './pages/auth/LoginPage';
 import AdminLayout from './layout/AdminLayout';
 import SchoolLayout from './layout/SchoolLayout';
@@ -37,60 +37,58 @@ import FingerprintPage from './pages/school/dashboard/admin/fingerprintRegisterP
 
 const AppRoutes = () => {
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<PublicLayout />} >
-                    <Route path='/' element={<LandingPage />} />
+        <Routes>
+            <Route path="/" element={<PublicLayout />} >
+                <Route path='/' element={<LandingPage />} />
+            </Route>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<RegisterPage />} />
+
+            <Route path="client" element={<ClientLayout />}>
+                <Route path="dashboard" element={<ClientDashboard />} />
+                <Route path="dashboard/billing" element={<ClientBillingPage />} />
+                <Route path="invoice/:id" element={<ClientInvoiceDetailPage />} />
+                <Route path="dashboard/support" element={<ClientSupportPage />} />
+                <Route path="support/ticket/:id" element={<ClientSupportDetailPage />} />
+                <Route path="profile" element={<ClientProfilePage />} />
+            </Route>
+
+            <Route path="/admin/*" element={<AdminLayout />}>
+                <Route path="mainpage" element={<AdminDashboard />} />
+                <Route path="schools" element={<AdminSchoolPage />} />
+                <Route path="subscriptions" element={<AdminSubscribtionPage />} />
+            </Route>
+
+            <Route path="/school/:schoolName/*" element={<SchoolLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="profile" element={<SchoolProfilePage />} />
+
+                <Route path="student">
+                    <Route index element={<StudentListPage />} />
                 </Route>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<RegisterPage />} />
+                <Route path='attendance-record' element={<StudentAttendanceRecordPage />} />
+                <Route path='attendance-record-result' element={<StudentAttendanceRecordResultPage />} />
+                <Route path='custom-event' element={<CustomEventPage />} />
+                <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
+                <Route path='attendance/status' element={<AttendanceStatusListPage />} />
 
-                <Route path="client" element={<ClientLayout />}>
-                    <Route path="dashboard" element={<ClientDashboard />} />
-                    <Route path="dashboard/billing" element={<ClientBillingPage />} />
-                    <Route path="invoice/:id" element={<ClientInvoiceDetailPage />} />
-                    <Route path="dashboard/support" element={<ClientSupportPage />} />
-                    <Route path="support/ticket/:id" element={<ClientSupportDetailPage />} />
-                    <Route path="profile" element={<ClientProfilePage />} />
-                </Route>
+                <Route path='classroom' element={<ClassroomListPage />} />
 
-                <Route path="/admin/*" element={<AdminLayout />}>
-                    <Route path="mainpage" element={<AdminDashboard />} />
-                    <Route path="schools" element={<AdminSchoolPage />} />
-                    <Route path="subscriptions" element={<AdminSubscribtionPage />} />
-                </Route>
-
-                <Route path="/school/:schoolId/*" element={<SchoolLayout />}>
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="profile" element={<SchoolProfilePage />} />
-
-                    <Route path="student">
-                        <Route index element={<StudentListPage />} />
-                    </Route>
-                    <Route path='attendance-record' element={<StudentAttendanceRecordPage />} />
-                    <Route path='attendance-record-result' element={<StudentAttendanceRecordResultPage />} />
-                    <Route path='custom-event' element={<CustomEventPage />} />
-                    <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
-                    <Route path='attendance/status' element={<AttendanceStatusListPage />} />
-
-                    <Route path='classroom' element={<ClassroomListPage />} />
-
-                    {/* <Route path='achievement' element={<AchievementListPage />} />
+                {/* <Route path='achievement' element={<AchievementListPage />} />
                     <Route path='achievement/student' element={<StudentAchievementListPage />} />
 
                     <Route path='violation' element={<ViolationPage />} />
                     <Route path='violation/student' element={<StudentViolationPage />} />
                     <Route path='violation/student-point-report' element={<ViolationStudentPointReport />} /> */}
-                    <Route path='fingerprint' element={<FingerprintPage />} />
-                    <Route path="attendance" element={<SchoolStudentAttendanceListPage />} />
-                </Route>
+                <Route path='fingerprint' element={<FingerprintPage />} />
+            </Route>
 
-                <Route path="/school/student/attendance/in" element={<StudentAttendanceInPage />} />
-                <Route path="/school/student/attendance/out" element={<StudentAttendanceOutPage />} />
+            <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
+            <Route path="/school/student/attendance/in" element={<StudentAttendanceInPage />} />
+            <Route path="/school/student/attendance/out" element={<StudentAttendanceOutPage />} />
 
-                <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-        </Router>
+            <Route path="*" element={<NotFoundPage />} />
+        </Routes>
     );
 };
 

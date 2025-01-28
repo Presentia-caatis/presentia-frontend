@@ -30,7 +30,7 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
     const [schoolName, setSchoolName] = useState("");
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState< 
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
         string | null
     >(null);
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);

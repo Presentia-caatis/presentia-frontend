@@ -208,7 +208,6 @@ const SchoolSetAttendanceTimePage = () => {
         <div className="p-grid p-justify-center p-align-center p-mt-4">
             <Toast ref={toast} />
             <div className="card">
-
                 <div className="flex justify-content-between">
                     <div>
                         <h1>Konfigurasi Waktu Presensi</h1>
