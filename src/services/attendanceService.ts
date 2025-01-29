@@ -1,11 +1,11 @@
 import axiosClient from '../utils/axiosClient';
 
 class AttendanceService {
-    getAttendances(schoolId: number) {
-        return axiosClient.get(`/${schoolId}/attendance`)
+    getAttendances() {
+        return axiosClient.get(`/attendance`)
             .then(response => response.data)
             .catch(error => {
-                console.error(`There was an error fetching the attendances for school_id: ${schoolId}`, error);
+                console.error(`There was an error fetching the attendances`, error);
                 throw error;
             });
     }

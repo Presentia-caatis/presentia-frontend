@@ -12,12 +12,12 @@ interface AttendanceScheduleData {
 
 class AttendanceScheduleService {
 
-    async showScheduleByType(schoolId: number, data: any): Promise<any> {
-        return axiosClient.post(`${schoolId}/attendance-schedule/show-by-type`, data);
+    async showScheduleByType(data: any): Promise<any> {
+        return axiosClient.post(`attendance-schedule/show-by-type`, data);
     }
 
-    async updateSchedule(schoolId: number, id: number, data: AttendanceScheduleData): Promise<any> {
-        return axiosClient.put(`${schoolId}/attendance-schedule/${id}`, data);
+    async updateSchedule(id: number, data: AttendanceScheduleData): Promise<any> {
+        return axiosClient.put(`attendance-schedule/${id}`, data);
     }
 }
 

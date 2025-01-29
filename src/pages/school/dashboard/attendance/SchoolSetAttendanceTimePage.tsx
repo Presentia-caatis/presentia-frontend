@@ -71,7 +71,7 @@ const SchoolSetAttendanceTimePage = () => {
 
         try {
             setLoading(true);
-            const response = await attendanceScheduleService.showScheduleByType(user.school_id, dataType);
+            const response = await attendanceScheduleService.showScheduleByType(dataType);
             const schedule = response?.data.data?.[0];
 
             if (schedule) {
@@ -160,7 +160,7 @@ const SchoolSetAttendanceTimePage = () => {
         try {
             setLoading(true);
             if (!user?.school_id || !scheduleId) return;
-            await attendanceScheduleService.updateSchedule(user.school_id, scheduleId, scheduleData);
+            await attendanceScheduleService.updateSchedule(scheduleId, scheduleData);
 
             toast.current?.show({
                 severity: 'success',

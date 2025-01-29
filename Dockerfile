@@ -1,15 +1,19 @@
-FROM node:16.20.2-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json .
 
 COPY .env .env
 
 RUN npm install
 
+RUN npm i -g serve
+
 COPY . .
 
-EXPOSE 5173
+RUN npm run build
 
-CMD ["npm", "run", "dev", "--", "--host"]
+EXPOSE 3000
+
+CMD [ "serve", "-s", "dist" ]

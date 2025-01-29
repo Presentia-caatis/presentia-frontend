@@ -354,7 +354,7 @@ const FingerprintPage = () => {
                             />
                         </div>
                         <div className="field col-12 md:col-6">
-                            <label>Pilih Siswa</label>
+                            <label>Pilih Siswa <span className='text-red-600'>*</span></label>
                             <Dropdown
                                 value={selectedStudent}
                                 options={filteredStudents}
@@ -367,7 +367,7 @@ const FingerprintPage = () => {
                             />
                         </div>
                         <div className="field col-12 md:col-6">
-                            <label>Pilih Jari</label>
+                            <label>Pilih Jari <span className='text-red-600'>*</span></label>
                             <Dropdown
                                 value={selectedFinger}
                                 options={fingerOptions}
@@ -377,7 +377,7 @@ const FingerprintPage = () => {
                             />
                         </div>
                         <div className="field col-12 md:col-6">
-                            <label>Nomor Mesin</label>
+                            <label>Nomor Mesin <span className='text-red-600'>*</span></label>
                             <InputText
                                 value={machineNumber}
                                 onChange={(e) => setMachineNumber((e.target as HTMLInputElement).value)}

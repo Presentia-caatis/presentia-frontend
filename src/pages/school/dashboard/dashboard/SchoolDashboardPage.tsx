@@ -39,7 +39,6 @@ interface StudentActiveChart {
 }
 
 const SchoolDashboardPage = () => {
-    // const { schoolId } = useParams();
     const navigate = useNavigate();
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-color');
@@ -59,7 +58,7 @@ const SchoolDashboardPage = () => {
         const fetchData = async () => {
             try {
                 if (user && user.school_id !== null) {
-                    const data = await dashboardService.getStaticStatistics(user.school_id);
+                    const data = await dashboardService.getStaticStatistics();
                     setStaticData({
                         active_students: data?.data.active_students ?? 0,
                         inactive_students: data?.data.inactive_students ?? 0,
@@ -163,7 +162,7 @@ const SchoolDashboardPage = () => {
 
         try {
             setLoading(true);
-            const response: any = await attendanceService.getAttendances(user.school_id);
+            const response: any = await attendanceService.getAttendances();
             setAttendanceData(response.data);
             console.log(response.data);
         } catch (error: any) {

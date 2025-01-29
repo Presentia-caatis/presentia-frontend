@@ -2,22 +2,32 @@
 import axiosClient from '../utils/axiosClient';
 
 class StudentService {
-    async getStudent(schoolId: string | number) {
+    async getStudent() {
         try {
-            const response = await axiosClient.get(`/${schoolId}/student`);
+            const response = await axiosClient.get(`/student`);
             return response.data;
         } catch (error) {
-            console.error(`Error fetching students for school id: ${schoolId}`, error);
+            console.error(`Error fetching students`, error);
             throw error;
         }
     }
 
-    async addStudent(schoolId: string | number, payload: any) {
+    async addStudent(payload: any) {
         try {
-            const response = await axiosClient.post(`/${schoolId}/student`, payload);
+            const response = await axiosClient.post(`/student`, payload);
             return response.data;
         } catch (error) {
-            console.error(`Error adding students for school id: ${schoolId}`, error);
+            console.error(`Error adding students`, error);
+            throw error;
+        }
+    }
+
+    async storeViaFile(payload: any) {
+        try {
+            const response = await axiosClient.post(`/student/store-via-file`, payload);
+            return response.data;
+        } catch (error) {
+            console.error(`Error adding students`, error);
             throw error;
         }
     }
@@ -25,7 +35,7 @@ class StudentService {
     async updateStudent(schoolId: string | number, studentId: string | number, payload: any) {
         try {
             const updatedPayload = { ...payload, school_id: schoolId };
-            const response = await axiosClient.put(`/${schoolId}/student/${studentId}`, updatedPayload);
+            const response = await axiosClient.put(`/student/${studentId}`, updatedPayload);
             return response.data;
         } catch (error) {
             console.error(`Error updating students for student id: ${schoolId}`, error);
@@ -33,9 +43,9 @@ class StudentService {
         }
     }
 
-    async deleteStudent(schoolId: string | number, studentId: string | number) {
+    async deleteStudent(studentId: string | number) {
         try {
-            const response = await axiosClient.delete(`/${schoolId}/student/${studentId}`);
+            const response = await axiosClient.delete(`/student/${studentId}`);
             return response.data;
         } catch (error) {
             console.error(`Error deleting students for student id: ${studentId}`, error);

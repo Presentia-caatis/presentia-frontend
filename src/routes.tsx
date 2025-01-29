@@ -33,7 +33,7 @@ import ClientSupportDetailPage from './pages/client/dashboard/support/ClientSupp
 import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SchoolStudentAttendanceListPage from './pages/school/dashboard/student/SchoolAttendanceListPage';
-import FingerprintPage from './pages/school/dashboard/admin/fingerprintRegisterPage';
+import FingerprintPage from './pages/school/dashboard/admin/FingerprintRegisterPage';
 
 const AppRoutes = () => {
     return (

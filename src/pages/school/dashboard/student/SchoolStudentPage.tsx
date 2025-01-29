@@ -15,6 +15,8 @@ import classGroupService from '../../../../services/classGroupService';
 import { Toast } from 'primereact/toast';
 import { Skeleton } from 'primereact/skeleton';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
+import { FilterMatchMode } from 'primereact/api';
+import { FileUpload } from 'primereact/fileupload';
 
 
 type StudentData = {
@@ -38,8 +40,16 @@ const SchoolStudentPage = () => {
     const [tempEditStudentData, setTempEditStudentData] = useState<StudentData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [showImportDialog, setShowImportDialog] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
     const [listKelas, setListKelas] = useState([]);
-    const [listKelamin, setListKelamin] = useState([{ label: 'Laki-Laki', value: 'male' }, { label: 'Perempuan', value: 'female' }]);
+    const listKelamin = [
+        { label: 'Laki-Laki', value: 'male' },
+        { label: 'Perempuan', value: 'female' }];
+    const listStatus = [
+        { label: "Aktif", value: 1 },
+        { label: "Tidak Aktif", value: 0 },
+    ];
     const [studentData, setStudentData] = useState<StudentData[]>([]);
     const [selectedStudents, setSelectedStudents] = useState<StudentData[] | undefined>(undefined);
     const [newStudentData, setNewStudentData] = useState<StudentData>({
@@ -55,7 +65,129 @@ const SchoolStudentPage = () => {
             class_name: ''
         }
     });
+    const [globalFilter, setGlobalFilter] = useState("");
+    const [filters, setFilters] = useState({
+        student_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        nis: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        nisn: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        gender: { value: null, matchMode: FilterMatchMode.EQUALS },
+        class_group_id: { value: null, matchMode: FilterMatchMode.EQUALS },
+        is_active: { value: null, matchMode: FilterMatchMode.EQUALS },
+    });
+    const fileUploadRef = useRef<FileUpload>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+    const handleFileSelect = (event: any) => {
+        setSelectedFile(event.files[0]);
+    };
+
+    const handleClearFile = () => {
+        setSelectedFile(null);
+        fileUploadRef.current?.clear();
+    };
+
+    const handleImportDialogClose = () => {
+        setShowImportDialog(false);
+        setSelectedFile(null);
+        fileUploadRef.current?.clear();
+    };
+
+    const confirmImport = (event: React.MouseEvent) => {
+        if (!selectedFile) {
+            toast.current?.show({
+                severity: 'warn',
+                summary: 'Peringatan',
+                detail: 'Silakan pilih file terlebih dahulu!',
+                life: 3000
+            });
+            return;
+        }
+
+        confirmPopup({
+            target: event.currentTarget as HTMLElement,
+            message: 'Apakah Anda yakin ingin mengupload file ini?',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-success',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: handleImport,
+            reject: () => {
+                toast.current?.show({
+                    severity: 'info',
+                    summary: 'Dibatalkan',
+                    detail: 'Proses upload dibatalkan.',
+                    life: 3000
+                });
+            }
+        });
+    };
+
+    const handleImport = async () => {
+        try {
+            if (!selectedFile || !user?.school_id) {
+                toast.current?.show({
+                    severity: 'warn',
+                    summary: 'Peringatan',
+                    detail: 'Silakan pilih file terlebih dahulu!',
+                    life: 3000
+                });
+                return;
+            }
+
+            setImportLoading(true);
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('school_id', user.school_id.toString());
+
+            await studentService.storeViaFile(formData);
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sukses',
+                detail: 'File berhasil diupload.',
+                life: 3000
+            });
+
+            setShowImportDialog(false);
+            fileUploadRef.current?.clear();
+            setSelectedFile(null);
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: 'Terjadi kesalahan saat mengupload file.',
+                life: 3000
+            });
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
+
+
+    const inputFilterTemplate = (field: keyof typeof filters) => (
+        <InputText
+            value={filters[field].value || ""}
+            onChange={(e) =>
+                setFilters({ ...filters, [field]: { value: e.target.value, matchMode: FilterMatchMode.CONTAINS } })
+            }
+            placeholder="Filter..."
+            className="p-column-filter"
+        />
+    );
+
+    const dropdownFilterTemplate = (field: keyof typeof filters, options: any) => (
+        <Dropdown
+            value={filters[field].value}
+            options={options}
+            onChange={(e) => setFilters({ ...filters, [field]: { value: e.value, matchMode: FilterMatchMode.EQUALS } })}
+            placeholder="Pilih..."
+            showClear
+            className="p-column-filter"
+        />
+    );
 
     const { school } = useSchool();
     const { user } = useAuth();
@@ -68,7 +200,7 @@ const SchoolStudentPage = () => {
         try {
             setLoading(true);
             if (!user?.school_id) return;
-            const response = await studentService.getStudent(user.school_id);
+            const response = await studentService.getStudent();
             setStudentData(response.data);
 
         } catch (error) {
@@ -81,8 +213,11 @@ const SchoolStudentPage = () => {
     const fetchKelas = async () => {
         try {
             if (!user?.school_id) return;
-            const response = await classGroupService.getClassGroups(user.school_id);
-            setListKelas(response.responseData.data);
+            const response = await classGroupService.getClassGroups();
+            setListKelas(response.responseData.data.map((kelas: { id: number; class_name: string }) => ({
+                label: kelas.class_name,
+                value: kelas.id
+            })));
 
         } catch (error) {
             console.error('Error fetching students:', error);
@@ -98,15 +233,15 @@ const SchoolStudentPage = () => {
                 nisn: newStudent.nisn,
                 gender: newStudent.gender,
                 is_active: newStudent.is_active,
-                class_group_id: (newStudent.class_group_id as any).id,
+                class_group_id: newStudent.class_group_id,
                 school_id: user?.school_id
             };
 
-            console.log(payload);
             if (user?.school_id !== undefined) {
                 if (user?.school_id !== null) {
-                    const response = await studentService.addStudent(user.school_id, payload);
+                    await studentService.addStudent(payload);
                     setSaveLoading(false);
+                    toast.current?.show({ severity: 'success', summary: 'Siswa berhasil ditambahkan', detail: 'Anda berhasil menambahkan siswa.', life: 3000 });
                 } else {
                     throw new Error('School ID is null');
                 }
@@ -114,11 +249,11 @@ const SchoolStudentPage = () => {
                 throw new Error('School ID is undefined');
             }
             fetchStudents();
-            toast.current?.show({ severity: 'success', summary: 'Siswa berhasil ditambahkan', detail: 'Anda berhasil menambahkan siswa.', life: 3000 });
-            setShowAddDialog(false);
+            closeDialog('add');
             setSaveLoading(false);
         } catch (error) {
             setSaveLoading(false);
+            toast.current?.show({ severity: 'error', summary: 'Siswa gagal ditambahkan', detail: 'Anda gagal menambahkan siswa.', life: 3000 });
             console.error('Error Add student:', error);
         }
     };
@@ -152,7 +287,7 @@ const SchoolStudentPage = () => {
                 throw new Error('School ID is undefined');
             }
 
-            setShowEditDialog(false);
+            closeDialog('update');
 
         } catch (error) {
             console.error('Error updating student:', error);
@@ -164,7 +299,7 @@ const SchoolStudentPage = () => {
             });
         } finally {
             setSaveLoading(false);
-            setShowEditDialog(false);
+            closeDialog('update');
         }
     };
 
@@ -177,7 +312,7 @@ const SchoolStudentPage = () => {
                     detail: 'Proses menghapus sedang berlangsung...',
                     life: 3000,
                 });
-                await studentService.deleteStudent(user.school_id, studentId);
+                await studentService.deleteStudent(studentId);
                 fetchStudents();
                 toast.current?.show({
                     severity: 'success',
@@ -198,7 +333,6 @@ const SchoolStudentPage = () => {
             });
         }
     };
-
 
     const confirmAddStudent = (event: React.MouseEvent, newStudent: StudentData) => {
         confirmPopup({
@@ -292,69 +426,91 @@ const SchoolStudentPage = () => {
                         <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
                             setShowAddDialog(true);
                         }} />
-                        <Button icon="pi pi-plus" severity='success' label='Import Excel' />
+                        <Button
+                            icon="pi pi-upload"
+                            severity="info"
+                            label="Import"
+                            onClick={() => setShowImportDialog(true)}
+                        />
                         <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
                     </div>
                     <Button icon="pi pi-upload" severity='help' label='Export' />
                 </div>
 
-                <DataTable dataKey="id"
+                <DataTable
+                    dataKey="id"
                     selection={selectedStudents!}
                     selectionMode="multiple"
-                    onSelectionChange={(e) => setSelectedStudents(e.value)} paginator header={
+                    onSelectionChange={(e) => setSelectedStudents(e.value)}
+                    paginator
+                    rows={10}
+                    rowsPerPageOptions={[10, 50, 75, 100]}
+                    emptyMessage={loading ? "Loading..." : "Belum ada siswa"}
+                    tableStyle={{ minWidth: "50rem" }}
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
+                    stripedRows
+                    value={studentData}
+                    filters={filters}
+                    filterDisplay="row"
+                    globalFilter={globalFilter}
+                    header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 className="m-0">Data Siswa {school ? school.name : "Loading"}</h5>
-                            <span className="block mt-2 md:mt-0 p-input-icon-left ">
-                                <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
-                                <InputText className='py-2 pl-5' placeholder="Search..." />
+                            <span className="block mt-2 md:mt-0 p-input-icon-left">
+                                <i className="pi pi-search" style={{ paddingLeft: "8px" }} />
+                                <InputText
+                                    className="py-2 pl-5"
+                                    placeholder="Search..."
+                                    value={globalFilter}
+                                    onChange={(e) => setGlobalFilter(e.target.value)}
+                                />
                             </span>
                         </div>
-                    } rows={10} rowsPerPageOptions={[10, 50, 75, 100]} emptyMessage={
-                        loading ? (
-                            <div className="flex flex-column align-items-sm-start">
-                                <div className="py-1 text-start text-sm text-secondary">Loading...</div>
-                            </div>
-                        ) : "Belum ada siswa"
-                    } tableStyle={{ minWidth: '50rem' }}
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students" stripedRows
-                    value={studentData} >
-                    <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+                    }
+                >
+                    <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+
                     <Column
                         field="student_name"
                         header="Nama"
-                        body={(rowData) =>
-                            loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name
-                        }
-                    ></Column>
+                        body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name)}
+                        filter
+                        filterElement={inputFilterTemplate("student_name")}
+                    />
+
                     <Column
                         field="nis"
                         header="NIS"
-                        body={(rowData) =>
-                            loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nis
-                        }
-                    ></Column>
+                        body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nis)}
+                        filter
+                        filterElement={inputFilterTemplate("nis")}
+                    />
+
                     <Column
                         field="nisn"
                         header="NISN"
-                        body={(rowData) =>
-                            loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nisn
-                        }
-                    ></Column>
+                        body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nisn)}
+                        filter
+                        filterElement={inputFilterTemplate("nisn")}
+                    />
+
                     <Column
                         field="gender"
                         header="Gender"
-                        body={(rowData) =>
-                            loading ? <Skeleton width="40%" height="1.5rem" /> : rowData.gender
-                        }
-                    ></Column>
+                        body={(rowData) => (loading ? <Skeleton width="40%" height="1.5rem" /> : rowData.gender)}
+                        filter
+                        filterElement={dropdownFilterTemplate("gender", listKelamin)}
+                    />
+
                     <Column
-                        field="class_group.class_name"
+                        field="class_group_id"
                         header="Kelas"
-                        body={(rowData) =>
-                            loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name
-                        }
-                    ></Column>
+                        body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
+                        filter
+                        filterElement={dropdownFilterTemplate("class_group_id", listKelas)}
+                    />
+
                     <Column
                         field="is_active"
                         header="Status"
@@ -362,12 +518,15 @@ const SchoolStudentPage = () => {
                             loading ? (
                                 <Skeleton width="40%" height="1.5rem" />
                             ) : rowData.is_active === 1 ? (
-                                'Aktif'
+                                "Aktif"
                             ) : (
-                                'Tidak Aktif'
+                                "Tidak Aktif"
                             )
                         }
-                    ></Column>
+                        filter
+                        filterElement={dropdownFilterTemplate("is_active", listStatus)}
+                    />
+
                     <Column
                         body={(rowData) =>
                             loading ? (
@@ -381,7 +540,7 @@ const SchoolStudentPage = () => {
                                         icon="pi pi-pencil"
                                         className="p-button-success p-button-rounded"
                                         tooltip="Edit"
-                                        tooltipOptions={{ position: 'top' }}
+                                        tooltipOptions={{ position: "top" }}
                                         onClick={() => {
                                             setTempEditStudentData(rowData);
                                             setEditStudentData(rowData);
@@ -392,23 +551,28 @@ const SchoolStudentPage = () => {
                                         icon="pi pi-trash"
                                         className="p-button-danger p-button-rounded"
                                         tooltip="Hapus"
-                                        tooltipOptions={{ position: 'top' }}
+                                        tooltipOptions={{ position: "top" }}
                                         onClick={(e) => confirmDeleteStudent(e, rowData.id)}
                                     />
                                 </div>
                             )
                         }
-                    ></Column>
+                    />
                 </DataTable>
 
                 <Dialog visible={showAddDialog} style={{ width: '450px' }} onHide={() => closeDialog('add')} header="Penambahan Data Siswa" footer={
                     <div>
                         <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => closeDialog('add')} />
-                        <Button label="Save" loading={saveLoading} icon="pi pi-check" className="p-button-text" onClick={(event) => confirmAddStudent(event, newStudentData)} />
+                        <Button label="Save" loading={saveLoading} disabled={!newStudentData.student_name ||
+                            !newStudentData.nis ||
+                            !newStudentData.nisn ||
+                            !newStudentData.class_group_id ||
+                            !newStudentData.gender ||
+                            newStudentData.is_active === undefined} icon="pi pi-check" className="p-button-text" onClick={(event) => confirmAddStudent(event, newStudentData)} />
                     </div>
                 } modal={true} className='p-fluid'>
                     <div className='field'>
-                        <label htmlFor="nama">Nama</label>
+                        <label htmlFor="nama">Nama  <span className='text-red-600'>*</span></label>
                         <InputText
                             id="nama"
                             placeholder='Masukkan Nama'
@@ -419,7 +583,7 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className='field'>
-                        <label htmlFor="nis">NIS</label>
+                        <label htmlFor="nis">NIS  <span className='text-red-600'>*</span></label>
                         <InputText
                             id="nis"
                             type='number'
@@ -431,7 +595,7 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className='field'>
-                        <label htmlFor="nisn">NISN</label>
+                        <label htmlFor="nisn">NISN  <span className='text-red-600'>*</span></label>
                         <InputText
                             id="nisn"
                             type='number'
@@ -443,17 +607,17 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className='field'>
-                        <label htmlFor="kelas">Kelas</label>
-                        <Dropdown value={newStudentData.class_group_id} onChange={(e) => setNewStudentData({ ...newStudentData, class_group_id: e.value })} options={listKelas} optionLabel="class_name"
+                        <label htmlFor="kelas">Kelas  <span className='text-red-600'>*</span></label>
+                        <Dropdown value={newStudentData.class_group_id} onChange={(e) => setNewStudentData({ ...newStudentData, class_group_id: e.value })} options={listKelas} optionLabel="label"
                             placeholder="Pilih Kelas" />
                     </div>
                     <div className='field'>
-                        <label htmlFor="kelamin">Kelamin</label>
+                        <label htmlFor="kelamin">Kelamin  <span className='text-red-600'>*</span></label>
                         <Dropdown value={newStudentData.gender} onChange={(e) => setNewStudentData({ ...newStudentData, gender: e.value })} options={listKelamin} optionLabel="label"
                             placeholder="Pilih Kelamin" />
                     </div>
                     <div className='field'>
-                        <label htmlFor="status">Status Siswa</label>
+                        <label htmlFor="status">Status Siswa  <span className='text-red-600'>*</span></label>
                         <div className="formgrid grid">
                             <div className="field-radiobutton col-6">
                                 <RadioButton
@@ -509,7 +673,7 @@ const SchoolStudentPage = () => {
                     className="p-fluid"
                 >
                     <div className="field">
-                        <label htmlFor="edit-nama">Nama</label>
+                        <label htmlFor="edit-nama">Nama <span className='text-red-600'>*</span></label>
                         <InputText
                             id="edit-nama"
                             value={editStudentData?.student_name}
@@ -519,7 +683,7 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="edit-nis">NIS</label>
+                        <label htmlFor="edit-nis">NIS  <span className='text-red-600'>*</span></label>
                         <InputText
                             id="edit-nis"
                             type="number"
@@ -530,7 +694,7 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="edit-nisn">NISN</label>
+                        <label htmlFor="edit-nisn">NISN  <span className='text-red-600'>*</span></label>
                         <InputText
                             id="edit-nisn"
                             type="number"
@@ -541,19 +705,20 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="edit-kelas">Kelas</label>
+                        <label htmlFor="edit-kelas">Kelas  <span className='text-red-600'>*</span></label>
                         <Dropdown
-                            value={editStudentData?.class_group}
-                            onChange={(e) =>
-                                setEditStudentData({ ...editStudentData!, class_group: e.value, class_group_id: e.value.id })
+                            value={editStudentData?.class_group_id}
+                            onChange={(e) => {
+                                setEditStudentData({ ...editStudentData!, class_group: e.value, class_group_id: e.value });
+                            }
                             }
                             options={listKelas}
-                            optionLabel="class_name"
+                            optionLabel="label"
                             placeholder="Pilih Kelas"
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="edit-gender">Kelamin</label>
+                        <label htmlFor="edit-gender">Kelamin  <span className='text-red-600'>*</span></label>
                         <Dropdown
                             value={editStudentData?.gender}
                             onChange={(e) =>
@@ -562,6 +727,63 @@ const SchoolStudentPage = () => {
                             options={listKelamin}
                             placeholder="Pilih Gender"
                         />
+                    </div>
+                </Dialog>
+
+                <Dialog
+                    visible={showImportDialog}
+                    header="Import Data Siswa"
+                    onHide={handleImportDialogClose}
+
+                >
+                    <div className="p-fluid">
+                        <h4>Langkah-Langkah Import Data Siswa:</h4>
+                        <ol>
+                            <li className='mb-2' >
+                                <strong>Download Template:</strong> Klik tombol di bawah untuk mengunduh template.
+                                <div className="mt-2">
+                                    <a href="/path/to/template.xlsx" download="Template_Import_Siswa.xlsx">
+                                        <Button label="Download Template" icon="pi pi-download" className="p-button-sm w-auto" />
+                                    </a>
+                                </div>
+                            </li>
+                            <li className='mb-2'>
+                                <strong>Sesuaikan Data dengan Template:</strong> Pastikan data yang diinput sesuai dengan struktur yang ada di template.
+                            </li>
+                            <li className='mb-2'>
+                                <strong>Upload File:</strong> Pilih file yang sudah diisi sesuai template.
+                                <div className="mt-2">
+                                    <FileUpload
+                                        ref={fileUploadRef}
+                                        mode="basic"
+                                        accept=".xlsx, .csv"
+                                        maxFileSize={2000000}
+                                        chooseLabel="Pilih File"
+                                        customUpload
+                                        onSelect={handleFileSelect}
+                                        onClear={handleClearFile}
+                                        auto={false}
+                                    />
+                                </div>
+                            </li>
+                            <li>
+                                <strong>Import Data:</strong> Tekan tombol "Confirm Import" untuk memulai proses import.
+                            </li>
+                        </ol>
+
+                        {selectedFile && (
+                            <div className="mt-3">
+                                <p><strong>File:</strong> {selectedFile.name}</p>
+                                <a href={URL.createObjectURL(selectedFile)} download={selectedFile.name} className="w-auto p-button p-button-text">
+                                    <i className="pi pi-download pr-2" />  Download Preview
+                                </a>
+                            </div>
+                        )}
+
+                        <div className="flex justify-content-end gap-2 mt-4">
+                            <Button label="Batal" severity="secondary" icon="pi pi-times" onClick={handleImportDialogClose} disabled={importLoading} />
+                            <Button label="Confirm Import" severity="success" icon="pi pi-check" onClick={confirmImport} loading={importLoading} />
+                        </div>
                     </div>
                 </Dialog>
 
