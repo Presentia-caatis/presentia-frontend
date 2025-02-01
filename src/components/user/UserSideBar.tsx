@@ -1,7 +1,7 @@
 import { Menu } from 'primereact/menu';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const ClientSideBar = () => {
+const UserSideBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const currentPath = location.pathname;
@@ -13,20 +13,20 @@ const ClientSideBar = () => {
                 {
                     label: 'Dashboard',
                     icon: 'pi pi-fw pi-home',
-                    command: () => navigate('/client/dashboard'),
-                    className: currentPath === '/client/dashboard' ? 'active-route' : 'menu-item'
+                    command: () => navigate('/user/dashboard'),
+                    className: currentPath === '/user/dashboard' ? 'active-route' : 'menu-item'
                 },
                 // {
                 //     label: 'Pembayaran',
                 //     icon: 'pi pi-fw pi-receipt',
-                //     command: () => navigate('/client/dashboard/billing'),
-                //     className: currentPath === '/client/dashboard/billing' ? 'active-route' : 'menu-item'
+                //     command: () => navigate('/user/dashboard/billing'),
+                //     className: currentPath === '/user/dashboard/billing' ? 'active-route' : 'menu-item'
                 // },
                 // {
                 //     label: 'Support',
                 //     icon: 'pi pi-fw pi-headphones',
-                //     command: () => navigate('/client/dashboard/support'),
-                //     className: currentPath === '/client/dashboard/support' ? 'active-route' : 'menu-item'
+                //     command: () => navigate('/user/dashboard/support'),
+                //     className: currentPath === '/user/dashboard/support' ? 'active-route' : 'menu-item'
                 // }
             ]
         },
@@ -39,4 +39,4 @@ const ClientSideBar = () => {
     );
 };
 
-export default ClientSideBar;
+export default UserSideBar;

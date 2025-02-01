@@ -13,15 +13,18 @@ import { formatTime } from '../../../../utils/formatTime';
 import { useAuth } from '../../../../context/AuthContext';
 import attendanceScheduleService from '../../../../services/attendanceScheduleService';
 import { formatSchoolName } from '../../../../utils/formatSchoolName';
+import { TabMenu } from 'primereact/tabmenu';
 
 
 const SchoolStudentAttendanceListPage = () => {
+    const countdownTime = 15;
     const navigate = useNavigate();
     const { school } = useSchool();
     const { user } = useAuth();
+    const [activeIndex, setActiveIndex] = useState(0);
     const [attendanceData, setAttendanceData] = useState<any>([]);
     const [loading, setLoading] = useState(true);
-    const [countdown, setCountdown] = useState(30);
+    const [countdown, setCountdown] = useState(countdownTime);
     const [currentTime, setCurrentTime] = useState(new Date());
     const formattedDate = currentTime.toLocaleDateString('id-ID');
     const formattedTime = currentTime.toLocaleTimeString('id-ID', { hour12: false });
@@ -29,6 +32,10 @@ const SchoolStudentAttendanceListPage = () => {
     const [entryEndTime, setEntryEndTime] = useState<Date | null>(null);
     const [exitStartTime, setExitStartTime] = useState<Date | null>(null);
     const [exitEndTime, setExitEndTime] = useState<Date | null>(null);
+    const items = [
+        { label: 'Presensi Masuk', icon: 'pi pi-lock' },
+        { label: 'Presensi Keluar', icon: 'pi pi-sign-out' },
+    ];
 
     const eventDetail = {
         isEvent: false,
@@ -49,7 +56,6 @@ const SchoolStudentAttendanceListPage = () => {
     };
 
 
-
     const fetchAttendance = async () => {
         if (!user?.school_id) {
             return;
@@ -68,7 +74,7 @@ const SchoolStudentAttendanceListPage = () => {
                 console.error("Unexpected error:", error);
             }
         } finally {
-            setCountdown(30);
+            setCountdown(15);
             setLoading(false);
         }
     };
@@ -116,7 +122,7 @@ const SchoolStudentAttendanceListPage = () => {
             setCountdown((prevCountdown) => {
                 if (prevCountdown === 1) {
                     fetchAttendance();
-                    return 30;
+                    return 15;
                 }
                 return prevCountdown - 1;
             });
@@ -133,7 +139,164 @@ const SchoolStudentAttendanceListPage = () => {
     }, []);
 
 
+    const renderContent = () => {
+        switch (activeIndex) {
+            case 0:
+                return (
+                    <Card className="text-center shadow-1 col-12 py-0 w-10 overflow-auto mb-4">
+                        <div className="flex justify-content-between align-items-center mb-4 gap-2 white-space-nowrap">
+                            <div>
+                                <h5>{formattedDate}</h5>
+                                <p>{formattedTime}</p>
+                            </div>
+                            <div className="sm:block hidden text-center w-full lg:pl-3 ">
+                                <h2>Daftar presensi masuk siswa</h2>
+                                <p className="text-2xl font-bold text-black-alpha-90">
+                                    Waktu Presensi:  <br /> {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}
+                                </p>
+                            </div>
+                            <div>
+                                {eventDetail?.isEvent ? (
+                                    <div className="flex flex-column align-items-center gap-2">
+                                        <Tag value="Sedang Event" severity="info" />
+                                        <div
+                                            className="text-sm text-secondary border-round px-2 py-1 text-left"
+                                            style={{
+                                                backgroundColor: 'var(--blue-50)',
+                                                border: '1px solid var(--blue-300)',
+                                            }}
+                                        >
+                                            Event: {eventDetail.name} <br />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Tag value="Tidak Ada Event" severity="secondary" />
+                                )}
+                            </div>
+                        </div>
+                        <div className="sm:hidden block mb-2">
+                            <h4>Daftar presensi siswa</h4>
+                            <p className="text-base text-secondary">Waktu presensi: <br /> {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}</p>
+                        </div>
+                        <div className='mt-4'>
+                            <div className='flex justify-content-between py-2 px-3 border-bottom-1 surface-border'>
+                                <span className='font-bold text-lg'>Nama</span>
+                                <span className='font-bold text-lg'>Waktu</span>
+                            </div>
+                            <ul
+                                className="list-none p-2 m-0 h-full max-h-full lg:max-h-70vh"
+                                style={{ overflowY: 'auto' }}
+                            >
+                                {loading ? (
+                                    <li className="py-1 text-center text-xl text-secondary">Loading...</li>
+                                ) : attendanceData.length > 0 ? (
+                                    attendanceData.map((attendance: any, index: any) => {
+                                        const checkInTime = formatTime(attendance.check_in_time);
+                                        const isOnTime = isWithinTimeRange(checkInTime);
+                                        const bgColor = isOnTime ? 'bg-green-100' : 'bg-red-100';
 
+                                        return (
+                                            <li
+                                                key={index}
+                                                className={`flex justify-content-between ${bgColor} align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
+                                            >
+                                                <div>
+                                                    <span className="font-bold">{index + 1}. </span>
+                                                    <span className="font-bold">{attendance.student.student_name}</span>
+                                                </div>
+                                                <span>{checkInTime}</span>
+                                            </li>
+                                        );
+                                    })
+                                ) : (
+                                    <li className="py-1 text-center text-xl text-secondary">Belum ada yang presensi</li>
+                                )}
+                            </ul>
+
+                        </div>
+
+                    </Card>
+                );
+            case 1:
+                return (
+                    <Card className="text-center shadow-1 col-12 py-0 w-10 overflow-auto mb-4">
+                        <div className="flex justify-content-between align-items-center mb-4 gap-2 white-space-nowrap">
+                            <div>
+                                <h5>{formattedDate}</h5>
+                                <p>{formattedTime}</p>
+                            </div>
+                            <div className="sm:block hidden text-center w-full lg:pl-3 ">
+                                <h2>Daftar presensi pulang siswa</h2>
+                                <p className="text-2xl font-bold text-black-alpha-90">
+                                    Waktu Presensi:  <br /> {exitStartTime ? exitStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {exitEndTime ? exitEndTime.toLocaleTimeString('id-ID') : "Loading..."}
+                                </p>
+                            </div>
+                            <div>
+                                {eventDetail?.isEvent ? (
+                                    <div className="flex flex-column align-items-center gap-2">
+                                        <Tag value="Sedang Event" severity="info" />
+                                        <div
+                                            className="text-sm text-secondary border-round px-2 py-1 text-left"
+                                            style={{
+                                                backgroundColor: 'var(--blue-50)',
+                                                border: '1px solid var(--blue-300)',
+                                            }}
+                                        >
+                                            Event: {eventDetail.name} <br />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Tag value="Tidak Ada Event" severity="secondary" />
+                                )}
+                            </div>
+                        </div>
+                        <div className="sm:hidden block mb-2">
+                            <h4>Daftar presensi pulang siswa</h4>
+                            <p className="text-base text-secondary">Waktu presensi: <br /> {exitStartTime ? exitStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {exitEndTime ? exitEndTime.toLocaleTimeString('id-ID') : "Loading..."}</p>
+                        </div>
+                        <div className='mt-4'>
+                            <div className='flex justify-content-between py-2 px-3 border-bottom-1 surface-border'>
+                                <span className='font-bold text-lg'>Nama</span>
+                                <span className='font-bold text-lg'>Waktu</span>
+                            </div>
+                            <ul
+                                className="list-none p-2 m-0 h-full max-h-full lg:max-h-70vh"
+                                style={{ overflowY: 'auto' }}
+                            >
+                                {loading ? (
+                                    <li className="py-1 text-center text-xl text-secondary">Loading...</li>
+                                ) : attendanceData.length > 0 ? (
+                                    attendanceData.map((attendance: any, index: any) => {
+                                        const checkOutTime = formatTime(attendance.check_out_time);
+                                        const isOnTime = isWithinTimeRange(checkOutTime);
+                                        const bgColor = isOnTime ? 'bg-green-100' : 'bg-red-100';
+
+                                        return (
+                                            <li
+                                                key={index}
+                                                className={`flex justify-content-between ${bgColor} align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
+                                            >
+                                                <div>
+                                                    <span className="font-bold">{index + 1}. </span>
+                                                    <span className="font-bold">{attendance.student.student_name}</span>
+                                                </div>
+                                                <span>{checkOutTime}</span>
+                                            </li>
+                                        );
+                                    })
+                                ) : (
+                                    <li className="py-1 text-center text-xl text-secondary">Belum ada yang presensi</li>
+                                )}
+                            </ul>
+
+                        </div>
+
+                    </Card>
+                );
+            default:
+                return null;
+        }
+    };
 
 
     return (
@@ -186,79 +349,12 @@ const SchoolStudentAttendanceListPage = () => {
                     </div>
                 </div>
             </div>
-            <Card className="text-center shadow-1 col-12 py-0 w-10 overflow-auto mb-4">
-                <div className="flex justify-content-between align-items-center mb-4 gap-2 white-space-nowrap">
-                    <div>
-                        <h5>{formattedDate}</h5>
-                        <p>{formattedTime}</p>
-                    </div>
-                    <div className="sm:block hidden text-center w-full lg:pl-3">
-                        <h3>Daftar presensi siswa</h3>
-                        <p className="text-base text-secondary">
-                            Waktu presensi: {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}
-                        </p>
-                    </div>
-                    <div>
-                        {eventDetail?.isEvent ? (
-                            <div className="flex flex-column align-items-center gap-2">
-                                <Tag value="Sedang Event" severity="info" />
-                                <div
-                                    className="text-sm text-secondary border-round px-2 py-1 text-left"
-                                    style={{
-                                        backgroundColor: 'var(--blue-50)',
-                                        border: '1px solid var(--blue-300)',
-                                    }}
-                                >
-                                    Event: {eventDetail.name} <br />
-                                </div>
-                            </div>
-                        ) : (
-                            <Tag value="Tidak Ada Event" severity="secondary" />
-                        )}
-                    </div>
-                </div>
-                <div className="sm:hidden block mb-2">
-                    <h4>Daftar presensi siswa</h4>
-                    <p className="text-base text-secondary">Waktu presensi: <br /> {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}</p>
-                </div>
-                <div className='mt-4'>
-                    <div className='flex justify-content-between py-2 px-3 border-bottom-1 surface-border'>
-                        <span className='font-bold text-lg'>Nama</span>
-                        <span className='font-bold text-lg'>Waktu</span>
-                    </div>
-                    <ul
-                        className="list-none p-2 m-0 h-full max-h-full lg:max-h-70vh"
-                        style={{ overflowY: 'auto' }}
-                    >
-                        {loading ? (
-                            <li className="py-1 text-center text-xl text-secondary">Loading...</li>
-                        ) : attendanceData.length > 0 ? (
-                            attendanceData.map((attendance: any, index: any) => {
-                                const checkInTime = formatTime(attendance.check_in_time);
-                                const isOnTime = isWithinTimeRange(checkInTime);
-                                const bgColor = isOnTime ? 'bg-green-100' : 'bg-red-100';
-
-                                return (
-                                    <li
-                                        key={index}
-                                        className={`flex justify-content-between ${bgColor} align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
-                                    >
-                                        <div>
-                                            <span className="font-bold">{index + 1}. </span>
-                                            <span className="font-bold">{attendance.student.student_name}</span>
-                                        </div>
-                                        <span>{checkInTime}</span>
-                                    </li>
-                                );
-                            })
-                        ) : (
-                            <li className="py-1 text-center text-xl text-secondary">Belum ada yang presensi</li>
-                        )}
-                    </ul>
-
-                </div>
-
-            </Card>
+            <TabMenu
+                model={items}
+                activeIndex={activeIndex}
+                onTabChange={(e) => setActiveIndex(e.index)}
+            />
+            <div className="w-full flex justify-content-center">{renderContent()}</div>
         </div>
 
     );

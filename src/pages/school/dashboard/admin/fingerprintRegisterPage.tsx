@@ -124,8 +124,26 @@ const FingerprintPage = () => {
             const response = await getFingerprintData();
             setFingerprintData(response.data);
         } catch (error) {
-            localStorage.removeItem('admsjs_token');
-            console.error('Error fetching fingerprint data:', error);
+            if ((error as any).response?.data?.message === "Failed to authenticate token") {
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Unauthenticated',
+                    detail: 'Sesi login Anda telah berakhir. Memuat ulang...',
+                    life: 3000
+                });
+
+                localStorage.removeItem('admsjs_token');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Data fingerprint gagal dimuat',
+                    detail: 'Gagal mendapatkan data fingerprint.',
+                    life: 3000
+                });
+            }
         }
     };
 
@@ -172,7 +190,7 @@ const FingerprintPage = () => {
     const fetchStudents = async () => {
         try {
             if (!user?.school_id) return;
-            const data = await studentService.getStudent(user.school_id);
+            const data = await studentService.getStudent();
             setStudents(data.data);
             setFilteredStudents(data.data);
         } catch (error) {
@@ -199,7 +217,6 @@ const FingerprintPage = () => {
     const handleLogout = async () => {
         setLoading(true);
         try {
-            const token = await logoutADMSJS();
             setIsLoggedIn(false);
             localStorage.removeItem('admsjs_token');
             toast.current?.show({ severity: 'success', summary: 'Logout Berhasil', detail: 'Anda berhasil logout.', life: 3000 });
@@ -212,20 +229,51 @@ const FingerprintPage = () => {
 
     const handleRegister = async () => {
         if (!selectedStudent || !machineNumber) {
-            toast.current?.show({ severity: 'warn', summary: 'Data Tidak Lengkap', detail: 'Pilih siswa dan masukkan nomor mesin.', life: 3000 });
+            toast.current?.show({
+                severity: 'warn',
+                summary: 'Data Tidak Lengkap',
+                detail: 'Pilih siswa dan masukkan nomor mesin.',
+                life: 3000
+            });
             return;
         }
+
         setRegisterLoading(true);
         try {
             const studentId = selectedStudent.id;
             await enrollFingerprint(studentId, selectedFinger, retryCount, machineNumber);
-            toast.current?.show({ severity: 'success', summary: 'Pendaftaran Berhasil', detail: 'Segera daftarkan sidik jari pada mesin.', life: 8000 });
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Pendaftaran Berhasil',
+                detail: 'Segera daftarkan sidik jari pada mesin.',
+                life: 8000
+            });
         } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Pendaftaran Gagal', detail: 'Gagal mendaftarkan sidik jari.', life: 3000 });
+            if ((error as any).response?.data?.message === "Failed to authenticate token") {
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Unauthenticated',
+                    detail: 'Sesi login Anda telah berakhir. Memuat ulang...',
+                    life: 3000
+                });
+
+                localStorage.removeItem('admsjs_token');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Pendaftaran Gagal',
+                    detail: 'Gagal mendaftarkan sidik jari.',
+                    life: 3000
+                });
+            }
         } finally {
             setRegisterLoading(false);
         }
     };
+
 
     const actionBodyTemplate = (rowData: any) => {
         return (
@@ -316,7 +364,7 @@ const FingerprintPage = () => {
         <>
             <div title="" className="card p-4">
                 <Toast ref={toast} />
-                <div className='flex justify-content-between w-full my-2'>
+                <div className='flex flex-column md:flex-row justify-content-between w-full my-2'>
                     <div>
                         <h1>{!isLoggedIn ? "Login untuk mendaftaran Sidik Jari" : "Pendaftaran Sidik Jari"}</h1>
                     </div>

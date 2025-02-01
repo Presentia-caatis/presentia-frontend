@@ -2,11 +2,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
-import authServices from '../../services/authService';
 import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
-const ClientTopBar = () => {
+const UserTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = React.useRef<Toast>(null);
     const navigate = useNavigate();
@@ -36,7 +35,6 @@ const ClientTopBar = () => {
 
     const handleLogout = async () => {
         try {
-
             callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
             setLoading(true);
 
@@ -57,14 +55,7 @@ const ClientTopBar = () => {
             label: 'Profile',
             icon: 'pi pi-user',
             action: () => {
-                navigate('/client/profile');
-            },
-        },
-        {
-            label: 'Settings',
-            icon: 'pi pi-cog',
-            action: () => {
-                console.log('Open Settings');
+                navigate('/user/profile');
             },
         },
         {
@@ -148,4 +139,4 @@ const ClientTopBar = () => {
     );
 };
 
-export default ClientTopBar;
+export default UserTopBar;

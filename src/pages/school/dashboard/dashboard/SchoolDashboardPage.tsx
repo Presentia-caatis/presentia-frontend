@@ -259,7 +259,7 @@ const SchoolDashboardPage = () => {
 
     return (
         <>
-            <div className="card flex justify-content-between">
+            <div className="card flex flex-column md:flex-row  gap-3 justify-content-between">
                 <div>
                     <h1>{`Selamat Datang di Dashboard ${school ? school.name : 'Loading...'}`}</h1>
                     <p>{school ? school.address : 'Loading...'}</p>

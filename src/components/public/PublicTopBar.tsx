@@ -77,7 +77,7 @@ const PublicTopbar = () => {
                     onMouseEnter={() => setHovered(true)}
                 >
                     <Link
-                        to="/client/dashboard"
+                        to="/user/dashboard"
                         className="border-primary border-1 py-2 px-4 border-round-lg text-primary w-11rem flex justify-content-center align-items-center"
                     >
                         My Presentia{' '}

@@ -122,7 +122,6 @@ const SchoolSetAttendanceTimePage = () => {
             setEntryEndTime(initialData.entryEndTime);
             setExitStartTime(initialData.exitStartTime);
             setExitEndTime(initialData.exitEndTime);
-            setLastUpdated(initialData.lastUpdated);
         }
     };
 
@@ -166,6 +165,13 @@ const SchoolSetAttendanceTimePage = () => {
                 severity: 'success',
                 summary: 'Sukses',
                 detail: 'Jam default absensi berhasil diperbarui!',
+            });
+
+            setInitialData({
+                entryStartTime: entryStartTime,
+                entryEndTime: entryEndTime,
+                exitStartTime: exitStartTime,
+                exitEndTime: exitEndTime
             });
 
             setLastUpdated(new Date());

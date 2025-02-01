@@ -14,7 +14,7 @@ const invoiceList: InvoiceData[] = [
     { id: 2, schoolName: "SMK 9", invoiceDate: "02/06/2003", dueDate: "04/07/2004", total: 122020, status: 'Unpaid' },
 ];
 
-const ClientInvoiceDetailPage = () => {
+const UserInvoiceDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -72,11 +72,11 @@ const ClientInvoiceDetailPage = () => {
                 </div>
             </div>
 
-            <button onClick={() => navigate("/client/dashboard/billing")} className="p-button mt-3">
+            <button onClick={() => navigate("/User/dashboard/billing")} className="p-button mt-3">
                 Back to Invoices
             </button>
         </div>
     );
 };
 
-export default ClientInvoiceDetailPage;
+export default UserInvoiceDetailPage;

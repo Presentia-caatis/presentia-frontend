@@ -40,7 +40,7 @@ const LoginPage = () => {
         const authenticate = async () => {
             const isAuth = await checkAuth();
             if (isAuth) {
-                navigate('/client/dashboard');
+                navigate('/user/dashboard');
             }
             setIsLoggedIn(false);
         };
@@ -67,7 +67,7 @@ const LoginPage = () => {
                         const response = await authServices.getProfile();
                         localStorage.setItem('user', JSON.stringify(response.data));
                         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-                        navigate('/client/dashboard');
+                        navigate('/user/dashboard');
                     } catch (error) {
                         callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
                     }
@@ -101,7 +101,7 @@ const LoginPage = () => {
                 setAuth(user, token);
 
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-                navigate('/client/dashboard');
+                navigate('/user/dashboard');
             }
             //     try {
             //         const redirectResponse = await authServices.authenticated();
@@ -112,7 +112,7 @@ const LoginPage = () => {
 
             //         setIsLoggedIn(true);
             //         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-            //         navigate('/client/dashboard');
+            //         navigate('/user/dashboard');
             //     } catch (authError) {
             //         callToast(showToast, 'error', 'Login Gagal', 'Gagal mendapatkan data user');
             //     }
@@ -149,7 +149,7 @@ const LoginPage = () => {
     //                 const response = await authCheck();
     //                 if (response.status === "success") {
     //                     setIsLoggedIn(true);
-    //                     navigate('/client/dashboard');
+    //                     navigate('/user/dashboard');
     //                 } else {
     //                     localStorage.clear();
     //                     setIsLoggedIn(false);

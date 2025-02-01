@@ -25,7 +25,7 @@ const LandingPage = () => {
                                     label="Dashboard"
                                     type="button"
                                     className="mr-3"
-                                    onClick={() => navigate('/client/dashboard')}
+                                    onClick={() => navigate('/user/dashboard')}
                                     raised
                                 />
                             </div>

@@ -43,6 +43,8 @@ const SchoolStudentPage = () => {
     const [showImportDialog, setShowImportDialog] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
     const [listKelas, setListKelas] = useState([]);
+    const { school } = useSchool();
+    const { user } = useAuth();
     const listKelamin = [
         { label: 'Laki-Laki', value: 'male' },
         { label: 'Perempuan', value: 'female' }];
@@ -189,8 +191,6 @@ const SchoolStudentPage = () => {
         />
     );
 
-    const { school } = useSchool();
-    const { user } = useAuth();
     useEffect(() => {
         fetchStudents();
         fetchKelas();
@@ -477,6 +477,7 @@ const SchoolStudentPage = () => {
                         body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name)}
                         filter
                         filterElement={inputFilterTemplate("student_name")}
+                        showFilterMenu={false}
                     />
 
                     <Column
@@ -485,6 +486,7 @@ const SchoolStudentPage = () => {
                         body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nis)}
                         filter
                         filterElement={inputFilterTemplate("nis")}
+                        showFilterMenu={false}
                     />
 
                     <Column
@@ -493,6 +495,7 @@ const SchoolStudentPage = () => {
                         body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nisn)}
                         filter
                         filterElement={inputFilterTemplate("nisn")}
+                        showFilterMenu={false}
                     />
 
                     <Column
@@ -501,6 +504,7 @@ const SchoolStudentPage = () => {
                         body={(rowData) => (loading ? <Skeleton width="40%" height="1.5rem" /> : rowData.gender)}
                         filter
                         filterElement={dropdownFilterTemplate("gender", listKelamin)}
+                        showFilterMenu={false}
                     />
 
                     <Column
@@ -509,6 +513,7 @@ const SchoolStudentPage = () => {
                         body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
                         filter
                         filterElement={dropdownFilterTemplate("class_group_id", listKelas)}
+                        showFilterMenu={false}
                     />
 
                     <Column
@@ -525,6 +530,7 @@ const SchoolStudentPage = () => {
                         }
                         filter
                         filterElement={dropdownFilterTemplate("is_active", listStatus)}
+                        showFilterMenu={false}
                     />
 
                     <Column
@@ -544,6 +550,7 @@ const SchoolStudentPage = () => {
                                         onClick={() => {
                                             setTempEditStudentData(rowData);
                                             setEditStudentData(rowData);
+                                            console.log(rowData);
                                             setShowEditDialog(true);
                                         }}
                                     />
@@ -728,6 +735,31 @@ const SchoolStudentPage = () => {
                             placeholder="Pilih Gender"
                         />
                     </div>
+                    <div className='field'>
+                        <label htmlFor="status">Status Siswa  <span className='text-red-600'>*</span></label>
+                        <div className="formgrid grid">
+                            <div className="field-radiobutton col-6">
+                                <RadioButton
+                                    inputId="status1"
+                                    name="status"
+                                    value={1}
+                                    onChange={(e) => setEditStudentData({ ...editStudentData!, is_active: e.value })}
+                                    checked={editStudentData?.is_active === 1}
+                                />
+                                <label htmlFor="status1" className="ml-2">Aktif</label>
+                            </div>
+                            <div className="field-radiobutton col-6">
+                                <RadioButton
+                                    inputId="status2"
+                                    name="status"
+                                    value={0}
+                                    onChange={(e) => setEditStudentData({ ...editStudentData!, is_active: e.value })}
+                                    checked={editStudentData?.is_active === 0}
+                                />
+                                <label htmlFor="status2" className="ml-2">Tidak Aktif</label>
+                            </div>
+                        </div>
+                    </div>
                 </Dialog>
 
                 <Dialog
@@ -742,7 +774,7 @@ const SchoolStudentPage = () => {
                             <li className='mb-2' >
                                 <strong>Download Template:</strong> Klik tombol di bawah untuk mengunduh template.
                                 <div className="mt-2">
-                                    <a href="/path/to/template.xlsx" download="Template_Import_Siswa.xlsx">
+                                    <a href="https://telkomuniversityofficial-my.sharepoint.com/:x:/g/personal/rezadhied_student_telkomuniversity_ac_id/EUVzkCTGZMFLkKi2dXWGlDQBqK3bdjJMitcF4FXULmevsA?e=jehdeJ" target='_blank' download="Template_Import_Siswa.xlsx">
                                         <Button label="Download Template" icon="pi pi-download" className="p-button-sm w-auto" />
                                     </a>
                                 </div>
@@ -764,6 +796,8 @@ const SchoolStudentPage = () => {
                                         onClear={handleClearFile}
                                         auto={false}
                                     />
+
+
                                 </div>
                             </li>
                             <li>

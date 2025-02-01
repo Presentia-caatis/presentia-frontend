@@ -19,14 +19,7 @@ const AdminTopbar = () => {
             label: 'Profile',
             icon: 'pi pi-user',
             action: () => {
-                navigate('/client/profile');
-            },
-        },
-        {
-            label: 'Settings',
-            icon: 'pi pi-cog',
-            action: () => {
-                console.log('Open Settings');
+                navigate('/user/profile');
             },
         },
         {

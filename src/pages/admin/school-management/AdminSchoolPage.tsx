@@ -4,7 +4,6 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { useNavigate } from 'react-router-dom';
-import ClientCreateSchoolModal from '../../../components/client/ClientCreateSchoolModal';
 import AdminCreateSchoolModal from '../../../components/admin/AdminCreateSchoolModal';
 
 type SchoolData = {

@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useLayoutConfig } from '../context/LayoutConfigContext';
 import LayoutConfigSidebar from '../components/LayoutConfigSidebar';
-import ClientSideBar from '../components/client/ClientSideBar';
-import ClientFooter from '../components/client/ClientFooter';
-import ClientTopBar from '../components/client/ClientTopBar';
+import UserSideBar from '../components/user/UserSideBar';
+import UserFooter from '../components/user/UserFooter';
+import UserTopBar from '../components/user/UserTopBar';
 import { Helmet } from 'react-helmet';
 
-const ClientLayout = () => {
+const UserLayout = () => {
     const { darkMode } = useLayoutConfig();
     const [containerClass, setContainerClass] = useState('');
 
@@ -21,15 +21,15 @@ const ClientLayout = () => {
 
     const getTitle = () => {
         switch (location.pathname) {
-            case '/client/dashboard':
+            case '/user/dashboard':
                 return 'Dashboard - Presentia';
-            case '/client/dashboard/billing':
+            case '/user/dashboard/billing':
                 return 'Pembayaran - Presentia';
-            case '/client/invoice':
+            case '/user/invoice':
                 return 'Invoice - Presentia';
-            case '/client/dashboard/support':
+            case '/user/dashboard/support':
                 return 'Support - Presentia';
-            case '/client/profile':
+            case '/user/profile':
                 return 'Profile - Presentia';
             default:
                 return 'Presentia';
@@ -41,15 +41,15 @@ const ClientLayout = () => {
             <Helmet>
                 <title>{getTitle()}</title>
             </Helmet>
-            <ClientTopBar />
+            <UserTopBar />
             <div className="layout-sidebar">
-                <ClientSideBar />
+                <UserSideBar />
             </div>
             <div className="layout-main-container">
                 <div className="layout-main">
                     <Outlet />
                 </div>
-                <ClientFooter />
+                <UserFooter />
             </div>
             <LayoutConfigSidebar />
             <div className="layout-mask"></div>
@@ -57,4 +57,4 @@ const ClientLayout = () => {
     );
 };
 
-export default ClientLayout;
+export default UserLayout;

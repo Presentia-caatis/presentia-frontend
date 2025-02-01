@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 
 interface SchoolContextProps {
     school: any;
+    setSchool: any;
     attendance: any;
     loading: boolean;
 }
@@ -15,7 +16,7 @@ const SchoolContext = createContext<SchoolContextProps | undefined>(undefined);
 export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
     const [school, setSchool] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [attendance, setAttendance] = useState<any>(null);
+    const [attendance] = useState<any>(null);
 
     const { user } = useAuth();
 
@@ -45,7 +46,7 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     return (
-        <SchoolContext.Provider value={{ school, attendance, loading }}>
+        <SchoolContext.Provider value={{ school, attendance, loading, setSchool }}>
             {children}
         </SchoolContext.Provider>
     );

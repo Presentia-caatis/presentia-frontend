@@ -6,7 +6,7 @@ import { Divider } from 'primereact/divider';
 import { Tag } from 'primereact/tag';
 import { Tooltip } from 'primereact/tooltip';
 import { Panel } from 'primereact/panel';
-import ClientCreateSchoolModal from '../../../../components/client/ClientCreateSchoolModal';
+import UserCreateSchoolModal from '../../../../components/user/UserCreateSchoolModal';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import schoolService from '../../../../services/schoolService';
 import { useAuth } from '../../../../context/AuthContext';
@@ -28,7 +28,7 @@ type SchoolData = {
 };
 
 
-const ClientDashboardPage = () => {
+const UserDashboardPage = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -55,7 +55,7 @@ const ClientDashboardPage = () => {
                 if (user.school_id) {
                     const school = await schoolService.getById(user.school_id!);
 
-                    const staticSchoolData = await dashboardService.getStaticStatistics(user.school_id!);
+                    const staticSchoolData = await dashboardService.getStaticStatistics();
                     console.log(staticSchoolData.data);
 
                     setSchoolData({
@@ -242,7 +242,7 @@ const ClientDashboardPage = () => {
                 </div>
             )}
 
-            {/* <ClientCreateSchoolModal
+            {/* <UserCreateSchoolModal
                 visible={isModalVisible}
                 onClose={() => setModalVisible(false)}
                 onSave={(newSchool: SchoolData) => {
@@ -254,4 +254,4 @@ const ClientDashboardPage = () => {
     );
 };
 
-export default ClientDashboardPage;
+export default UserDashboardPage;

@@ -1,8 +1,9 @@
+@use "sass:meta";
 @import "primereact/resources/themes/lara-light-indigo/theme.css";
 @import 'primereact/resources/primereact.min.css';
 @import 'primeicons/primeicons.css';
 @import 'primeflex/primeflex.css';
-@import './layout/layout.scss';
+@include meta.load-css('layout/layout.scss');
 
 body {
   margin: 0

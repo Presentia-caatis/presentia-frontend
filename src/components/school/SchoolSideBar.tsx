@@ -4,24 +4,40 @@ import { useSchool } from '../../context/SchoolContext';
 import { formatSchoolName } from '../../utils/formatSchoolName';
 import { Skeleton } from 'primereact/skeleton';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { useLayoutConfig } from '../../context/LayoutConfigContext';
+import { Sidebar } from 'primereact/sidebar';
+import { useEffect } from 'react';
 
 const SchoolSideBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const currentPath = location.pathname;
     const { school, loading } = useSchool();
+    const { isSidebarVisible, setIsSidebarVisible } = useLayoutConfig();
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) {
+                setIsSidebarVisible(false);
+            }
+        };
+
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (loading) {
         return (
             <div className="layout-sidebar">
-                <Skeleton height="1rem" width="100%" className="mb-4 mt-4" />
-                <Skeleton height="1rem" width="100%" className="mb-4" />
-                <Skeleton height="1rem" width="100%" className="mb-4" />
-                <Skeleton height="1rem" width="100%" className="mb-4" />
-                <Skeleton height="1rem" width="100%" className="mb-4" />
+                {[...Array(5)].map((_, index) => (
+                    <Skeleton key={index} height="1rem" width="100%" className="mb-4 mt-4" />
+                ))}
             </div>
         );
     }
+
 
     const schoolName = formatSchoolName(school.name);
 
@@ -58,16 +74,10 @@ const SchoolSideBar = () => {
             label: 'Presensi',
             items: [
                 {
-                    label: 'Rekam Presensi Siswa',
+                    label: 'Kehadiran Siswa',
                     icon: 'pi pi-book',
-                    command: () => navigate(`/school/${schoolName}/attendance-record`),
-                    className: currentPath === `/school/${schoolName}/attendance-record` ? 'active-route' : 'menu-item',
-                },
-                {
-                    label: 'Rekam Absensi Siswa',
-                    icon: 'pi pi-book',
-                    command: () => navigate(`/school/${schoolName}/attendance-record-result`),
-                    className: currentPath === `/school/${schoolName}/attendance-record-result` ? 'active-route' : 'menu-item',
+                    command: () => navigate(`/school/${schoolName}/attendance`),
+                    className: currentPath === `/school/${schoolName}/attendance` ? 'active-route' : 'menu-item',
                 },
                 {
                     label: 'Custom Event Baru',
@@ -119,10 +129,21 @@ const SchoolSideBar = () => {
         </div>;
     }
 
+
+
     return (
-        <div className="layout-sidebar">
-            <Menu model={model} />
-        </div>
+        <>
+            <div className="layout-sidebar hidden md:block">
+                <Menu model={model} />
+            </div>
+            <Sidebar
+                visible={isSidebarVisible}
+                onHide={() => setIsSidebarVisible(false)}
+                className="block lg:hidden pr-6"
+            >
+                <Menu className='mb-6 text-xs' model={model} />
+            </Sidebar>
+        </>
     );
 };
 

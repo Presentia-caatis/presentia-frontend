@@ -13,7 +13,7 @@ type InvoiceData = {
     status: string;
 };
 
-const ClientInvoicesPage = () => {
+const UserInvoicesPage = () => {
     const navigate = useNavigate();
     const [invoiceList, setInvoiceList] = useState<InvoiceData[]>([
         { id: 1, schoolName: "SMK 8", invoiceDate: "02/05/2003", dueDate: "03/07/2004", total: 4196807, status: 'Paid' },
@@ -21,7 +21,7 @@ const ClientInvoicesPage = () => {
     ]);
 
     const handleRowClick = (rowData: InvoiceData) => {
-        navigate(`/client/invoice/${rowData.id}`);
+        navigate(`/user/invoice/${rowData.id}`);
     };
 
     const formatCurrency = (value: number): string =>
@@ -75,4 +75,4 @@ const ClientInvoicesPage = () => {
     );
 };
 
-export default ClientInvoicesPage;
+export default UserInvoicesPage;

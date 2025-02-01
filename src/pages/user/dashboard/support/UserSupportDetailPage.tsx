@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 type TicketMessage = { sender: string; content: string; attachments?: string[] };
 
-const ClientSupportDetailPage = () => {
+const UserSupportDetailPage = () => {
     const { id } = useParams<{ id: string }>();
 
     const navigate = useNavigate();
@@ -34,7 +34,7 @@ const ClientSupportDetailPage = () => {
     const handleSendMessage = () => {
         if (newMessage.trim() || uploadedFiles.length > 0) {
             const newMsg: TicketMessage = {
-                sender: 'Client',
+                sender: 'User',
                 content: newMessage,
                 attachments: uploadedFiles.map((file) => URL.createObjectURL(file)),
             };
@@ -167,7 +167,7 @@ const ClientSupportDetailPage = () => {
                     <div key={idx} className="mb-4 card">
                         <div className="flex align-items-center mb-2">
                             <span className="font-bold mr-2">
-                                {msg.sender === 'Client' ? 'You' : msg.sender}
+                                {msg.sender === 'User' ? 'You' : msg.sender}
                             </span>
                             <small className="text-gray-600">{new Date().toLocaleString()}</small>
                         </div>
@@ -196,4 +196,4 @@ const ClientSupportDetailPage = () => {
     );
 };
 
-export default ClientSupportDetailPage;
+export default UserSupportDetailPage;

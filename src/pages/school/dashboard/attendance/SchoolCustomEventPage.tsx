@@ -18,7 +18,7 @@ type EventData = {
     entryEnd: Date;
     exitStart: Date;
     exitEnd: Date;
-    status: string;
+    status: number;
 };
 
 const SchoolCustomEventPage = () => {
@@ -31,7 +31,7 @@ const SchoolCustomEventPage = () => {
         entryEnd: new Date(new Date().setHours(8, 0)),
         exitStart: new Date(new Date().setHours(15, 30)),
         exitEnd: new Date(new Date().setHours(16, 0)),
-        status: ''
+        status: 1
     });
     const [selectedEvents, setSelectedEvents] = useState<EventData[]>([]);
     const [errors, setErrors] = useState({
@@ -115,7 +115,7 @@ const SchoolCustomEventPage = () => {
             entryEnd: new Date(new Date().setHours(8, 0)),
             exitStart: new Date(new Date().setHours(15, 30)),
             exitEnd: new Date(new Date().setHours(16, 0)),
-            status: ''
+            status: 1
         });
         setErrors({ name: '', date: '', entryStart: '', entryEnd: '', exitStart: '', exitEnd: '', status: '' });
     };
@@ -272,9 +272,9 @@ const SchoolCustomEventPage = () => {
                                 <RadioButton
                                     inputId="status1"
                                     name="status"
-                                    value="1"
+                                    value={1}
                                     onChange={(e) => setEventData({ ...eventData, status: e.value })}
-                                    checked={eventData.status === '1'}
+                                    checked={eventData.status === 1}
                                 />
                                 <label htmlFor="status1" className="ml-2">
                                     Aktif
@@ -284,9 +284,9 @@ const SchoolCustomEventPage = () => {
                                 <RadioButton
                                     inputId="status2"
                                     name="status"
-                                    value="0"
+                                    value={0}
                                     onChange={(e) => setEventData({ ...eventData, status: e.value })}
-                                    checked={eventData.status === '0'}
+                                    checked={eventData.status === 0}
                                 />
                                 <label htmlFor="status2" className="ml-2">
                                     Tidak Aktif

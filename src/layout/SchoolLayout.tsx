@@ -69,8 +69,18 @@ const SchoolLayout = () => {
                 return `Daftar Siswa - ${schoolNameTitle}`;
             case `/school/${formatedSchoolName}/attendance-record`:
                 return `Rekam Presensi Siswa - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/attendance`:
+                return `Kehadiran Siswa - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/custom-event`:
+                return `Event - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/default-attendance-time`:
+                return `Waktu Presensi - ${schoolNameTitle}`;
             case `/school/${formatedSchoolName}/classroom`:
                 return `Daftar Kelas - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/fingerprint`:
+                return `Fingerprint - ${schoolNameTitle}`;
+            case `/school/${formatedSchoolName}/profile`:
+                return `Profile - ${schoolNameTitle}`;
             default:
                 return `${schoolNameTitle}`;
         }
@@ -84,6 +94,9 @@ const SchoolLayout = () => {
             </Helmet>
             <Topbar />
             <div className="layout-sidebar">
+                <SideBar />
+            </div>
+            <div className="block md:hidden">
                 <SideBar />
             </div>
             <div className="layout-main-container">

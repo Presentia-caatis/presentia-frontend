@@ -20,7 +20,7 @@ type SupportTicket = {
     images?: File[];
 };
 
-const ClientSupportPage = () => {
+const UserSupportPage = () => {
 
     const navigate = useNavigate();
 
@@ -90,7 +90,7 @@ const ClientSupportPage = () => {
     };
 
     const handleRowClick = (ticketId: number) => {
-        navigate(`/client/support/ticket/${ticketId}`);
+        navigate(`/User/support/ticket/${ticketId}`);
     };
 
     return (
@@ -234,4 +234,4 @@ const ClientSupportPage = () => {
     );
 };
 
-export default ClientSupportPage;
+export default UserSupportPage;

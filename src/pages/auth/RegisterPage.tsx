@@ -57,7 +57,7 @@ const RegisterPage = () => {
                 callToast(showToast, 'success', 'Registrasi Berhasil', 'Berhasil login dengan akun yang didaftarkan');
                 setLoading(false);
 
-                navigate('/client/dashboard');
+                navigate('/user/dashboard');
             } else {
                 setLoading(false);
                 callToast(showToast, 'error', 'Login Gagal', 'Terjadi masalah saat login setelah registrasi.');

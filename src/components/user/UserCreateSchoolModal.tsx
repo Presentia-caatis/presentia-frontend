@@ -6,7 +6,7 @@ import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import subscriptionService from "../../services/subscriptionService";
 
-type ClientCreateSchoolModalProps = {
+type UserCreateSchoolModalProps = {
     onClose: () => void;
     onSave: (newSchool: {
         id: number;
@@ -19,7 +19,7 @@ type ClientCreateSchoolModalProps = {
     visible: boolean;
 };
 
-const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
+const UserCreateSchoolModal: React.FC<UserCreateSchoolModalProps> = ({
     onClose,
     onSave,
     visible,
@@ -339,4 +339,4 @@ const ClientCreateSchoolModal: React.FC<ClientCreateSchoolModalProps> = ({
     );
 };
 
-export default ClientCreateSchoolModal;
+export default UserCreateSchoolModal;
