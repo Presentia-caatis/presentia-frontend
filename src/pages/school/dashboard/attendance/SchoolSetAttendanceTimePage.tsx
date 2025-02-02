@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Calendar } from 'primereact/calendar';
 import { Button } from 'primereact/button';
 import { Divider } from 'primereact/divider';
@@ -8,7 +8,7 @@ import { Messages } from 'primereact/messages';
 import { useMountEffect } from 'primereact/hooks';
 import attendanceScheduleService from '../../../../services/attendanceScheduleService';
 import { useAuth } from '../../../../context/AuthContext';
-import { convertToWIB, formatTime } from '../../../../utils/formatTime';
+import { parseToDate } from '../../../../utils/formatTime';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Dialog } from 'primereact/dialog';
 
@@ -75,33 +75,18 @@ const SchoolSetAttendanceTimePage = () => {
             const schedule = response?.data.data?.[0];
 
             if (schedule) {
-
-                const entryStartWIB = formatTime(schedule.check_in_start_time);
-                const entryEndWIB = formatTime(schedule.check_in_end_time);
-                const exitStartWIB = formatTime(schedule.check_out_start_time);
-                const exitEndWIB = formatTime(schedule.check_out_end_time);
-
-                const parseToDate = (time: string, baseDate: string) => {
-                    const [hours, minutes, seconds] = time.split(':').map(Number);
-                    const date = new Date(baseDate);
-                    date.setHours(hours, minutes, seconds);
-                    return date;
-                };
-
-
-                const baseDate = schedule.check_in_start_time;
-                setEntryStartTime(parseToDate(entryStartWIB, baseDate));
-                setEntryEndTime(parseToDate(entryEndWIB, baseDate));
-                setExitStartTime(parseToDate(exitStartWIB, baseDate));
-                setExitEndTime(parseToDate(exitEndWIB, baseDate));
-                setLastUpdated(convertToWIB(schedule.updated_at));
+                setEntryStartTime(parseToDate(schedule.check_in_start_time));
+                setEntryEndTime(parseToDate(schedule.check_in_end_time));
+                setExitStartTime(parseToDate(schedule.check_out_start_time));
+                setExitEndTime(parseToDate(schedule.check_out_end_time));
+                setLastUpdated(new Date(schedule.updated_at));
                 setScheduleId(schedule.id);
                 setInitialData({
-                    entryStartTime: parseToDate(entryStartWIB, baseDate),
-                    entryEndTime: parseToDate(entryEndWIB, baseDate),
-                    exitStartTime: parseToDate(exitStartWIB, baseDate),
-                    exitEndTime: parseToDate(exitEndWIB, baseDate),
-                    lastUpdated: convertToWIB(schedule.updated_at)
+                    entryStartTime: parseToDate(schedule.check_in_start_time),
+                    entryEndTime: parseToDate(schedule.check_in_end_time),
+                    exitStartTime: parseToDate(schedule.check_out_start_time),
+                    exitEndTime: parseToDate(schedule.check_out_end_time),
+                    lastUpdated: new Date(schedule.updated_at)
                 });
             }
         } catch (error) {

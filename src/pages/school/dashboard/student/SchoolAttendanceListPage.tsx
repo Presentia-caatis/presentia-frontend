@@ -9,16 +9,20 @@ import { useSchool } from '../../../../context/SchoolContext';
 import logo from "../../../../assets/Logo-SMK-10-Bandung.png"
 import AttendanceService from '../../../../services/attendanceService';
 import { Helmet } from 'react-helmet';
-import { formatTime } from '../../../../utils/formatTime';
 import { useAuth } from '../../../../context/AuthContext';
 import attendanceScheduleService from '../../../../services/attendanceScheduleService';
 import { formatSchoolName } from '../../../../utils/formatSchoolName';
 import { TabMenu } from 'primereact/tabmenu';
+import { formatTime, parseToDate } from '../../../../utils/formatTime';
+import { InputSwitch } from 'primereact/inputswitch';
 
+const countdownTime = 15;
 
 const SchoolStudentAttendanceListPage = () => {
-    const countdownTime = 15;
     const navigate = useNavigate();
+    const [autoSwitch, setAutoSwitch] = useState<boolean>(() => {
+        return JSON.parse(localStorage.getItem("autoSwitch") || "true");
+    });
     const { school } = useSchool();
     const { user } = useAuth();
     const [activeIndex, setActiveIndex] = useState(0);
@@ -33,9 +37,13 @@ const SchoolStudentAttendanceListPage = () => {
     const [exitStartTime, setExitStartTime] = useState<Date | null>(null);
     const [exitEndTime, setExitEndTime] = useState<Date | null>(null);
     const items = [
-        { label: 'Presensi Masuk', icon: 'pi pi-lock' },
-        { label: 'Presensi Keluar', icon: 'pi pi-sign-out' },
+        { label: 'Presensi Masuk', icon: 'pi pi-sign-in' },
+        { label: 'Presensi Pulang', icon: 'pi pi-sign-out' },
     ];
+
+    useEffect(() => {
+        localStorage.setItem("autoSwitch", JSON.stringify(autoSwitch));
+    }, [autoSwitch]);
 
     const eventDetail = {
         isEvent: false,
@@ -43,18 +51,6 @@ const SchoolStudentAttendanceListPage = () => {
         startTime: '08:00',
         endTime: '12:00',
     };
-
-    const isWithinTimeRange = (time: string): boolean => {
-        if (!entryStartTime || !entryEndTime) return false;
-
-        const [hours, minutes] = time.split(':').map(Number);
-        const attendanceTime = hours * 60 + minutes;
-        const startTime = entryStartTime.getHours() * 60 + entryStartTime.getMinutes();
-        const endTime = entryEndTime.getHours() * 60 + entryEndTime.getMinutes();
-
-        return attendanceTime >= startTime && attendanceTime <= endTime;
-    };
-
 
     const fetchAttendance = async () => {
         if (!user?.school_id) {
@@ -89,23 +85,10 @@ const SchoolStudentAttendanceListPage = () => {
             const schedule = response?.data?.data?.[0];
 
             if (schedule) {
-                const entryStartWIB = formatTime(schedule.check_in_start_time);
-                const entryEndWIB = formatTime(schedule.check_in_end_time);
-                const exitStartWIB = formatTime(schedule.check_out_start_time);
-                const exitEndWIB = formatTime(schedule.check_out_end_time);
-
-                const parseToDate = (time: string, baseDate: string) => {
-                    const [hours, minutes, seconds] = time.split(':').map(Number);
-                    const date = new Date(baseDate);
-                    date.setHours(hours, minutes, seconds);
-                    return date;
-                };
-
-                const baseDate = schedule.check_in_start_time;
-                setEntryStartTime(parseToDate(entryStartWIB, baseDate));
-                setEntryEndTime(parseToDate(entryEndWIB, baseDate));
-                setExitStartTime(parseToDate(exitStartWIB, baseDate));
-                setExitEndTime(parseToDate(exitEndWIB, baseDate));
+                setEntryStartTime(parseToDate(schedule.check_in_start_time));
+                setEntryEndTime(parseToDate(schedule.check_in_end_time));
+                setExitStartTime(parseToDate(schedule.check_out_start_time));
+                setExitEndTime(parseToDate(schedule.check_out_end_time));
             }
         } catch (error) {
             console.error('Failed to fetch default attendance schedule:', error);
@@ -117,19 +100,31 @@ const SchoolStudentAttendanceListPage = () => {
     useEffect(() => {
         fetchDefaultAttendanceSchedule();
         fetchAttendance();
-        console.log(entryStartTime);
+
         const countdownInterval = setInterval(() => {
             setCountdown((prevCountdown) => {
                 if (prevCountdown === 1) {
                     fetchAttendance();
-                    return 15;
+                    return countdownTime;
                 }
                 return prevCountdown - 1;
             });
         }, 1000);
 
         const timer = setInterval(() => {
-            setCurrentTime(new Date());
+            const now = new Date();
+            setCurrentTime(now);
+
+            console.log("sini");
+            if (autoSwitch && entryStartTime && exitStartTime) {
+                if (now >= entryStartTime && now < exitStartTime) {
+                    console.log("sini");
+                    setActiveIndex(0);
+                } else if (now >= exitStartTime) {
+                    console.log("sini");
+                    setActiveIndex(1);
+                }
+            }
         }, 1000);
 
         return () => {
@@ -137,6 +132,7 @@ const SchoolStudentAttendanceListPage = () => {
             clearInterval(timer);
         };
     }, []);
+
 
 
     const renderContent = () => {
@@ -190,21 +186,21 @@ const SchoolStudentAttendanceListPage = () => {
                                 {loading ? (
                                     <li className="py-1 text-center text-xl text-secondary">Loading...</li>
                                 ) : attendanceData.length > 0 ? (
-                                    attendanceData.map((attendance: any, index: any) => {
-                                        const checkInTime = formatTime(attendance.check_in_time);
-                                        const isOnTime = isWithinTimeRange(checkInTime);
-                                        const bgColor = isOnTime ? 'bg-green-100' : 'bg-red-100';
+                                    attendanceData.map((attendance: any, index: number) => {
+                                        const checkInTime = attendance.check_in_time;
+                                        const isOnTime = attendance.check_in_status.type_name === "On Time";
+                                        const statusColor = isOnTime ? 'green' : 'red';
 
                                         return (
                                             <li
                                                 key={index}
-                                                className={`flex justify-content-between ${bgColor} align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
+                                                className={`flex justify-content-between bg-${statusColor}-100 align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
                                             >
                                                 <div>
                                                     <span className="font-bold">{index + 1}. </span>
                                                     <span className="font-bold">{attendance.student.student_name}</span>
                                                 </div>
-                                                <span>{checkInTime}</span>
+                                                <span>{formatTime(checkInTime)}</span>
                                             </li>
                                         );
                                     })
@@ -266,21 +262,20 @@ const SchoolStudentAttendanceListPage = () => {
                                 {loading ? (
                                     <li className="py-1 text-center text-xl text-secondary">Loading...</li>
                                 ) : attendanceData.length > 0 ? (
-                                    attendanceData.map((attendance: any, index: any) => {
-                                        const checkOutTime = formatTime(attendance.check_out_time);
-                                        const isOnTime = isWithinTimeRange(checkOutTime);
-                                        const bgColor = isOnTime ? 'bg-green-100' : 'bg-red-100';
+                                    attendanceData.map((attendance: any, index: number) => {
+                                        const checkOutTime = attendance.check_out_time;
+                                        const statusColor = checkOutTime ? 'green' : 'yellow';
 
                                         return (
                                             <li
                                                 key={index}
-                                                className={`flex justify-content-between ${bgColor} align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
+                                                className={`flex justify-content-between bg-${statusColor}-100 align-items-center border-1 p-3 text-base md:text-2xl surface-border text-left`}
                                             >
                                                 <div>
                                                     <span className="font-bold">{index + 1}. </span>
                                                     <span className="font-bold">{attendance.student.student_name}</span>
                                                 </div>
-                                                <span>{checkOutTime}</span>
+                                                <span>{formatTime(checkOutTime)}</span>
                                             </li>
                                         );
                                     })
@@ -288,9 +283,7 @@ const SchoolStudentAttendanceListPage = () => {
                                     <li className="py-1 text-center text-xl text-secondary">Belum ada yang presensi</li>
                                 )}
                             </ul>
-
                         </div>
-
                     </Card>
                 );
             default:
@@ -318,10 +311,10 @@ const SchoolStudentAttendanceListPage = () => {
                     <img
                         src={logo}
                         alt="Logo Sekolah"
-                        className='w-4rem h-4rem hidden lg:block'
+                        className='w-4rem h-4rem '
                         onError={(e) => e.currentTarget.style.display = 'none'}
                     />
-                    <div className=' text-lg lg:text-6xl font-bold text-black-alpha-90 my-auto'>{school ? school.name : "Loading..."}</div>
+                    <div className=' text-lg md:text-6xl font-bold text-black-alpha-90 my-auto hidden md:block'>{school ? school.name : "Loading..."}</div>
                 </div>
                 <div className='my-auto'>
                     <div className='flex justify-content-center gap-2 align-content-end'>
@@ -349,11 +342,28 @@ const SchoolStudentAttendanceListPage = () => {
                     </div>
                 </div>
             </div>
-            <TabMenu
-                model={items}
-                activeIndex={activeIndex}
-                onTabChange={(e) => setActiveIndex(e.index)}
-            />
+            <div className='flex flex-column gap-2'>
+                <div className="flex">
+                    <div className="w-full">
+                        <Button
+                            label="AutoSwitch"
+                            onClick={() => setAutoSwitch(!autoSwitch)}
+                            className={autoSwitch ? "p-button-primary w-full pl-7" : "p-button-secondary w-full  pl-7"}
+                        >
+                            <InputSwitch
+                                checked={autoSwitch}
+                                onChange={() => setAutoSwitch(!autoSwitch)}
+                                className={autoSwitch ? "p-button-success" : "p-button-secondary"}
+                            />
+                        </Button>
+                    </div>
+                </div>
+                <TabMenu
+                    model={items}
+                    activeIndex={activeIndex}
+                    onTabChange={(e) => setActiveIndex(e.index)}
+                />
+            </div>
             <div className="w-full flex justify-content-center">{renderContent()}</div>
         </div>
 

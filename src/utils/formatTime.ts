@@ -1,13 +1,21 @@
-export const formatTime = (time: string | Date): string => {
-    const date = new Date(time + " UTC");
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+export const parseToDate = (time: string) => {
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, seconds);
+    return date;
 };
 
 export const convertToWIB = (dateString: string) => {
     const date = new Date(dateString);
     date.setHours(date.getHours() + 7);
     return date;
+};
+
+export const formatTime = (time: string | null) => {
+    if (!time) return "Belum Absen";
+    return new Date(time).toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+    });
 };

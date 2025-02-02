@@ -447,6 +447,7 @@ const FingerprintPage = () => {
                 <DataTable value={filteredStudentsTable} paginator rows={10} dataKey="id" className="mt-4" filters={filters} filterDisplay="row" header={
                     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                         <h5 className="m-0">Daftar Sidik Jari Siswa</h5>
+                        <span className="text-sm text-secondary">Total Siswa: {filteredStudentsTable.length}</span>
                     </div>
                 } rowsPerPageOptions={[10, 50, 75, 100]} emptyMessage={
                     loadingTable ? (

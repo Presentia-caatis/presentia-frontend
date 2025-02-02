@@ -5,7 +5,6 @@ import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
 import AttendanceService from '../../services/attendanceService';
-import { formatTime } from '../../utils/formatTime';
 import { useAuth } from '../../context/AuthContext';
 
 const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdate: (total: number) => void }) => {
@@ -31,7 +30,7 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
 
         try {
             setLoading(true);
-            const response = await AttendanceService.getAttendances(user.school_id!);
+            const response = await AttendanceService.getAttendances();
             setAttendanceData(response.data);
             onAttendanceUpdate(response.data.length);
         } catch (error) {
@@ -104,7 +103,7 @@ const SchoolStudentAttendanceList = ({ onAttendanceUpdate }: { onAttendanceUpdat
                         >
                             <span className="font-bold">{index + 1}. {attendance.student.student_name}</span>
                             <span>
-                                {formatTime(attendance.check_in_time)}
+                                {attendance.check_in_time}
                             </span>
                         </li>
                     ))
