@@ -19,7 +19,7 @@ type SchoolData = {
     id: number;
     name: string;
     plan: string;
-    dueDate: string;
+    latest_subscription: string;
     status: string;
     address: string;
     totalStudents: number;
@@ -62,7 +62,7 @@ const UserDashboardPage = () => {
                         id: school.data.id!,
                         name: school.data.name,
                         plan: 'Premium',
-                        dueDate: school.data.end_subscription,
+                        latest_subscription: school.data.latest_subscription,
                         status: 'Active',
                         address: school.data.address,
                         totalStudents: staticSchoolData.data.active_students,
@@ -137,8 +137,8 @@ const UserDashboardPage = () => {
                                         <div className="mb-3 flex">
                                             <i className="pi pi-calendar-times text-xl mr-2"></i>
                                             <div className='flex sm:flex-row flex-column'>
-                                                <strong className='mr-2 white-space-nowrap'>Jatuh Tempo Paket:</strong>
-                                                <span>{new Date(schoolData.dueDate).toLocaleDateString()}</span>
+                                                <strong className='mr-2 white-space-nowrap'>Terakhir Berlangganan:</strong>
+                                                <span>{schoolData.latest_subscription}</span>
                                             </div>
                                         </div>
                                         <div className="mb-3">

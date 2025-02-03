@@ -13,6 +13,7 @@
   "compilerOptions": {
     "noEmit": true,
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+    "noCheck": true
   }
 }

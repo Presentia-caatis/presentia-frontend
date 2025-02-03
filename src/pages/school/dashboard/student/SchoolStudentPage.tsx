@@ -39,6 +39,7 @@ const SchoolStudentPage = () => {
     const [editStudentData, setEditStudentData] = useState<StudentData | null>(null);
     const [tempEditStudentData, setTempEditStudentData] = useState<StudentData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadingKelas, setLoadingKelas] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
     const [showImportDialog, setShowImportDialog] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
@@ -213,6 +214,7 @@ const SchoolStudentPage = () => {
     const fetchKelas = async () => {
         try {
             if (!user?.school_id) return;
+            setLoadingKelas(true);
             const response = await classGroupService.getClassGroups();
             setListKelas(response.responseData.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
@@ -221,6 +223,8 @@ const SchoolStudentPage = () => {
 
         } catch (error) {
             console.error('Error fetching students:', error);
+        } finally {
+            setLoadingKelas(false);
         }
     };
 
@@ -615,7 +619,7 @@ const SchoolStudentPage = () => {
                     </div>
                     <div className='field'>
                         <label htmlFor="kelas">Kelas  <span className='text-red-600'>*</span></label>
-                        <Dropdown value={newStudentData.class_group_id} onChange={(e) => setNewStudentData({ ...newStudentData, class_group_id: e.value })} options={listKelas} optionLabel="label"
+                        <Dropdown value={newStudentData.class_group_id} loading={loadingKelas} onChange={(e) => setNewStudentData({ ...newStudentData, class_group_id: e.value })} options={listKelas} optionLabel="label"
                             placeholder="Pilih Kelas" />
                     </div>
                     <div className='field'>
