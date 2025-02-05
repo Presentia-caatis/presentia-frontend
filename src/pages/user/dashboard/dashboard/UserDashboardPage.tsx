@@ -15,17 +15,17 @@
     import dashboardService from '../../../../services/dashboardService';
     import { formatSchoolName } from '../../../../utils/formatSchoolName';
 
-    type SchoolData = {
-        id: number;
-        name: string;
-        plan: string;
-        dueDate: string;
-        status: string;
-        address: string;
-        totalStudents: number;
-        registeredAt: string;
-        logoImagePath: string,
-    };
+type SchoolData = {
+    id: number;
+    name: string;
+    plan: string;
+    latest_subscription: string;
+    status: string;
+    address: string;
+    totalStudents: number;
+    registeredAt: string;
+    logoImagePath: string,
+};
 
 
     const UserDashboardPage = () => {
@@ -58,25 +58,25 @@
                         const staticSchoolData = await dashboardService.getStaticStatistics();
                         console.log(staticSchoolData.data);
 
-                        setSchoolData({
-                            id: school.data.id!,
-                            name: school.data.name,
-                            plan: 'Premium',
-                            dueDate: school.data.end_subscription,
-                            status: 'Active',
-                            address: school.data.address,
-                            totalStudents: staticSchoolData.data.active_students,
-                            registeredAt: school.data.created_at!,
-                            logoImagePath: school.data.logo_image_path!,
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                    navigate('/login');
-                } finally {
-                    setLoading(false);
+                    setSchoolData({
+                        id: school.data.id!,
+                        name: school.data.name,
+                        plan: 'Premium',
+                        latest_subscription: school.data.latest_subscription,
+                        status: 'Active',
+                        address: school.data.address,
+                        totalStudents: staticSchoolData.data.active_students,
+                        registeredAt: school.data.created_at!,
+                        logoImagePath: school.data.logo_image_path!,
+                    });
                 }
-            };
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                navigate('/login');
+            } finally {
+                setLoading(false);
+            }
+        };
 
             fetchUserAndSchoolData();
         }, [token, navigate]);
@@ -96,71 +96,71 @@
 
 
 
-        return (
-            <div className="grid gap-4">
-                {schoolData ? (
-                    <>
-                        <div className="col-12">
-                            <Panel header="Sekolah yang dikelola">
-                                <div className="grid grid-nogutter">
-                                    <div className="col-12 md:col-6 p-6">
-                                        <div className="flex gap-4 items-center">
-                                            <img
-                                                src={logoImage}
-                                                alt={`${schoolData.name} logo`}
-                                                className="h-4rem  w-4rem object-cover rounded-full"
-                                            />
-                                            <h1 className="text-4xl font-bold my-auto">{schoolData.name}</h1>
+    return (
+        <div className="grid gap-4">
+            {schoolData ? (
+                <>
+                    <div className="col-12">
+                        <Panel header="Sekolah yang dikelola">
+                            <div className="grid grid-nogutter">
+                                <div className="col-12 md:col-6 p-6">
+                                    <div className="flex gap-4 items-center">
+                                        <img
+                                            src={logoImage}
+                                            alt={`${schoolData.name} logo`}
+                                            className="h-4rem  w-4rem object-cover rounded-full"
+                                        />
+                                        <h1 className="text-4xl font-bold my-auto">{schoolData.name}</h1>
+                                    </div>
+                                    <div className="mt-4 text-lg">
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-info-circle text-xl mr-2"></i>
+                                            <div className='flex'>
+                                                <strong className='mr-2'>Status:</strong>
+                                                <span>{schoolData.status}</span>
+                                            </div>
                                         </div>
-                                        <div className="mt-4 text-lg">
-                                            <div className="mb-3 flex">
-                                                <i className="pi pi-info-circle text-xl mr-2"></i>
-                                                <div className='flex'>
-                                                    <strong className='mr-2'>Status:</strong>
-                                                    <span>{schoolData.status}</span>
-                                                </div>
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-map-marker text-xl mr-2"></i>
+                                            <div className='flex sm:flex-row flex-column'>
+                                                <strong className='mr-2 white-space-nowrap'>Alamat:</strong>
+                                                <span>{schoolData.address}</span>
                                             </div>
-                                            <div className="mb-3 flex">
-                                                <i className="pi pi-map-marker text-xl mr-2"></i>
-                                                <div className='flex sm:flex-row flex-column'>
-                                                    <strong className='mr-2 white-space-nowrap'>Alamat:</strong>
-                                                    <span>{schoolData.address}</span>
-                                                </div>
+                                        </div>
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-calendar text-xl mr-2"></i>
+                                            <div className='flex sm:flex-row flex-column'>
+                                                <strong className='mr-2 white-space-nowrap'>Terdaftar Sejak:</strong>
+                                                <span>{new Date(schoolData.registeredAt).toLocaleDateString()}</span>
                                             </div>
-                                            <div className="mb-3 flex">
-                                                <i className="pi pi-calendar text-xl mr-2"></i>
-                                                <div className='flex sm:flex-row flex-column'>
-                                                    <strong className='mr-2 white-space-nowrap'>Terdaftar Sejak:</strong>
-                                                    <span>{new Date(schoolData.registeredAt).toLocaleDateString()}</span>
-                                                </div>
+                                        </div>
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-calendar-times text-xl mr-2"></i>
+                                            <div className='flex sm:flex-row flex-column'>
+                                                <strong className='mr-2 white-space-nowrap'>Terakhir Berlangganan:</strong>
+                                                <span>{schoolData.latest_subscription}</span>
                                             </div>
-                                            <div className="mb-3 flex">
-                                                <i className="pi pi-calendar-times text-xl mr-2"></i>
-                                                <div className='flex sm:flex-row flex-column'>
-                                                    <strong className='mr-2 white-space-nowrap'>Jatuh Tempo Paket:</strong>
-                                                    <span>{new Date(schoolData.dueDate).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="mb-3">
-                                                <i className="pi pi-box text-xl mr-2"></i>
-                                                <strong>Paket:</strong>
-                                                <Tag
-                                                    id="package-tooltip"
-                                                    value={schoolData.plan}
-                                                    severity="info"
-                                                    className="cursor-pointer text-lg ml-2"
-                                                    data-pr-tooltip={
-                                                        "Fitur yang Didapatkan:\n" +
-                                                        "- Manajemen Presensi Siswa\n" +
-                                                        "- Rekap Data Kehadiran\n" +
-                                                        "- Dashboard Statistik\n" +
-                                                        "- Laporan Otomatis"
-                                                    }
-                                                />
-                                                <Tooltip target="#package-tooltip" position="right" />
-                                            </div>
+                                        </div>
+                                        <div className="mb-3">
+                                            <i className="pi pi-box text-xl mr-2"></i>
+                                            <strong>Paket:</strong>
+                                            <Tag
+                                                id="package-tooltip"
+                                                value={schoolData.plan}
+                                                severity="info"
+                                                className="cursor-pointer text-lg ml-2"
+                                                data-pr-tooltip={
+                                                    "Fitur yang Didapatkan:\n" +
+                                                    "- Manajemen Presensi Siswa\n" +
+                                                    "- Rekap Data Kehadiran\n" +
+                                                    "- Dashboard Statistik\n" +
+                                                    "- Laporan Otomatis"
+                                                }
+                                            />
+                                            <Tooltip target="#package-tooltip" position="right" />
                                         </div>
                                     </div>
+                                </div>
 
                                     <div className="col-12 md:col-6 p-4">
                                         <div className="grid">

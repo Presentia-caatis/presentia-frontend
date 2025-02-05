@@ -52,36 +52,15 @@ const SchoolStudentAttendanceListPage = () => {
         endTime: '12:00',
     };
 
-    const fetchAttendance = async () => {
-        if (!user?.school_id) {
-            return;
-        }
-        try {
-            setLoading(true);
-            const response: any = await AttendanceService.getAttendances();
-            setAttendanceData(response.data);
-        } catch (error: any) {
-            console.error("Error fetching attendance data", error);
-            if (error.response?.status === 401 || error.response?.data?.error === "Unauthenticated.") {
-                localStorage.clear();
-
-                navigate("/login");
-            } else {
-                console.error("Unexpected error:", error);
-            }
-        } finally {
-            setCountdown(15);
-            setLoading(false);
-        }
-    };
-
     const fetchDefaultAttendanceSchedule = async () => {
         if (!user?.school_id) return;
 
         const dataType = { type: 'default' as const };
-
+        setLoading(true);
         try {
             const response = await attendanceScheduleService.showScheduleByType(dataType);
+            console.log("Data yang diterima:", response?.data?.data?.[0]);
+
             const schedule = response?.data?.data?.[0];
 
             if (schedule) {
@@ -92,19 +71,65 @@ const SchoolStudentAttendanceListPage = () => {
             }
         } catch (error) {
             console.error('Failed to fetch default attendance schedule:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    const handleRefresh = async () => {
+        console.log(entryStartTime, exitStartTime);
+        if (!entryStartTime || !exitStartTime) {
+            return;
+        }
+
+        const now = new Date();
+        if (autoSwitch) {
+            if (now >= entryStartTime && now < exitStartTime) {
+                setActiveIndex(0);
+            } else if (now >= exitStartTime) {
+                setActiveIndex(1);
+            }
+        }
+
+        fetchAttendance();
+    };
+
+    const fetchAttendance = async () => {
+        if (!user?.school_id) {
+            return;
+        }
+        try {
+            setLoading(true);
+            const response: any = await AttendanceService.getAttendances();
+            setAttendanceData(response.data);
+        } catch (error: any) {
+            console.error("❌ Error fetching attendance data", error);
+            if (error.response?.status === 401 || error.response?.data?.error === "Unauthenticated.") {
+                localStorage.clear();
+                navigate("/login");
+            } else {
+                console.error("Unexpected error:", error);
+            }
+        } finally {
+            setCountdown(countdownTime);
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const initialize = async () => {
+            await fetchDefaultAttendanceSchedule();
+        };
+
+        initialize();
+    }, [])
 
 
     useEffect(() => {
-        fetchDefaultAttendanceSchedule();
-        fetchAttendance();
-
         const countdownInterval = setInterval(() => {
             setCountdown((prevCountdown) => {
                 if (prevCountdown === 1) {
-                    fetchAttendance();
+                    handleRefresh();
                     return countdownTime;
                 }
                 return prevCountdown - 1;
@@ -112,19 +137,7 @@ const SchoolStudentAttendanceListPage = () => {
         }, 1000);
 
         const timer = setInterval(() => {
-            const now = new Date();
-            setCurrentTime(now);
-
-            console.log("sini");
-            if (autoSwitch && entryStartTime && exitStartTime) {
-                if (now >= entryStartTime && now < exitStartTime) {
-                    console.log("sini");
-                    setActiveIndex(0);
-                } else if (now >= exitStartTime) {
-                    console.log("sini");
-                    setActiveIndex(1);
-                }
-            }
+            setCurrentTime(new Date());
         }, 1000);
 
         return () => {
@@ -132,6 +145,14 @@ const SchoolStudentAttendanceListPage = () => {
             clearInterval(timer);
         };
     }, []);
+
+
+    useEffect(() => {
+        if (entryStartTime && exitStartTime) {
+            handleRefresh();
+        }
+    }, [entryStartTime, exitStartTime]);
+
 
 
 
@@ -148,7 +169,7 @@ const SchoolStudentAttendanceListPage = () => {
                             <div className="sm:block hidden text-center w-full lg:pl-3 ">
                                 <h2>Daftar presensi masuk siswa</h2>
                                 <p className="text-2xl font-bold text-black-alpha-90">
-                                    Waktu Presensi:  <br /> {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}
+                                    Waktu presensi:  <br /> {entryStartTime ? entryStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {entryEndTime ? entryEndTime.toLocaleTimeString('id-ID') : "Loading..."}
                                 </p>
                             </div>
                             <div>
@@ -224,7 +245,7 @@ const SchoolStudentAttendanceListPage = () => {
                             <div className="sm:block hidden text-center w-full lg:pl-3 ">
                                 <h2>Daftar presensi pulang siswa</h2>
                                 <p className="text-2xl font-bold text-black-alpha-90">
-                                    Waktu Presensi:  <br /> {exitStartTime ? exitStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {exitEndTime ? exitEndTime.toLocaleTimeString('id-ID') : "Loading..."}
+                                    Waktu presensi:  <br /> {exitStartTime ? exitStartTime.toLocaleTimeString('id-ID') : "Loading..."} - {exitEndTime ? exitEndTime.toLocaleTimeString('id-ID') : "Loading..."}
                                 </p>
                             </div>
                             <div>
@@ -301,12 +322,15 @@ const SchoolStudentAttendanceListPage = () => {
                 <div className='my-auto flex'>
                     <Button
                         icon="pi pi-arrow-left"
-                        className="p-button-text p-button-plain "
+                        className="p-button-text p-button-plain"
                         onClick={() => navigate(`/school/${formatSchoolName(school.name)}/dashboard`)}
                         aria-label="Back"
                     />
-                    <div className='my-auto'>Kembali ke Dashboard</div>
+                    <div className='my-auto'>
+                        {school ? (school.name ? "Kembali ke Dashboard" : "Loading...") : "Loading..."}
+                    </div>
                 </div>
+
                 <div className='my-auto text-center flex gap-3'>
                     <img
                         src={logo}
@@ -321,8 +345,8 @@ const SchoolStudentAttendanceListPage = () => {
                         <Tag
                             value={countdown.toString()}
                             severity="info"
-                            id="countdown-tooltip"
                             className="w-3rem text-xl"
+                            id="countdown-tooltip"
                             data-pr-tooltip={`Countdown`}
                             rounded
                             style={{
@@ -335,7 +359,7 @@ const SchoolStudentAttendanceListPage = () => {
                             label="Refresh"
                             icon="pi pi-refresh"
                             className="p-button p-button-primary"
-                            onClick={() => fetchAttendance()}
+                            onClick={() => handleRefresh()}
                             loading={loading}
                         />
                         <Tooltip target="#countdown-tooltip" position="left" />
@@ -346,16 +370,19 @@ const SchoolStudentAttendanceListPage = () => {
                 <div className="flex">
                     <div className="w-full">
                         <Button
-                            label="AutoSwitch"
-                            onClick={() => setAutoSwitch(!autoSwitch)}
+                            label="Ganti Otomatis"
+                            onClick={() => { setAutoSwitch(!autoSwitch); window.location.reload(); }}
+                            id="auto-switch-tooltip"
+                            data-pr-tooltip={`Otomatis ganti daftar kehadiran jika dinyalakan`}
                             className={autoSwitch ? "p-button-primary w-full pl-7" : "p-button-secondary w-full  pl-7"}
+                            outlined
                         >
                             <InputSwitch
                                 checked={autoSwitch}
-                                onChange={() => setAutoSwitch(!autoSwitch)}
-                                className={autoSwitch ? "p-button-success" : "p-button-secondary"}
+                                className={autoSwitch ? "p-focus" : "p-button-secondary"}
                             />
                         </Button>
+                        <Tooltip target="#auto-switch-tooltip" position="left" />
                     </div>
                 </div>
                 <TabMenu

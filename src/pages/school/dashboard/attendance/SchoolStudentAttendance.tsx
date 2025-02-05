@@ -19,6 +19,7 @@ const SchoolStudentAttendance = () => {
     const [editAttendanceData, setEditAttendanceData] = useState<null>(null);
     const [tempEditAttendanceData, setTempEditAttendanceData] = useState<null>(null);
     const [listKelas, setListKelas] = useState([]);
+    const [loadingKelas, setLoadingKelas] = useState(true);
     const listJenisKehadiran = ([{
         label: "Presensi",
         value: "presensi",
@@ -53,6 +54,7 @@ const SchoolStudentAttendance = () => {
 
     const fetchKelas = async () => {
         try {
+            setLoadingKelas(true);
             if (!user?.school_id) return;
             const response = await classGroupService.getClassGroups();
             setListKelas(response.responseData.data.map((kelas: { id: number; class_name: string }) => ({
@@ -62,6 +64,8 @@ const SchoolStudentAttendance = () => {
 
         } catch (error) {
             console.error('Error fetching students:', error);
+        } finally {
+            setLoadingKelas(false);
         }
     };
 
@@ -96,7 +100,7 @@ const SchoolStudentAttendance = () => {
                     </div>
                     <div className=" col-12 xl:col-3">
                         <h5>Pilih Kelas</h5>
-                        <Dropdown placeholder="Silahkan Pilih Kelas" value={selectedKelas} options={listKelas} onChange={(e) => {
+                        <Dropdown placeholder="Silahkan Pilih Kelas" loading={loadingKelas} value={selectedKelas} options={listKelas} onChange={(e) => {
                             setSelectedKelas(e.value);
                         }} optionLabel="label" className="w-full" />
                     </div>
