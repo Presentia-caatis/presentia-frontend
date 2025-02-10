@@ -22,11 +22,11 @@ class AuthService {
     }
 
     googleLogin() {
-        window.location.href = `${axiosClient.defaults.baseURL}/auth/google`;
+        window.location.href = `${axiosClient.defaults.baseURL}/auth-google`;
     }
 
     async googleCallback() {
-        const response = await axiosClient.post('/auth/google-callback');
+        const response = await axiosClient.post('/auth-google-callback');
         return response.data;
     }
 }
