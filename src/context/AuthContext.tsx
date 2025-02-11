@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             localStorage.clear();
             setUser(null);
             setToken(null);
-            if (window.location.pathname !== '/') {
+            if (window.location.pathname !== '/' && window.location.pathname !== '/register') {
                 navigate('/login');
             }
         }

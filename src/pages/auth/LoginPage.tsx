@@ -44,8 +44,12 @@ const LoginPage = () => {
             }
             setIsLoggedIn(false);
         };
-
-        authenticate();
+        const queryParams = new URLSearchParams(location.search);
+        const status = queryParams.get('status');
+        const token = queryParams.get('token');
+        if (!status && !token) {
+            authenticate();
+        }
     }, []);
 
 
@@ -55,6 +59,7 @@ const LoginPage = () => {
         const token = queryParams.get('token');
 
         const handleLoginFlow = async () => {
+            setIsLoggedIn(true);
             if (status === 'new_user') {
                 const fullname = queryParams.get('name');
                 const email = queryParams.get('email');
@@ -65,7 +70,7 @@ const LoginPage = () => {
                     localStorage.setItem('token', token);
                     try {
                         const response = await authServices.getProfile();
-                        localStorage.setItem('user', JSON.stringify(response.data));
+                        setAuth(response.data, token);
                         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
                         navigate('/user/dashboard');
                     } catch (error) {
@@ -76,9 +81,11 @@ const LoginPage = () => {
                 const message = queryParams.get('message');
                 callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
             }
+
+            setIsLoggedIn(false);
         };
 
-        if (status && token) {
+        if (status) {
             handleLoginFlow();
         }
     }, [navigate, showToast]);
