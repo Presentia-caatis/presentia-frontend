@@ -11,8 +11,10 @@ import { absencePermitTypeService } from '../../../../services/absencePermitServ
 import { useAuth } from '../../../../context/AuthContext';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
+import { Messages } from 'primereact/messages';
+import { useMountEffect } from 'primereact/hooks';
 
-const SchoolAttendanceStatusPage = () => {
+const SchoolAbsenceStatusPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [permitTypeData, setPermitTypeData] = useState<any>({ permit_name: '', is_active: '' });
     const [selectedPermits, setSelectedPermits] = useState<any[]>([]);
@@ -95,9 +97,24 @@ const SchoolAttendanceStatusPage = () => {
         fetchPermitTypes();
     };
 
+    const msgs = useRef<Messages>(null);
+
+    useMountEffect(() => {
+        msgs.current?.clear();
+        msgs.current?.show({
+            id: '1',
+            sticky: true,
+            severity: 'info',
+            detail: 'Status absensi yang aktif, dapat digunakan untuk menentukan status siswa yang tidak hadir.',
+            closable: false,
+        });
+    });
+
     return (
         <div className="card">
+            <h1>Daftar Status Absensi</h1>
             <Toast ref={toast} />
+            <Messages ref={msgs} />
             <ConfirmPopup />
             <div className="flex justify-content-between p-4 card">
                 <div className="flex gap-2">
@@ -196,4 +213,4 @@ const SchoolAttendanceStatusPage = () => {
     );
 };
 
-export default SchoolAttendanceStatusPage;
+export default SchoolAbsenceStatusPage;

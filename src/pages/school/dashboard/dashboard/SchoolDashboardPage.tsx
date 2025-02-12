@@ -385,7 +385,7 @@ const SchoolDashboardPage = () => {
                 </div>
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
-                        <h5 className="text-left w-full">Perbandingan Status siswa terdaftar</h5>
+                        <h5 className="text-left w-full">Perbandingan Status Siswa Terdaftar</h5>
                         <Chart type="pie" data={studentActiveChart} options={studentActiveChartOption} />
                     </div>
                 </div>

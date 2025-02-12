@@ -11,6 +11,7 @@ import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 import { useSchool } from '../../../../context/SchoolContext';
 import { FilterMatchMode } from 'primereact/api';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 type ClassgroupData = {
     id?: number;
@@ -239,20 +240,39 @@ const SchoolClassgroupPage = () => {
                     selectionMode="multiple"
                     onSelectionChange={(e) => setSelectedClassgroups(e.value)}
                     value={classgroupList}
-                    paginator
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 className="m-0">Daftar Kelas</h5>
                         </div>
                     }
-                    rows={20}
-                    rowsPerPageOptions={[20, 50, 75, 100]}
-                    emptyMessage={loading ? "Loading..." : "Belum ada kelas"}
-                    tableStyle={{ minWidth: '30rem' }}
-                    filters={filters}
-                    filterDisplay="row"
+                    emptyMessage={
+                        loading ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                <span className="text-gray-500 font-semibold">Memuat data kelas...</span>
+                            </div>
+                        ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) || globalFilter ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-filter-slash text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Tidak ada kelas yang sesuai dengan pencarian Anda</span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Belum ada data kelas</span>
+                                <small className="text-gray-400">Silakan tambahkan kelas melalui tombol kelas baru atau import.</small>
+                            </div>
+                        )
+                    }
+                    paginator
+                    rows={10}
+                    rowsPerPageOptions={[10, 50, 75, 100]}
+                    tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} classes"
+                    stripedRows
+                    filters={filters}
+                    filterDisplay="row"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                     <Column field="class_name" header="Nama" sortable filter

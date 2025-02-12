@@ -92,6 +92,12 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolName}/default-attendance-time` ? 'active-route' : 'menu-item',
                 },
                 {
+                    label: 'Daftar Status Presensi',
+                    icon: 'pi pi-list',
+                    command: () => navigate(`/school/${schoolName}/check-in/status`),
+                    className: currentPath === `/school/${schoolName}/check-in/status` ? 'active-route' : 'menu-item',
+                },
+                {
                     label: 'Daftar Status Absensi',
                     icon: 'pi pi-list',
                     command: () => navigate(`/school/${schoolName}/attendance/status`),
