@@ -11,10 +11,10 @@ const dashboardService = {
     }
   },
 
-  getDailyStatistics: async (date: string) => {
+  getDailyStatistics: async (date: string, summarize: number = 0) => {
     try {
-      const response = await axiosClient.post(`/dashboard-statistic/daily`, {
-        date,
+      const response = await axiosClient.get(`/dashboard-statistic/daily`, {
+        params: { date, summarize: summarize },
       });
       return response.data;
     } catch (error: any) {

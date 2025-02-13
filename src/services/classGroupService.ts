@@ -2,8 +2,10 @@
 import axiosClient from '../utils/axiosClient';
 
 class ClassGroupService {
-    async getClassGroups(): Promise<any> {
-        const response = await axiosClient.get(`/class-group`);
+    async getClassGroups(page: number = 1, perPage: number = 10): Promise<any> {
+        const response = await axiosClient.get(`/class-group`, {
+            params: { page, perPage }
+        });
         return { responseData: response.data, status: response.status };
     }
 

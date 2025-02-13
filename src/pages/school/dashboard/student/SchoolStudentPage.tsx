@@ -81,6 +81,9 @@ const SchoolStudentPage = () => {
     });
     const fileUploadRef = useRef<FileUpload>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
 
     const handleFileSelect = (event: any) => {
         setSelectedFile(event.files[0]);
@@ -227,19 +230,24 @@ const SchoolStudentPage = () => {
     );
 
     useEffect(() => {
-        fetchStudents();
         fetchKelas();
     }, []);
 
-    const fetchStudents = async () => {
+    useEffect(() => {
+        fetchStudents(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
+
+    const fetchStudents = async (page = 1, perPage = 10) => {
         try {
             setLoading(true);
             if (!user?.school_id) return;
-            const response = await studentService.getStudent();
-            setStudentData(response.data);
+            setStudentData([]);
+            const response = await studentService.getStudent(page, perPage);
+            setStudentData(response.data.data);
+            setTotalRecords(response.data.total);
 
         } catch (error) {
-            console.error('Error fetching students:', error);
+            console.error("Error fetching students:", error);
         } finally {
             setLoading(false);
         }
@@ -249,8 +257,8 @@ const SchoolStudentPage = () => {
         try {
             if (!user?.school_id) return;
             setLoadingKelas(true);
-            const response = await classGroupService.getClassGroups();
-            setListKelas(response.responseData.data.map((kelas: { id: number; class_name: string }) => ({
+            const response = await classGroupService.getClassGroups(1, 100);
+            setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
                 value: kelas.id
             })));
@@ -502,8 +510,15 @@ const SchoolStudentPage = () => {
                         )
                     }
                     paginator
-                    rows={10}
-                    rowsPerPageOptions={[10, 50, 75, 100]}
+                    lazy
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPage={(event) => {
+                        setCurrentPage((event.page ?? 0) + 1);
+                        setRowsPerPage(event.rows);
+                    }}
+                    rowsPerPageOptions={[10, 20, 50, 100]}
                     tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"

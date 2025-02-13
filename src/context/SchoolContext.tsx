@@ -25,7 +25,6 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const fetchSchool = async () => {
             if (!schoolId) {
-                console.log('No school ID available.');
                 setLoading(false);
                 return;
             }

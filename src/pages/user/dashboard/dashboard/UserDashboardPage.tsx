@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
@@ -7,13 +8,12 @@ import { Tag } from 'primereact/tag';
 import { Tooltip } from 'primereact/tooltip';
 import { Panel } from 'primereact/panel';
 import UserCreateSchoolModal from '../../../../components/user/UserCreateSchoolModal';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import schoolService from '../../../../services/schoolService';
 import { useAuth } from '../../../../context/AuthContext';
-import SchoolStudentAttendanceList from '../../../../components/school/SchoolStudentAttendanceList';
 import logoImage from '../../../../assets/Logo-SMK-10-Bandung.png';
 import dashboardService from '../../../../services/dashboardService';
 import { formatSchoolName } from '../../../../utils/formatSchoolName';
+import { Skeleton } from 'primereact/skeleton';
 
 type SchoolData = {
     id: number;
@@ -22,7 +22,9 @@ type SchoolData = {
     latest_subscription: string;
     status: string;
     address: string;
-    totalStudents: number;
+    totalActiveStudents: number;
+    totalPresenceToday: number;
+    totalAbsenceToday: number;
     registeredAt: string;
     logoImagePath: string,
 };
@@ -35,12 +37,8 @@ const UserDashboardPage = () => {
     const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
     const [isModalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [schoolLoading, setSchoolLoading] = useState(true);
     const { user } = useAuth();
-    const [totalAttendance, setTotalAttendance] = useState(0);
-
-    const handleAttendanceUpdate = (total: number) => {
-        setTotalAttendance(total);
-    };
 
     useEffect(() => {
         if (!user) {
@@ -51,35 +49,44 @@ const UserDashboardPage = () => {
 
         const fetchUserAndSchoolData = async () => {
             try {
-                console.log(user.school_id);
                 if (user.school_id) {
-                    const school = await schoolService.getById(user.school_id!);
+                    setSchoolLoading(true);
 
-                    const staticSchoolData = await dashboardService.getStaticStatistics();
-                    console.log(staticSchoolData.data);
+                    const date = new Date().toISOString().split('T')[0];
+
+                    const [schoolRes, staticRes, dailyRes] = await Promise.all([
+                        schoolService.getById(user.school_id),
+                        dashboardService.getStaticStatistics(),
+                        dashboardService.getDailyStatistics(date, 1)
+                    ]);
 
                     setSchoolData({
-                        id: school.data.id!,
-                        name: school.data.name,
-                        plan: 'Premium',
-                        latest_subscription: school.data.latest_subscription,
+                        id: schoolRes.data.id!,
+                        name: schoolRes.data.name,
+                        plan: staticRes.data.subscription_packet.subscription_name,
+                        latest_subscription: schoolRes.data.latest_subscription,
                         status: 'Active',
-                        address: school.data.address,
-                        totalStudents: staticSchoolData.data.active_students,
-                        registeredAt: school.data.created_at!,
-                        logoImagePath: school.data.logo_image_path!,
+                        address: schoolRes.data.address,
+                        totalActiveStudents: staticRes.data.active_students ?? 0,
+                        totalPresenceToday: dailyRes.data.presence ?? 0,
+                        totalAbsenceToday: dailyRes.data.absence ?? 0,
+                        registeredAt: schoolRes.data.created_at!,
+                        logoImagePath: schoolRes.data.logo_image_path!,
                     });
                 }
             } catch (error) {
-                console.error('Error fetching data:', error);
-                navigate('/login');
+                if ((error as any).response && ((error as any).response.status === 401 || (error as any).response.status === 403)) {
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                }
             } finally {
                 setLoading(false);
+                setSchoolLoading(false);
             }
         };
 
         fetchUserAndSchoolData();
-    }, [token, navigate]);
+    }, []);
 
 
     const handleDashboard = () => {
@@ -89,12 +96,6 @@ const UserDashboardPage = () => {
     const handleAttendanceIn = () => {
         if (schoolData) navigate(`/school/attendance`);
     };
-
-    const handleAttendanceOut = () => {
-        if (schoolData) navigate(`/school/student/attendance/out`);
-    };
-
-
 
     return (
         <div className="grid gap-4">
@@ -162,28 +163,25 @@ const UserDashboardPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="col-12 md:col-6 p-4">
-                                    <div className="grid">
+                                <div className="col-12  md:col-6 p-4">
+                                    <div className="grid h-full">
                                         <div className="col-12 flex flex-column gap-3">
-                                            <div className="grid gap-4">
-                                                <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
+                                            <div className="grid gap-4 h-full">
+                                                <Card className="flex flex-column shadow-1 text-center justify-content-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-users text-blue-500 text-4xl"></i>
-                                                    <p className="text-3xl font-bold">{schoolData.totalStudents}</p>
+                                                    <p className="text-3xl font-bold">{schoolData.totalActiveStudents}</p>
                                                     <label className="text-lg">Jumlah siswa aktif</label>
                                                 </Card>
-                                                <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
+                                                <Card className="flex flex-column shadow-1 text-center justify-content-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-address-book text-green-500 text-4xl"></i>
-                                                    <p className="text-3xl font-bold">{totalAttendance}</p>
+                                                    <p className="text-3xl font-bold">{schoolData.totalPresenceToday}</p>
                                                     <label className="text-lg">Jumlah presensi hari ini</label>
                                                 </Card>
-                                                <Card className="flex flex-column shadow-1 text-center align-items-center gap-2 p-3 col">
+                                                <Card className="flex flex-column shadow-1 text-center justify-content-center align-items-center gap-2 p-3 col">
                                                     <i className="pi pi-user-minus text-orange-500 text-4xl"></i>
-                                                    <p className="text-3xl font-bold">{schoolData.totalStudents - totalAttendance}</p>
+                                                    <p className="text-3xl font-bold">{schoolData.totalAbsenceToday}</p>
                                                     <label className="text-lg">Jumlah absensi hari ini</label>
                                                 </Card>
-                                            </div>
-                                            <div className='grid mt-2'>
-                                                <SchoolStudentAttendanceList onAttendanceUpdate={handleAttendanceUpdate} />
                                             </div>
                                         </div>
                                     </div>
@@ -232,11 +230,63 @@ const UserDashboardPage = () => {
                             onClick={() => setModalVisible(true)}
                         />
                     </Card> :
-                        <Card className='shadow-1'>
-                            <div className="col-12 flex justify-content-center align-items-center" style={{ height: '70vh' }}>
-                                <ProgressSpinner />
+                        <Panel header={<Skeleton width="60%" height="2rem" />}>
+                            <div className="grid grid-nogutter">
+                                <div className="col-12 md:col-6 p-6">
+                                    <div className="flex gap-4 items-center">
+                                        <Skeleton shape="circle" size="4rem" />
+                                        <Skeleton width="60%" height="2rem" />
+                                    </div>
+                                    <div className="mt-4 text-lg">
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-info-circle text-xl mr-2"></i>
+                                            <Skeleton width="40%" height="1.5rem" />
+                                        </div>
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-map-marker text-xl mr-2"></i>
+                                            <Skeleton width="60%" height="1.5rem" />
+                                        </div>
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-calendar text-xl mr-2"></i>
+                                            <Skeleton width="50%" height="1.5rem" />
+                                        </div>
+                                        <div className="mb-3 flex">
+                                            <i className="pi pi-calendar-times text-xl mr-2"></i>
+                                            <Skeleton width="50%" height="1.5rem" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="col-12 md:col-6 p-4">
+                                    <div className="grid h-full">
+                                        <div className="col-12 flex flex-column gap-3">
+                                            <div className="grid gap-4 h-full">
+                                                <Card className="flex flex-column shadow-1 text-center justify-content-center align-items-center gap-2 p-3 col">
+                                                    <Skeleton shape="circle" size="3rem" />
+                                                    <Skeleton width="50%" className='mx-auto' height="2rem" />
+                                                    <Skeleton width="80%" className='mx-auto mt-3' height="1.5rem" />
+                                                </Card>
+                                                <Card className="flex flex-column shadow-1 text-center justify-content-center align-items-center gap-2 p-3 col">
+                                                    <Skeleton shape="circle" size="3rem" />
+                                                    <Skeleton width="50%" className='mx-auto' height="2rem" />
+                                                    <Skeleton width="80%" className='mx-auto mt-3' height="1.5rem" />
+                                                </Card>
+                                                <Card className="flex flex-column shadow-1 text-center justify-content-center align-items-center gap-2 p-3 col">
+                                                    <Skeleton shape="circle" size="3rem" />
+                                                    <Skeleton width="50%" className='mx-auto' height="2rem" />
+                                                    <Skeleton width="80%" className='mx-auto mt-3' height="1.5rem" />
+                                                </Card>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </Card>
+                            <Divider />
+                            <div className="flex gap-3 sm:flex-row flex-column">
+                                <Skeleton width="30%" height="2.5rem" />
+                                <Skeleton width="30%" height="2.5rem" />
+                            </div>
+                        </Panel>
                     }
 
                 </div>

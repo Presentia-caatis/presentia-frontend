@@ -31,11 +31,15 @@ const SchoolStudentAttendance = () => {
     const [selectedKelas, setSelectedKelas] = useState();
     const [selectedStatusPresensi, setSelectedStatusPresensi] = useState();
     const [selectedAttendances, setSelectedAttendances] = useState([]);
-    const [liastAttendances, setListAttendances] = useState([]);
+    const [listAttendances, setListAttendances] = useState([]);
     const [dates, setDates] = useState<Nullable<(Date | null)[]>>([
         new Date(),
         new Date(),
     ]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
+
 
     const { school } = useSchool();
     const { user } = useAuth();
@@ -53,15 +57,22 @@ const SchoolStudentAttendance = () => {
     });
 
     useEffect(() => {
-        fetchAttendances();
+        fetchAttendances(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
+
+    useEffect(() => {
         fetchKelas();
         fetchStatusPresensi();
     }, []);
 
-    const fetchAttendances = async () => {
+    const fetchAttendances = async (page = 1, perPage = 10) => {
         try {
             setLoadingAttendance(true);
-            const params: any = {};
+            setListAttendances([]);
+            const params: any = {
+                page,
+                perPage
+            };
 
             if (dates && dates.length === 2 && dates[0] && dates[1]) {
                 params.startDate = dates[0].toISOString().split("T")[0];
@@ -77,32 +88,23 @@ const SchoolStudentAttendance = () => {
 
             const response = await attendanceService.getAttendances(params);
 
-            const formattedData = response.data.map((item: any) => ({
-                id: item.id,
-                nama: item.student.student_name,
-                nis: item.student.nis,
-                kelamin: item.student.gender === "male" ? "Laki-laki" : "Perempuan",
-                kelas: `Kelas ${item.student.class_group_id}`,
-                date: new Date(item.check_in_time).toLocaleDateString("id-ID"),
-                check_in_time: item.check_in_time ? new Date(item.check_in_time).toLocaleTimeString("id-ID") : "-",
-                check_out_time: item.check_out_time ? new Date(item.check_out_time).toLocaleTimeString("id-ID") : "-",
-                status: item.check_in_status.status_name
-            }));
-
-            setListAttendances(formattedData);
+            setListAttendances(response.data.data);
+            setTotalRecords(response.data.total);
+            setCurrentPage(response.data.current_page);
         } catch (error) {
-            console.error('Error fetching attendances:', error);
+            console.error("Error fetching attendances:", error);
         } finally {
             setLoadingAttendance(false);
         }
     };
 
+
     const fetchKelas = async () => {
         try {
             setLoadingKelas(true);
             if (!user?.school_id) return;
-            const response = await classGroupService.getClassGroups();
-            setListKelas(response.responseData.data.map((kelas: { id: number; class_name: string }) => ({
+            const response = await classGroupService.getClassGroups(1, 100);
+            setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
                 value: kelas.id
             })));
@@ -117,8 +119,8 @@ const SchoolStudentAttendance = () => {
     const fetchStatusPresensi = async () => {
         try {
             setLoadingStatusPresensi(true);
-            const { responseData } = await checkInStatusService.getAll();
-            setListStatusPresensi(responseData.data.map((status: { id: number; status_name: string }) => ({
+            const { responseData } = await checkInStatusService.getAll(1, 100);
+            setListStatusPresensi(responseData.data.data.map((status: { id: number; status_name: string }) => ({
                 label: status.status_name,
                 value: status.id
             })));
@@ -167,13 +169,13 @@ const SchoolStudentAttendance = () => {
                     </div>
                     <div className=" col-12 xl:col-3">
                         <h5>Pilih Kelas</h5>
-                        <Dropdown placeholder="Silahkan Pilih Kelas" loading={loadingKelas} value={selectedKelas} options={listKelas} onChange={(e) => {
+                        <Dropdown filter placeholder="Silahkan Pilih Kelas" showClear loading={loadingKelas} value={selectedKelas} options={listKelas} onChange={(e) => {
                             setSelectedKelas(e.value);
                         }} optionLabel="label" className="w-full" />
                     </div>
                     <div className=" col-12 xl:col-3">
                         <h5>Pilih Status Presensi</h5>
-                        <Dropdown placeholder="Silahkan Pilih Status Presensi" loading={loadingStatusPresensi} value={selectedStatusPresensi} options={listStatusPresensi} onChange={(e) => {
+                        <Dropdown filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusPresensi} value={selectedStatusPresensi} options={listStatusPresensi} onChange={(e) => {
                             setSelectedStatusPresensi(e.value);
                         }} optionLabel="label" className="w-full " />
                     </div>
@@ -191,21 +193,28 @@ const SchoolStudentAttendance = () => {
                     </div>
                     <Button icon="pi pi-upload" severity='help' label='Export' />
                 </div>
-                <DataTable value={liastAttendances} paginator header={
-                    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                        <h5 className="m-0">Data kehadiran siswa {school ? school.name : "Loading"}</h5>
-                        <span className="block mt-2 md:mt-0 p-input-icon-left">
-                            <i className="pi pi-search" style={{ paddingLeft: "8px" }} />
-                            <InputText
-                                className="py-2 pl-5"
-                                placeholder="Search..."
-                                value={globalFilter}
-                                onChange={(e) => setGlobalFilter(e.target.value)}
-                            />
-                        </span>
-                    </div>
-                } rows={20} globalFilter={globalFilter} filters={filters} rowsPerPageOptions={[20, 50, 75, 100]} emptyMessage={
-                    loadingAttendance ? (
+                <DataTable
+                    selectionMode="multiple"
+                    dataKey='id'
+                    value={listAttendances}
+                    selection={selectedAttendances}
+                    onSelectionChange={(e) => setSelectedAttendances(e.value)}
+                    header={(
+                        <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 className="m-0">Data kehadiran siswa {school ? school.name : "Loading"}</h5>
+                            <span className="block mt-2 md:mt-0 p-input-icon-left">
+                                <i className="pi pi-search" style={{ paddingLeft: "8px" }} />
+                                <InputText
+                                    className="py-2 pl-5"
+                                    placeholder="Search..."
+                                    value={globalFilter}
+                                    onChange={(e) => setGlobalFilter(e.target.value)}
+                                />
+                            </span>
+                        </div>
+                    )}
+                    globalFilter={globalFilter}
+                    emptyMessage={loadingAttendance ? (
                         <div className="flex flex-column align-items-center gap-3 py-4">
                             <ProgressSpinner style={{ width: "50px", height: "50px" }} />
                             <span className="text-gray-500 font-semibold">Memuat data kehadiran...</span>
@@ -216,22 +225,30 @@ const SchoolStudentAttendance = () => {
                             <span className="text-gray-500 font-semibold">Belum ada data kehadiran</span>
                             <small className="text-gray-400">Silakan periksa tanggal atau lakukan presensi terlebih dahulu.</small>
                         </div>
-                    )
-                }
-                    tableStyle={{ minWidth: '50rem' }}
+                    )}
+                    paginator
+                    lazy
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPage={(event) => {
+                        setCurrentPage((event.page ?? 0) + 1);
+                        setRowsPerPage(event.rows);
+                    }}
+                    rowsPerPageOptions={[10, 20, 50, 100]}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
-                    <Column sortable field="nama" header="Nama"></Column>
-                    <Column sortable field="nis" header="NIS"></Column>
-                    <Column sortable field="kelamin" header="Kelamin"></Column>
-                    <Column sortable field="kelas" header="Kelas"></Column>
-                    <Column sortable field="date" header="Tanggal"></Column>
-                    <Column sortable field="check_in_time" header="Waktu presensi masuk"></Column>
-                    <Column sortable field="check_out_time" header="Waktu absensi pulang"></Column>
-                    <Column sortable field="status" header="Status"></Column>
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
+                >
+                    <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+                    <Column field="student.student_name" header="Nama"></Column>
+                    <Column field="student.nis" header="NIS"></Column>
+                    <Column field="student.gender" header="Kelamin" body={(rowData) => rowData.student.gender === "male" ? "Laki-laki" : "Perempuan"}></Column>
+                    <Column field="student.class_group.class_name" header="Kelas"></Column>
+                    <Column field="check_in_time" header="Waktu Masuk" body={(rowData) => rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleTimeString("id-ID") : "-"}></Column>
+                    <Column field="check_out_time" header="Waktu Pulang" body={(rowData) => rowData.check_out_time ? new Date(rowData.check_out_time).toLocaleTimeString("id-ID") : "-"}></Column>
+                    <Column field="check_in_status.status_name" header="Status"></Column>
                     <Column
-                        body={(rowData) =>
-                        (
+                        body={(rowData) => (
                             <div className="flex gap-2">
                                 <Button
                                     icon="pi pi-pencil"
@@ -252,8 +269,7 @@ const SchoolStudentAttendance = () => {
                                     onClick={() => { }}
                                 />
                             </div>
-                        )
-                        }
+                        )}
                     />
                 </DataTable>
             </div>

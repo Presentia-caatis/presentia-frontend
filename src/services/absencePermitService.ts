@@ -2,8 +2,10 @@
 import axiosClient from '../utils/axiosClient';
 
 class AbsencePermitTypeService {
-    async getAll() {
-        const response = await axiosClient.get('/absence-permit-type');
+    async getAll(page: number = 1, perPage: number = 10) {
+        const response = await axiosClient.get('/absence-permit-type', {
+            params: { page, perPage }
+        });
         return response.data;
     }
 

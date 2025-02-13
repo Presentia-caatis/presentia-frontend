@@ -36,19 +36,25 @@ const SchoolClassgroupPage = () => {
     const [loading, setLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
     const { school } = useSchool();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
 
     useEffect(() => {
-        fetchClassgroups();
-    }, []);
+        fetchClassgroups(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
 
     const [filters, setFilters] = useState({
         class_name: { value: '', matchMode: FilterMatchMode.CONTAINS },
     });
 
-    const fetchClassgroups = async () => {
+    const fetchClassgroups = async (page = 1, perPage = 10) => {
         try {
-            const { responseData } = await classGroupService.getClassGroups();
-            setClassgroupList(responseData.data);
+            setLoading(true);
+            setClassgroupList([]);
+            const { responseData } = await classGroupService.getClassGroups(page, perPage);
+            setClassgroupList(responseData.data.data);
+            setTotalRecords(responseData.data.total);
         } catch (error: any) {
             console.error('Failed to fetch classgroups:', error);
         } finally {
@@ -224,6 +230,7 @@ const SchoolClassgroupPage = () => {
             <Toast ref={toast} />
             <ConfirmPopup />
             <div className="card">
+                <h1>Daftar Kelas</h1>
                 <div className="flex justify-content-between p-4 card">
                     <div className="flex gap-2">
                         <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
@@ -251,7 +258,7 @@ const SchoolClassgroupPage = () => {
                                 <ProgressSpinner style={{ width: "50px", height: "50px" }} />
                                 <span className="text-gray-500 font-semibold">Memuat data kelas...</span>
                             </div>
-                        ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) || globalFilter ? (
+                        ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) ? (
                             <div className="flex flex-column align-items-center gap-3 py-4">
                                 <i className="pi pi-filter-slash text-gray-400" style={{ fontSize: "2rem" }} />
                                 <span className="text-gray-500 font-semibold">Tidak ada kelas yang sesuai dengan pencarian Anda</span>
@@ -264,8 +271,15 @@ const SchoolClassgroupPage = () => {
                             </div>
                         )
                     }
+                    lazy
                     paginator
-                    rows={10}
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPage={(event) => {
+                        setCurrentPage((event.page ?? 0) + 1);
+                        setRowsPerPage(event.rows);
+                    }}
                     rowsPerPageOptions={[10, 50, 75, 100]}
                     tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"

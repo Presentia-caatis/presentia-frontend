@@ -2,15 +2,18 @@
 import axiosClient from '../utils/axiosClient';
 
 class StudentService {
-    async getStudent() {
+    async getStudent(page: number = 1, perPage: number = 10, classGroupId?: string | number, search?: string) {
         try {
-            const response = await axiosClient.get(`/student`);
+            const response = await axiosClient.get(`/student`, {
+                params: { page, perPage, class_group_id: classGroupId, search }
+            });
             return response.data;
         } catch (error) {
-            console.error(`Error fetching students`, error);
+            console.error("Error fetching students", error);
             throw error;
         }
     }
+
 
     async addStudent(payload: any) {
         try {

@@ -34,10 +34,13 @@ const SchoolCheckInStatusPage = () => {
     const [loading, setLoading] = useState(false);
     const [loadingButton, setLoadingButton] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
 
     useEffect(() => {
-        fetchCheckInStatus();
-    }, []);
+        fetchCheckInStatus(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
 
     useMountEffect(() => {
         msgs.current?.clear();
@@ -51,11 +54,13 @@ const SchoolCheckInStatusPage = () => {
     });
 
 
-    const fetchCheckInStatus = async () => {
+    const fetchCheckInStatus = async (page = 1, perPage = 10) => {
         try {
             setLoading(true);
-            const { responseData } = await checkInStatusService.getAll();
-            setCheckInStatusList(responseData.data || []);
+            setCheckInStatusList([]);
+            const { responseData } = await checkInStatusService.getAll(page, perPage);
+            setCheckInStatusList(responseData.data.data || []);
+            setTotalRecords(responseData.data.total);
         } catch (error) {
             console.error('Error fetching check-in status:', error);
             setCheckInStatusList([]);
@@ -191,8 +196,15 @@ const SchoolCheckInStatusPage = () => {
                 onSelectionChange={(e) => setSelectedCheckInStatus(e.value)}
                 value={checkInStatusList}
                 paginator
-                rows={10}
-                rowsPerPageOptions={[10, 50, 75, 100]}
+                first={(currentPage - 1) * rowsPerPage
+                }
+                rows={rowsPerPage}
+                totalRecords={totalRecords}
+                onPage={(event) => {
+                    setCurrentPage((event.page ?? 0) + 1);
+                    setRowsPerPage(event.rows);
+                }}
+                rowsPerPageOptions={[10, 20, 50, 100]}
                 tableStyle={{ minWidth: "50rem" }}
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
