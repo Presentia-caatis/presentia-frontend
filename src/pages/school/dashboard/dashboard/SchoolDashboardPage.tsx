@@ -21,57 +21,19 @@ interface DashboardData {
 
 const SchoolDashboardPage = () => {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const { school } = useSchool();
+    const { school, schoolLoading } = useSchool();
     const { user, logout } = useAuth();
 
     const today = new Date();
     const todayString = today.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-    useEffect(() => {
-        if (!user || user.school_id === null) return;
-
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const date = new Date().toISOString().split('T')[0];
-
-                const [staticData, dailyDataSummarize, dailyData] = await Promise.all([
-                    dashboardService.getStaticStatistics(),
-                    dashboardService.getDailyStatistics(date, 1),
-                    dashboardService.getDailyStatistics(date, 0)
-                ]);
-
-                setDashboardData({
-                    activeStudents: staticData.data.active_students,
-                    inactiveStudents: staticData.data.inactive_students,
-                    maleStudents: staticData.data.male_students,
-                    femaleStudents: staticData.data.female_students,
-                    activePackage: staticData.data.subscription_packet?.subscription_name ?? "-",
-                    packageExpiry: staticData.data.subscription_packet?.end_duration ?? "-",
-                    totalPresenceToday: dailyDataSummarize.data.presence ?? 0,
-                    totalAbsenceToday: dailyDataSummarize.data.absence ?? 0,
-                    dailyData: dailyData.data ?? []
-                });
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                logout();
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [user?.school_id]);
-
 
     useEffect(() => {
-        if (dashboardData) {
+        if (school) {
             setStudentActiveChart({
                 labels: ["Siswa Aktif", "Siswa Tidak Aktif"],
                 datasets: [
                     {
-                        data: [dashboardData.activeStudents, dashboardData.inactiveStudents],
+                        data: [school.activeStudents, school.inactiveStudents],
                         backgroundColor: ["#1E3A8A", "#6B21A8"]
 
                     },
@@ -82,33 +44,33 @@ const SchoolDashboardPage = () => {
                 labels: ["Laki-Laki", "Perempuan"],
                 datasets: [
                     {
-                        data: [dashboardData.maleStudents, dashboardData.femaleStudents],
+                        data: [school.maleStudents, school.femaleStudents],
                         backgroundColor: ["#6366F1", "#A855F7"]
                     },
                 ],
             });
 
             setStudentAttendanceChart({
-                labels: ["Hadir", "Tidak Hadir"],
+                labels: ["Presensi", "Absensi"],
                 datasets: [
                     {
-                        data: [dashboardData.totalPresenceToday, dashboardData.totalAbsenceToday],
+                        data: [school.totalPresenceToday, school.totalAbsenceToday],
                         backgroundColor: ["#10B981", "#EF4444"]
                     },
                 ],
             });
         }
-    }, [dashboardData]);
+    }, [school]);
 
-    const dailyDataArray = dashboardData?.dailyData
-        ? Object.entries(dashboardData.dailyData).map(([key, value]) => ({ key, value }))
+    const dailyDataArray = school?.dailyData
+        ? Object.entries(school.dailyData).map(([key, value]) => ({ key, value }))
         : [];
 
 
     useEffect(() => {
-        if (dashboardData?.dailyData && Object.keys(dashboardData.dailyData).length > 0) {
-            const dailyKeys: string[] = Object.keys(dashboardData.dailyData);
-            const dailyValues: number[] = Object.values(dashboardData.dailyData).map(Number);
+        if (school?.dailyData && Object.keys(school.dailyData).length > 0) {
+            const dailyKeys: string[] = Object.keys(school.dailyData);
+            const dailyValues: number[] = Object.values(school.dailyData).map(Number);
 
             setDailyChart({
                 labels: dailyKeys,
@@ -120,8 +82,7 @@ const SchoolDashboardPage = () => {
                 ],
             });
         }
-    }, [dashboardData?.dailyData]);
-
+    }, [school?.dailyData]);
 
 
     const [studentActiveChart, setStudentActiveChart] = useState({
@@ -151,9 +112,6 @@ const SchoolDashboardPage = () => {
             },
         ],
     });
-
-
-
 
     const chartOptions = {
         plugins: {
@@ -204,7 +162,7 @@ const SchoolDashboardPage = () => {
                         <div className="flex justify-content-between mb-3">
                             <div>
                                 <span className="block text-500 font-medium mb-3">Total Hadir Hari Ini</span>
-                                <div className="text-900 font-medium text-xl">{loading ? <Skeleton width="2rem" height="2rem" /> : dashboardData?.totalPresenceToday}</div>
+                                <div className="text-900 font-medium text-xl">{schoolLoading ? <Skeleton width="2rem" height="2rem" /> : school?.totalPresenceToday}</div>
                             </div>
                             <div
                                 className="flex align-items-center justify-content-center bg-blue-100 border-round"
@@ -220,7 +178,7 @@ const SchoolDashboardPage = () => {
                         <div className="flex justify-content-between mb-3">
                             <div>
                                 <span className="block text-500 font-medium mb-3">Total Absen Hari Ini</span>
-                                <div className="text-900 font-medium text-xl">{loading ? <Skeleton width="2rem" height="2rem" /> : dashboardData?.totalAbsenceToday}</div>
+                                <div className="text-900 font-medium text-xl">{schoolLoading ? <Skeleton width="2rem" height="2rem" /> : school?.totalAbsenceToday}</div>
                             </div>
                             <div
                                 className="flex align-items-center justify-content-center bg-orange-100 border-round"
@@ -236,12 +194,12 @@ const SchoolDashboardPage = () => {
                         <div className="flex justify-content-between mb-3">
                             <div>
                                 <span className="block text-500 font-medium mb-3">Paket Aktif</span>
-                                <div className="text-900 font-medium text-xl">{loading ? <Skeleton width="2rem" height="2rem" /> : dashboardData?.activePackage}</div>
+                                <div className="text-900 font-medium text-xl">{schoolLoading ? <Skeleton width="2rem" height="2rem" /> : school?.activePackage}</div>
                                 <span className="block text-500 font-small flex mt-2">
-                                    Berlaku hingga: {loading ? (
+                                    Berlaku hingga: {schoolLoading ? (
                                         <Skeleton className='ml-2 pt-1' width="10rem" height="1.2rem" />
                                     ) : (
-                                        convertToWIB(dashboardData?.packageExpiry)
+                                        convertToWIB(school?.packageExpiry)
                                     )}
                                 </span>
 
@@ -259,7 +217,7 @@ const SchoolDashboardPage = () => {
                     <div className="card">
                         <h5>Data Kehadiran Hari Ini</h5>
                         <div className="grid">
-                            {loading
+                            {schoolLoading
                                 ? Array.from({ length: 4 }).map((_, index) => (
                                     <div className="col-12 md:col-4 lg:col-3" key={index}>
                                         <div className="card h-full text-center">
@@ -272,7 +230,7 @@ const SchoolDashboardPage = () => {
                                         </div>
                                     </div>
                                 ))
-                                : dashboardData?.dailyData &&
+                                : school?.dailyData &&
                                 <Carousel
                                     className="col-12"
                                     value={dailyDataArray}
@@ -283,7 +241,6 @@ const SchoolDashboardPage = () => {
                                     circular
                                     autoplayInterval={3000}
                                 />
-
                             }
                         </div>
                     </div>
@@ -292,9 +249,9 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
                         <h5>Perbandingan Kehadiran Hari Ini</h5>
-                        {loading ? (
+                        {schoolLoading ? (
                             <Skeleton width="100%" height="200px" />
-                        ) : dashboardData?.totalPresenceToday === 0 && dashboardData?.totalAbsenceToday === 0 ? (
+                        ) : school?.totalPresenceToday === 0 && school?.totalAbsenceToday === 0 ? (
                             <h3>Tidak Ada Kehadiran Hari Ini</h3>
                         ) : (
                             <Chart type="pie" data={studentAttendanceChart} options={chartOptions} />
@@ -304,7 +261,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center h-full">
                         <h5>Statistik Kehadiran Harian</h5>
-                        {loading ? (
+                        {schoolLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : dailyChart.labels.length === 0 ? (
                             <h3>Tidak Ada Data Kehadiran</h3>
@@ -317,7 +274,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
                         <h5>Perbandingan Status Siswa</h5>
-                        {loading ? (
+                        {schoolLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : (
                             <Chart type="pie" data={studentActiveChart} options={chartOptions} />
@@ -326,8 +283,8 @@ const SchoolDashboardPage = () => {
                 </div>
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
-                        <h5>Perbandingan Gender Siswa</h5>
-                        {loading ? (
+                        <h5>Perbandingan Jenis Kelamin Siswa</h5>
+                        {schoolLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : (
                             <Chart type="doughnut" data={studentGenderChart} options={chartOptions} />

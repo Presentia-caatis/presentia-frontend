@@ -39,12 +39,10 @@ const UserTopBar = () => {
             setLoading(true);
 
             await logout();
-
-            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             navigate('/');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            callToast(showToast, 'error', 'Logout Gagal', 'Tidak bisa logout');
+            localStorage.clear();
         } finally {
             setLoading(false);
         }

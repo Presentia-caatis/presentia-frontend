@@ -11,7 +11,7 @@ const dashboardService = {
     }
   },
 
-  getDailyStatistics: async (date: string, summarize: number = 0) => {
+  getDailyStatistics: async (date?: string, summarize: number = 0) => {
     try {
       const response = await axiosClient.get(`/dashboard-statistic/daily`, {
         params: { date, summarize: summarize },

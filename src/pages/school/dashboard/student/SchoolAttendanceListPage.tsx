@@ -98,7 +98,7 @@ const SchoolStudentAttendanceListPage = () => {
             }
         }
 
-        fetchAttendance();
+        fetchAttendance(currentPage, rowsPerPage);
     };
 
     const fetchAttendance = async (page = 1, perPage = 10) => {
@@ -122,8 +122,9 @@ const SchoolStudentAttendanceListPage = () => {
                 params.endDate = dates[1].toISOString().split("T")[0];
             }
 
-            const response: any = await AttendanceService.getAttendances();
+            const response: any = await AttendanceService.getAttendances(params);
             setAttendanceData(response.data.data);
+            setTotalRecords(response.data.total);
         } catch (error: any) {
             console.error("❌ Error fetching attendance data", error);
             if (error.response?.status === 401 || error.response?.data?.error === "Unauthenticated.") {
@@ -169,8 +170,6 @@ const SchoolStudentAttendanceListPage = () => {
             clearInterval(timer);
         };
     }, [loading, pauseCountdown]);
-
-
 
 
     useEffect(() => {
@@ -243,13 +242,26 @@ const SchoolStudentAttendanceListPage = () => {
                                     setRowsPerPage(event.rows);
                                 }}
                                 rowsPerPageOptions={[10, 20, 50, 100]}
+                                showGridlines
+                                stripedRows
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                                 currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
-                                <Column field="student.student_name" header="Nama" sortable></Column>
-                                <Column field="check_in_time" header="Waktu" body={(rowData) => formatTime(rowData.check_in_time)} sortable></Column>
-                                <Column field="check_in_status.type_name" header="Status" body={(rowData) => (
-                                    <Tag severity={rowData.check_in_status.type_name === "On Time" ? "success" : "danger"} value={rowData.check_in_status.type_name} />
-                                )}></Column>
+                                <Column field="student.student_name" header="Nama" sortable
+                                    className="text-lg"
+                                    headerStyle={{ width: '50%', minWidth: '200px' }}
+                                    bodyStyle={{ width: '50%', minWidth: '200px' }}
+                                />
+                                <Column field="check_in_time" header="Waktu"
+                                    body={(rowData) => formatTime(rowData.check_in_time)} sortable
+                                    className="text-lg"
+                                    headerStyle={{ width: '5%', whiteSpace: 'nowrap' }}
+                                    bodyStyle={{ width: '5%', whiteSpace: 'nowrap' }}
+                                />
+                                <Column field="check_in_status.status_name" header="Status"
+                                    className="text-lg"
+                                    headerStyle={{ width: '5%', whiteSpace: 'nowrap' }}
+                                    bodyStyle={{ width: '5%', whiteSpace: 'nowrap' }}
+                                />
                             </DataTable>
                         </div>
                     </Card >
@@ -343,7 +355,7 @@ const SchoolStudentAttendanceListPage = () => {
                     <Button
                         icon="pi pi-arrow-left"
                         className="p-button-text p-button-plain"
-                        onClick={() => navigate(`/school/${formatSchoolName(school.name)}/dashboard`)}
+                        onClick={() => school && navigate(`/school/${formatSchoolName(school.name)}/dashboard`)}
                         aria-label="Back"
                     />
                     <div className='my-auto'>
