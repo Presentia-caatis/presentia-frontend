@@ -523,9 +523,9 @@ const SchoolStudentPage = () => {
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
                     stripedRows
-                    filterDisplay="row"
-                    filters={filters}
-                    globalFilter={globalFilter}
+                    // filterDisplay="row"
+                    // filters={filters}
+                    // globalFilter={globalFilter}
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 className="m-0">Data Siswa {school ? school.name : "Loading"}</h5>
