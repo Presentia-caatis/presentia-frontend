@@ -86,7 +86,7 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolName}/custom-event` ? 'active-route' : 'menu-item',
                 },
                 {
-                    label: 'Set Waktu Presensi Siswa',
+                    label: 'Atur Waktu Presensi Siswa',
                     icon: 'pi pi-list',
                     command: () => navigate(`/school/${schoolName}/default-attendance-time`),
                     className: currentPath === `/school/${schoolName}/default-attendance-time` ? 'active-route' : 'menu-item',

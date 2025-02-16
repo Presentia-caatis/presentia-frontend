@@ -10,7 +10,7 @@ import { InputText } from "primereact/inputtext";
 import classGroupService from "../../../../services/classGroupService";
 import { useSchool } from "../../../../context/SchoolContext";
 import { useAuth } from "../../../../context/AuthContext";
-import { confirmPopup, ConfirmPopup } from "primereact/confirmpopup";
+import { ConfirmPopup } from "primereact/confirmpopup";
 import { Toast } from "primereact/toast";
 import { FilterMatchMode } from "primereact/api";
 import { ProgressSpinner } from "primereact/progressspinner";
@@ -18,7 +18,7 @@ import checkInStatusService from "../../../../services/checkInStatusService";
 import attendanceService from "../../../../services/attendanceService";
 import { Nullable } from "primereact/ts-helpers";
 
-const SchoolStudentAttendance = () => {
+const SchoolStudentAttendancePage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
     const [showEditDialog, setShowEditDialog] = useState(false);
     const [editAttendanceData, setEditAttendanceData] = useState<null>(null);
@@ -132,26 +132,12 @@ const SchoolStudentAttendance = () => {
         }
     };
 
-    const confirmGenerateAttendance = (event: React.MouseEvent) => {
-        confirmPopup({
-            target: event.currentTarget as HTMLElement,
-            message: 'Apakah Anda yakin ingin menampilkan data kehadiran siswa?',
-            icon: 'pi pi-exclamation-triangle',
-            acceptClassName: 'p-button-success',
-            acceptLabel: 'Ya',
-            rejectLabel: 'Tidak',
-            accept: fetchAttendances,
-            reject: () => { },
-        });
-    };
-
-
     return (
         <>
             <Toast ref={toast} />
             <ConfirmPopup />
             <div className="card">
-                <h1>Kehadiran {school.name}</h1>
+                <h1>Kehadiran {school ? school.name : "Loading..."}</h1>
                 <div className="grid mt-4">
                     <div className="col-12 xl:col-6">
                         <h5>Pilih Tanggal Kehadiran  <span className='text-red-600'>*</span></h5>
@@ -181,7 +167,10 @@ const SchoolStudentAttendance = () => {
                     </div>
                 </div>
                 <h3>Tampilkan data kehadiran siswa</h3>
-                <Button icon="pi pi-upload" loading={loadingAttendance} label="Tampilkan" onClick={confirmGenerateAttendance} />
+                <Button icon="pi pi-upload" loading={loadingAttendance} label="Tampilkan" onClick={() => {
+                    setCurrentPage(1);
+                    fetchAttendances(1, rowsPerPage)
+                }} />
             </div>
             <div className="card">
                 <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
@@ -277,4 +266,4 @@ const SchoolStudentAttendance = () => {
     )
 }
 
-export default SchoolStudentAttendance;
+export default SchoolStudentAttendancePage;
