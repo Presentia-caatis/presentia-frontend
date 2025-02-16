@@ -75,8 +75,8 @@ const SchoolCheckInStatusPage = () => {
     };
 
     const isDataValid = () => {
-        const { status_name, description, late_duration } = checkInStatusData;
-        return status_name.trim() !== '' && description.trim() !== '' && late_duration > 0;
+        const { status_name, description } = checkInStatusData;
+        return status_name.trim() !== '' && description.trim() !== '';
     };
 
     const isDataChanged = () => {
@@ -271,6 +271,11 @@ const SchoolCheckInStatusPage = () => {
                                     className="p-button-success p-button-rounded"
                                     tooltip="Edit"
                                     disabled={loadingDelete}
+                                    onClick={() => {
+                                        setOriginalData(rowData);
+                                        setCheckInStatusData(rowData);
+                                        setShowDialog(true);
+                                    }}
                                 />
                                 <Button
                                     icon="pi pi-trash"

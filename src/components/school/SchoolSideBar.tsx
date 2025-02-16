@@ -80,7 +80,7 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolName}/attendance` ? 'active-route' : 'menu-item',
                 },
                 {
-                    label: 'Custom Event Baru',
+                    label: 'Buat Event Sekolah',
                     icon: 'pi pi-book',
                     command: () => navigate(`/school/${schoolName}/custom-event`),
                     className: currentPath === `/school/${schoolName}/custom-event` ? 'active-route' : 'menu-item',

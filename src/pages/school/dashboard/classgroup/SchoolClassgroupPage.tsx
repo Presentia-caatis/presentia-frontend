@@ -442,7 +442,6 @@ const SchoolClassgroupPage = () => {
                                 }
                             }}
                             rowsPerPageOptions={[10, 20, 50, 100]}
-                            tableStyle={{ minWidth: "50rem" }}
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa"
                             stripedRows value={students} emptyMessage={

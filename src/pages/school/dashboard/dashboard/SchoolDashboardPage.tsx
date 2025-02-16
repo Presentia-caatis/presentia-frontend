@@ -2,27 +2,11 @@
 import { useEffect, useState } from 'react';
 import { Chart } from 'primereact/chart';
 import { useSchool } from '../../../../context/SchoolContext';
-import { useAuth } from '../../../../context/AuthContext';
-import dashboardService from '../../../../services/dashboardService';
 import { Skeleton } from 'primereact/skeleton';
 import { Carousel } from 'primereact/carousel';
 
-interface DashboardData {
-    activeStudents: number;
-    inactiveStudents: number;
-    maleStudents: number;
-    femaleStudents: number;
-    activePackage: string;
-    packageExpiry: string;
-    totalPresenceToday: number;
-    totalAbsenceToday: number;
-    dailyData: []
-}
-
 const SchoolDashboardPage = () => {
-    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const { school, schoolLoading } = useSchool();
-    const { user, logout } = useAuth();
 
     const today = new Date();
     const todayString = today.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -77,7 +61,7 @@ const SchoolDashboardPage = () => {
                 datasets: [
                     {
                         data: dailyValues,
-                        backgroundColor: ["#10B981", "#EF4444", "#F59E0B", "#6366F1", "#A855F7"],
+                        backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
                     },
                 ],
             });
@@ -108,7 +92,7 @@ const SchoolDashboardPage = () => {
         datasets: [
             {
                 data: [],
-                backgroundColor: ["#10B981", "#EF4444", "#F59E0B", "#6366F1", "#A855F7"],
+                backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
             },
         ],
     });

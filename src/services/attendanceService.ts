@@ -2,14 +2,25 @@
 import axiosClient from '../utils/axiosClient';
 
 class AttendanceService {
-    getAttendances(params = {}) {
-        return axiosClient.get(`/attendance`, { params })
-            .then(response => response.data)
-            .catch((error: any) => {
-                console.error(`There was an error fetching the attendances`, error);
-                throw error;
-            });
+    async getAttendances(params = {}) {
+        try {
+            const response = await axiosClient.get(`/attendance`, { params });
+            return response.data;
+        } catch (error) {
+            console.error(`There was an error fetching the attendances`, error);
+            throw error;
+        }
     }
+    async updateAttendance(id: number, data: any) {
+        try {
+            const response = await axiosClient.put(`/attendance/${id}`, data);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating attendance:', error);
+            throw error;
+        }
+    }
+
     async exportAttendance(params = {}) {
         try {
             const response = await axiosClient.get('/attendance/export-attendance', {

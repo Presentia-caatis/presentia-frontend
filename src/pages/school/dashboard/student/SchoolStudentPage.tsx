@@ -519,7 +519,6 @@ const SchoolStudentPage = () => {
                         setRowsPerPage(event.rows);
                     }}
                     rowsPerPageOptions={[10, 20, 50, 100]}
-                    tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
                     stripedRows

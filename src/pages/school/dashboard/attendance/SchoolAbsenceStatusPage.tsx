@@ -18,7 +18,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 
 const SchoolAbsenceStatusPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
-    const [permitTypeData, setPermitTypeData] = useState<any>({ permit_name: '', is_active: '' });
+    const [permitTypeData, setPermitTypeData] = useState<any>({ permit_name: '', is_active: 1 });
     const [selectedPermits, setSelectedPermits] = useState<any[]>([]);
     const [loadingButton, setLoadingButton] = useState(false);
     const [permitList, setPermitList] = useState<any[]>([]);
@@ -136,7 +136,7 @@ const SchoolAbsenceStatusPage = () => {
                     <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowAddDialog(true)} />
                     <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedPermits?.length} />
                 </div>
-                <Button icon="pi pi-upload" severity="help" label="Export" />
+                {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
             </div>
 
             <Tooltip className='p-1' target=".student-count-tooltip" />
