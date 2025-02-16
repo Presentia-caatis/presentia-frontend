@@ -7,6 +7,9 @@ import { ToastContextProvider } from "./layout/ToastContext";
 import { AuthProvider } from "./context/AuthContext";
 import { SchoolProvider } from "./context/SchoolContext";
 import { BrowserRouter } from "react-router-dom";
+console.log("Mode:", import.meta.env.MODE);
+console.log("API URL:", import.meta.env.VITE_API_BASE_URL);
+
 
 createRoot(document.getElementById("root")!).render(
   <ToastContextProvider>

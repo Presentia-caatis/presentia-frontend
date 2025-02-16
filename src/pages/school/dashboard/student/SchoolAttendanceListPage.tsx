@@ -66,24 +66,24 @@ const SchoolStudentAttendanceListPage = () => {
         endTime: '12:00',
     };
 
-    const fetchLeaderboard = async () => {
-        try {
-            const response = await AttendanceService.getAttendances({
-                type: "in",
-                sortBy: "time",
-                order: "asc",
-                limit: 3
-            });
+    // const fetchLeaderboard = async () => {
+    //     try {
+    //         const response = await AttendanceService.getAttendances({
+    //             type: "in",
+    //             sortBy: "time",
+    //             order: "asc",
+    //             limit: 3
+    //         });
 
-            setTopThree(response.data.data);
-        } catch (error) {
-            console.error("Failed to fetch leaderboard", error);
-        }
-    };
+    //         setTopThree(response.data.data);
+    //     } catch (error) {
+    //         console.error("Failed to fetch leaderboard", error);
+    //     }
+    // };
 
-    useEffect(() => {
-        fetchLeaderboard();
-    }, []);
+    // useEffect(() => {
+    //     fetchLeaderboard();
+    // }, []);
 
     const fetchDefaultAttendanceSchedule = async () => {
         if (!user?.school_id) return;
@@ -140,15 +140,15 @@ const SchoolStudentAttendanceListPage = () => {
                 perPage
             };
 
-            const dates = [
-                new Date(2025, 1, 12),
-                new Date(2025, 1, 12),
-            ];
+            // const dates = [
+            //     new Date(2025, 1, 12),
+            //     new Date(2025, 1, 12),
+            // ];
 
-            // const dates = ([
-            //     new Date(),
-            //     new Date(),
-            // ]);
+            const dates = ([
+                new Date(),
+                new Date(),
+            ]);
 
             if (dates && dates.length === 2 && dates[0] && dates[1]) {
                 params.startDate = dates[0].toISOString().split("T")[0];

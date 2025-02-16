@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Calendar } from "primereact/calendar"
+import { Calendar, CalendarProps, CalendarViewChangeEvent } from "primereact/calendar"
 import { Dropdown } from 'primereact/dropdown';
 import { useEffect, useRef, useState } from "react";
 import { Button } from 'primereact/button';
@@ -17,6 +17,9 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import checkInStatusService from "../../../../services/checkInStatusService";
 import attendanceService from "../../../../services/attendanceService";
 import { Nullable } from "primereact/ts-helpers";
+import { Dialog } from "primereact/dialog";
+import { addHours } from "date-fns";
+import { MultiSelect } from "primereact/multiselect";
 
 const SchoolStudentAttendancePage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
@@ -27,18 +30,25 @@ const SchoolStudentAttendancePage = () => {
     const [loadingKelas, setLoadingKelas] = useState(true);
     const [loadingAttendance, setLoadingAttendance] = useState(true);
     const [loadingStatusPresensi, setLoadingStatusPresensi] = useState(true);
+    const [loadingExport, setLoadingExport] = useState(false);
     const [listStatusPresensi, setListStatusPresensi] = useState([]);
-    const [selectedKelas, setSelectedKelas] = useState();
-    const [selectedStatusPresensi, setSelectedStatusPresensi] = useState();
+    const [selectedKelas, setSelectedKelas] = useState<number[]>([]);
+    const [selectedStatusPresensi, setSelectedStatusPresensi] = useState<number[]>([]);
     const [selectedAttendances, setSelectedAttendances] = useState([]);
     const [listAttendances, setListAttendances] = useState([]);
-    const [dates, setDates] = useState<Nullable<(Date | null)[]>>([
-        new Date(),
-        new Date(),
-    ]);
+    const [startDate, setStartDate] = useState<Date | null>(new Date());
+    const [endDate, setEndDate] = useState<Date | null>(new Date());
+
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [totalRecords, setTotalRecords] = useState(0);
+
+    const [showExportDialog, setShowExportDialog] = useState(false);
+    const [exportDates, setExportDates] = useState<Nullable<(Date | null)[]>>([new Date(), new Date()]);
+    const [exportStartDate, setExportStartDate] = useState<Date | null>(new Date());
+    const [exportEndDate, setExportEndDate] = useState<Date | null>(new Date());
+    const [exportKelas, setExportKelas] = useState<number[]>([]);
+
 
 
     const { school } = useSchool();
@@ -65,6 +75,80 @@ const SchoolStudentAttendancePage = () => {
         fetchStatusPresensi();
     }, []);
 
+    const handleStartDateChange: CalendarProps["onChange"] = (e) => {
+        if (e.value instanceof Date) {
+            const localDate = addHours(e.value, -e.value.getTimezoneOffset() / 60);
+            setStartDate(localDate);
+
+            if (endDate && localDate > endDate) {
+                setEndDate(localDate);
+            }
+        }
+    };
+
+    const handleEndDateChange: CalendarProps["onChange"] = (e) => {
+        if (e.value instanceof Date) {
+            const localDate = addHours(e.value, -e.value.getTimezoneOffset() / 60);
+            setEndDate(localDate);
+        }
+    };
+
+    const handleExportStartDateChange: CalendarProps["onChange"] = (e) => {
+        if (e.value instanceof Date) {
+            const localDate = addHours(e.value, -e.value.getTimezoneOffset() / 60);
+            setExportStartDate(localDate);
+
+            if (endDate && localDate > endDate) {
+                setExportEndDate(localDate);
+            }
+        }
+    };
+
+    const handleExportEndDateChange: CalendarProps["onChange"] = (e) => {
+        if (e.value instanceof Date) {
+            const localDate = addHours(e.value, -e.value.getTimezoneOffset() / 60);
+            setExportEndDate(localDate);
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            setLoadingExport(true);
+            const params: any = {};
+            if (exportDates && exportDates.length === 2) {
+                params.startDate = exportDates[0]?.toISOString().split("T")[0];
+                params.endDate = exportDates[1]?.toISOString().split("T")[0];
+            }
+            if (exportKelas && exportKelas.length > 0) {
+                params.classGroup = exportKelas.join(',');
+            }
+
+
+            toast.current?.show({
+                severity: 'info',
+                summary: 'Loading...',
+                detail: 'Sedang melakukan export data kehadiran!',
+                sticky: true
+            });
+
+            await attendanceService.exportAttendance(params);
+
+            toast.current?.clear();
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sukses',
+                detail: 'Export data kehadiran berhasil!',
+                life: 3000
+            });
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Export Gagal', detail: 'Terjadi kesalahan saat mengekspor.' });
+        } finally {
+            setLoadingExport(false);
+            setShowExportDialog(false);
+        }
+    };
+
+
     const fetchAttendances = async (page = 1, perPage = 10) => {
         try {
             setLoadingAttendance(true);
@@ -74,16 +158,18 @@ const SchoolStudentAttendancePage = () => {
                 perPage
             };
 
-            if (dates && dates.length === 2 && dates[0] && dates[1]) {
-                params.startDate = dates[0].toISOString().split("T")[0];
-                params.endDate = dates[1].toISOString().split("T")[0];
+            if (startDate) {
+                params.startDate = startDate.toISOString().split("T")[0];
+            }
+            if (endDate) {
+                params.endDate = endDate.toISOString().split("T")[0];
             }
 
             if (selectedKelas) {
-                params.classGroup = selectedKelas;
+                params.classGroup = selectedKelas.join(',');
             }
             if (selectedStatusPresensi) {
-                params.checkInStatusId = selectedStatusPresensi;
+                params.checkInStatusId = selectedStatusPresensi.join(',');
             }
 
             const response = await attendanceService.getAttendances(params);
@@ -140,28 +226,49 @@ const SchoolStudentAttendancePage = () => {
                 <h1>Kehadiran {school ? school.name : "Loading..."}</h1>
                 <div className="grid mt-4">
                     <div className="col-12 xl:col-6">
-                        <h5>Pilih Tanggal Kehadiran  <span className='text-red-600'>*</span></h5>
-                        <div className="">
-                            <Calendar
-                                id="date"
-                                value={dates}
-                                onChange={(e) => setDates(e.value)}
-                                selectionMode="range"
-                                readOnlyInput
-                                hideOnRangeSelection
-                                className="w-full"
-                            />
+                        <h5>Pilih Tanggal Kehadiran <span className="text-red-600">*</span></h5>
+                        <div className="flex gap-2">
+                            <div>
+                                <Calendar
+                                    id="startDate"
+                                    value={startDate}
+                                    onChange={handleStartDateChange}
+                                    maxDate={endDate ?? undefined}
+                                    readOnlyInput
+                                    className="w-full"
+                                    placeholder="Tanggal Awal"
+                                    showIcon
+                                    dateFormat="dd/mm/yy"
+                                />
+                            </div>
+                            <div className="my-auto">
+                                -
+                            </div>
+                            <div>
+                                <Calendar
+                                    id="endDate"
+                                    value={endDate}
+                                    onChange={handleEndDateChange}
+                                    minDate={startDate ?? undefined}
+                                    readOnlyInput
+                                    className="w-full"
+                                    placeholder="Tanggal Akhir"
+                                    showIcon
+                                    dateFormat="dd/mm/yy"
+                                />
+                            </div>
                         </div>
                     </div>
+
                     <div className=" col-12 xl:col-3">
                         <h5>Pilih Kelas</h5>
-                        <Dropdown filter placeholder="Silahkan Pilih Kelas" showClear loading={loadingKelas} value={selectedKelas} options={listKelas} onChange={(e) => {
+                        <MultiSelect filter placeholder="Silahkan Pilih Kelas" showClear loading={loadingKelas} value={selectedKelas} options={listKelas} onChange={(e) => {
                             setSelectedKelas(e.value);
                         }} optionLabel="label" className="w-full" />
                     </div>
                     <div className=" col-12 xl:col-3">
                         <h5>Pilih Status Presensi</h5>
-                        <Dropdown filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusPresensi} value={selectedStatusPresensi} options={listStatusPresensi} onChange={(e) => {
+                        <MultiSelect filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusPresensi} value={selectedStatusPresensi} options={listStatusPresensi} onChange={(e) => {
                             setSelectedStatusPresensi(e.value);
                         }} optionLabel="label" className="w-full " />
                     </div>
@@ -180,7 +287,17 @@ const SchoolStudentAttendancePage = () => {
                         }} />
                         <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedAttendances?.length} />
                     </div>
-                    <Button icon="pi pi-upload" severity='help' label='Export' />
+                    <Button
+                        icon="pi pi-upload"
+                        severity="help"
+                        label="Export"
+                        onClick={() => {
+                            setExportStartDate(startDate);
+                            setExportEndDate(endDate);
+                            setExportKelas(selectedKelas);
+                            setShowExportDialog(true)
+                        }}
+                    />
                 </div>
                 <DataTable
                     selectionMode="multiple"
@@ -233,6 +350,13 @@ const SchoolStudentAttendancePage = () => {
                     <Column field="student.nis" header="NIS"></Column>
                     <Column field="student.gender" header="Kelamin" body={(rowData) => rowData.student.gender === "male" ? "Laki-laki" : "Perempuan"}></Column>
                     <Column field="student.class_group.class_name" header="Kelas"></Column>
+                    <Column
+                        field="check_in_time"
+                        header="Tanggal"
+                        body={(rowData) =>
+                            rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleDateString("id-ID") : "-"
+                        }
+                    />
                     <Column field="check_in_time" header="Waktu Masuk" body={(rowData) => rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleTimeString("id-ID") : "-"}></Column>
                     <Column field="check_out_time" header="Waktu Pulang" body={(rowData) => rowData.check_out_time ? new Date(rowData.check_out_time).toLocaleTimeString("id-ID") : "-"}></Column>
                     <Column field="check_in_status.status_name" header="Status"></Column>
@@ -262,6 +386,66 @@ const SchoolStudentAttendancePage = () => {
                     />
                 </DataTable>
             </div>
+            <Dialog
+                header="Export Data Kehadiran"
+                visible={showExportDialog}
+                style={{ width: '30vw' }}
+                onHide={() => { setExportKelas([]); setExportStartDate(new Date()); setExportEndDate(new Date()); setShowExportDialog(false); }}
+            >
+                <div className="flex flex-column gap-3">
+                    <label className="font-bold">Tanggal</label>
+                    <div className="flex gap-2">
+                        <div>
+                            <Calendar
+                                id="exportStartDate"
+                                value={exportStartDate}
+                                onChange={handleExportStartDateChange}
+                                maxDate={endDate ?? undefined}
+                                readOnlyInput
+                                className="w-full"
+                                placeholder="Tanggal Awal"
+                                showIcon
+                                dateFormat="dd/mm/yy"
+                            />
+                        </div>
+                        <div className="my-auto">
+                            -
+                        </div>
+                        <div>
+                            <Calendar
+                                id="exportEndDate"
+                                value={exportEndDate}
+                                onChange={handleExportEndDateChange}
+                                minDate={exportStartDate ?? undefined}
+                                readOnlyInput
+                                className="w-full"
+                                placeholder="Tanggal Akhir"
+                                showIcon
+                                dateFormat="dd/mm/yy"
+                            />
+                        </div>
+                    </div>
+                    <label className="font-bold">Kelas</label>
+                    <MultiSelect
+                        value={exportKelas}
+                        options={listKelas}
+                        onChange={(e) => setExportKelas(e.value)}
+                        placeholder="Pilih Kelas"
+                        loading={loadingKelas}
+                        showClear
+                        multiple
+                        filter
+                    />
+                    <Button
+                        label="Export"
+                        icon="pi pi-download"
+                        className="p-button-success"
+                        onClick={handleExport}
+                        loading={loadingExport}
+                    />
+                </div>
+            </Dialog>
+
         </>
     )
 }

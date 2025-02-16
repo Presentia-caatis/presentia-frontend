@@ -465,7 +465,7 @@ const SchoolStudentPage = () => {
             <Toast ref={toast} />
             <ConfirmPopup />
             <div className="card">
-                <h1>Daftar Siswa {school.name}</h1>
+                <h1>Daftar Siswa {school?.name ?? 'Loading...'}</h1>
                 <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
                     <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
                         <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
@@ -523,8 +523,8 @@ const SchoolStudentPage = () => {
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
                     stripedRows
-                    filters={filters}
                     filterDisplay="row"
+                    filters={filters}
                     globalFilter={globalFilter}
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
@@ -572,8 +572,12 @@ const SchoolStudentPage = () => {
 
                     <Column
                         field="gender"
-                        header="Gender"
-                        body={(rowData) => (loading ? <Skeleton width="40%" height="1.5rem" /> : rowData.gender)}
+                        header="Jenis Kelamin"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="40%" height="1.5rem" />
+                                : rowData.gender === "male" ? "Laki-Laki"
+                                    : "Perempuan"
+                        }
                         filter
                         filterElement={dropdownFilterTemplate("gender", listKelamin)}
                         showFilterMenu={false}
@@ -691,9 +695,9 @@ const SchoolStudentPage = () => {
                             placeholder="Pilih Kelas" />
                     </div>
                     <div className='field'>
-                        <label htmlFor="kelamin">Kelamin  <span className='text-red-600'>*</span></label>
+                        <label htmlFor="Jenis Kelamin">Jenis Kelamin  <span className='text-red-600'>*</span></label>
                         <Dropdown value={newStudentData.gender} onChange={(e) => setNewStudentData({ ...newStudentData, gender: e.value })} options={listKelamin} optionLabel="label"
-                            placeholder="Pilih Kelamin" />
+                            placeholder="Pilih Jenis Kelamin" />
                     </div>
                     <div className='field'>
                         <label htmlFor="status">Status Siswa  <span className='text-red-600'>*</span></label>
@@ -797,14 +801,14 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="edit-gender">Kelamin  <span className='text-red-600'>*</span></label>
+                        <label htmlFor="edit-gender">Jenis Kelamin  <span className='text-red-600'>*</span></label>
                         <Dropdown
                             value={editStudentData?.gender}
                             onChange={(e) =>
                                 setEditStudentData({ ...editStudentData!, gender: e.value })
                             }
                             options={listKelamin}
-                            placeholder="Pilih Gender"
+                            placeholder="Pilih Jenis Kelamin"
                         />
                     </div>
                     <div className='field'>
