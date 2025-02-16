@@ -235,6 +235,9 @@ const FingerprintPage = () => {
             const token = await loginToADMSJS(username, password);
             setIsLoggedIn(true);
             localStorage.setItem('admsjs_token', token);
+            fetchKelas();
+            fetchFingerprintData();
+            fetchStudentsTable();
             toast.current?.show({ severity: 'success', summary: 'Login Berhasil', detail: 'Anda berhasil login.', life: 3000 });
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Login Gagal', detail: 'Periksa kembali kredensial Anda.', life: 3000 });
