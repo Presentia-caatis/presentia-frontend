@@ -102,16 +102,18 @@ const LoginPage = () => {
         setLoading(true);
         try {
             const { responseData, status } = await authServices.login(data);
-            if (status === 200) {
+            if (status !== "failed") {
                 const { token, user } = responseData;
 
                 setAuth(user, token);
 
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
                 navigate('/user/dashboard');
+            } else {
+                callToast(showToast, 'error', 'Login Gagal', 'Akun tidak ditemukan atau password salah');
             }
         } catch (error: any) {
-            callToast(showToast, 'error', 'Login Gagal', 'Email atau Password salah');
+            callToast(showToast, 'error', 'Login Gagal', 'Akun tidak ditemukan atau password salah');
         } finally {
             setLoading(false);
         }
@@ -156,14 +158,14 @@ const LoginPage = () => {
                                 <div>
                                     <div className='flex flex-column mb-3'>
                                         <label htmlFor="email" className="block text-900 text-xl font-medium mb-2">
-                                            Email
+                                            Email / Username
                                         </label>
                                         <InputText
                                             id="email"
-                                            placeholder="Email address"
+                                            placeholder="Masukkan email atau password"
                                             className={`w-full md:w-30rem mb-2 ${errors.email_or_username ? 'p-invalid' : ''}`}
                                             style={{ padding: '1rem' }}
-                                            {...register('email_or_username', { required: 'Email or username is required' })}
+                                            {...register('email_or_username', { required: 'Email atau username harus diisi' })}
                                         />
                                         {errors.email_or_username && <small className="p-error">{errors.email_or_username.message}</small>}
                                     </div>
@@ -179,7 +181,7 @@ const LoginPage = () => {
                                             render={({ field }) => (
                                                 <Password
                                                     id="password"
-                                                    placeholder="Password"
+                                                    placeholder="Masukkan password"
                                                     className={`w-full md:w-30rem mb-2 ${errors.password ? 'p-invalid' : ''}`}
                                                     inputClassName="w-full"
                                                     inputStyle={{ padding: '1rem' }}
@@ -200,11 +202,11 @@ const LoginPage = () => {
                                                 onChange={e => setRememberMe(!!e.checked)}
                                                 className="mr-2"
                                             />
-                                            <label htmlFor="Remember Password">Save Password?</label>
+                                            <label htmlFor="Remember Password">Simpan Password?</label>
                                         </div>
                                     </div>
 
-                                    <Button type="submit" label="Sign In" className="w-full p-3 text-xl mb-3" loading={loading} />
+                                    <Button type="submit" label="Log In" className="w-full p-3 text-xl mb-3" loading={loading} />
                                 </div>
                             </form>
                             <Button

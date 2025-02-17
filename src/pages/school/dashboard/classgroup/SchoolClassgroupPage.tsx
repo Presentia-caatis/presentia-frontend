@@ -170,7 +170,7 @@ const SchoolClassgroupPage = () => {
         }
     };
 
-    const handleDeleteClassgroup = async (classId: number) => {
+    const handleDeleteClassgroup = async () => {
         try {
             toast.current?.show({
                 severity: 'info',
@@ -213,7 +213,7 @@ const SchoolClassgroupPage = () => {
         });
     };
 
-    const confirmDeleteClassgroup = (event: React.MouseEvent, classId: number) => {
+    const confirmDeleteClassgroup = (event: React.MouseEvent) => {
         confirmPopup({
             target: event.currentTarget as HTMLElement,
             message: 'Apakah Anda yakin ingin menghapus kelas ini?',
@@ -221,7 +221,7 @@ const SchoolClassgroupPage = () => {
             acceptClassName: 'p-button-danger',
             acceptLabel: 'Ya',
             rejectLabel: 'Tidak',
-            accept: () => handleDeleteClassgroup(classId),
+            accept: () => handleDeleteClassgroup(),
         });
     };
 
@@ -258,12 +258,12 @@ const SchoolClassgroupPage = () => {
             <Toast ref={toast} />
             <ConfirmPopup />
             <div className="card">
-                <h1>Daftar Kelas</h1>
+                <h1>Daftar Kelas {school ? school.name : "Loading"}</h1>
                 <div className="flex justify-content-between p-4 card">
                     <div className="flex gap-2">
                         <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
                         <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedClassgroups?.length} onClick={(e) => {
-                            confirmDeleteClassgroup(e, 1)
+                            confirmDeleteClassgroup(e)
                         }} />
                     </div>
                     {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
@@ -348,7 +348,7 @@ const SchoolClassgroupPage = () => {
                                     className="p-button-danger p-button-rounded"
                                     tooltip="Hapus"
                                     tooltipOptions={{ position: 'top' }}
-                                    onClick={(e) => confirmDeleteClassgroup(e, 1)}
+                                    onClick={(e) => confirmDeleteClassgroup(e)}
                                 />
                             </div>
                         )}

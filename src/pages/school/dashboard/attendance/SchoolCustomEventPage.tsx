@@ -52,7 +52,7 @@ const SchoolCustomEventPage = () => {
         const newErrors = { name: '', date: '', entryStart: '', entryEnd: '', exitStart: '', exitEnd: '', status: '' };
 
         if (!eventData.name) {
-            newErrors.name = 'Nama event harus diisi.';
+            newErrors.name = 'Nama acara harus diisi.';
             valid = false;
         }
         if (eventData.entryStart >= eventData.entryEnd) {
@@ -95,10 +95,10 @@ const SchoolCustomEventPage = () => {
                 setEventList((prev) =>
                     prev.map((event) => (event === selectedEvents[0] ? { ...eventData } : event))
                 );
-                msgs.current?.show({ severity: 'success', summary: 'Success', detail: 'Event berhasil diperbarui!' });
+                msgs.current?.show({ severity: 'success', summary: 'Success', detail: 'Acara berhasil diperbarui!' });
             } else {
                 setEventList([...eventList, { ...eventData }]);
-                msgs.current?.show({ severity: 'success', summary: 'Success', detail: 'Event berhasil disimpan!' });
+                msgs.current?.show({ severity: 'success', summary: 'Success', detail: 'Acara berhasil disimpan!' });
             }
             resetForm();
         }
@@ -129,7 +129,7 @@ const SchoolCustomEventPage = () => {
     const handleDelete = () => {
         setEventList(eventList.filter((event) => !selectedEvents.includes(event)));
         setSelectedEvents([]);
-        msgs.current?.show({ severity: 'warn', summary: 'Deleted', detail: 'Event berhasil dihapus!' });
+        msgs.current?.show({ severity: 'warn', summary: 'Deleted', detail: 'Acara berhasil dihapus!' });
     };
 
     useMountEffect(() => {
@@ -138,7 +138,7 @@ const SchoolCustomEventPage = () => {
             id: '1',
             sticky: true,
             severity: 'info',
-            detail: 'Event akan mengubah jadwal absensi masuk dan keluar sesuai jam yang ditentukan',
+            detail: 'Acara yang aktif akan mengubah jadwal absensi masuk dan keluar sesuai jam yang ditentukan',
             closable: false
         });
     });
@@ -146,11 +146,11 @@ const SchoolCustomEventPage = () => {
     return (
         <>
             <div className="card">
-                <h1>Buat Event Sekolah</h1>
+                <h1>Kelola Acara Sekolah</h1>
                 <Messages ref={msgs} />
                 <div className='flex justify-content-between p-4 card mt-4'>
                     <div className='flex gap-2'>
-                        <Button icon="pi pi-plus" severity='success' label='Event Baru' onClick={() => setShowAddDialog(true)} />
+                        <Button icon="pi pi-plus" severity='success' label='Acara Baru' onClick={() => setShowAddDialog(true)} />
                         <Button icon="pi pi-trash" severity='danger' label='Hapus' onClick={handleDelete} disabled={!selectedEvents.length} />
                     </div>
                 </div>
@@ -163,7 +163,7 @@ const SchoolCustomEventPage = () => {
                     onSelectionChange={(e) => setSelectedEvents(e.value)}
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 className="m-0">Daftar Event</h5>
+                            <h5 className="m-0">Daftar Acara</h5>
                             <span className="block mt-2 md:mt-0 p-input-icon-left">
                                 <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
                                 <InputText className='py-2 pl-5' placeholder="Search..." />
@@ -196,7 +196,7 @@ const SchoolCustomEventPage = () => {
                     visible={showAddDialog}
                     style={{ width: '450px' }}
                     onHide={resetForm}
-                    header={editMode ? 'Edit Event' : 'Buat Event Baru'}
+                    header={editMode ? 'Edit Acara' : 'Buat Acara Baru'}
                     footer={
                         <div>
                             <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={resetForm} />
