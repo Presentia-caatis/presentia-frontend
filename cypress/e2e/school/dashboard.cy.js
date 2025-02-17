@@ -1,5 +1,5 @@
 describe('Dashboard Page Tests', () => {
-  it('Login dan Verifikasi Halaman Dashboard', () => {
+  it('Login dan Verifikasi Halaman Dashboard Sekolah', () => {
     cy.visit('/login');
 
     cy.get('input#email').type('presentia1@gmail.com');
@@ -55,22 +55,46 @@ describe('Dashboard Page Tests', () => {
       .click();
 
     cy.url().should('include', 'school/smkn-10-bandung/dashboard');
-    cy.go('back');
+    cy.get('h1').should('contain.text', 'Selamat Datang di Dashboard');
+    cy.get('p').should('contain.text', 'Jl. Cijawura Hilir No.339, Cijaura, Buahbatu, Kota Bandung, Jawa Barat 40286, Indonesia');
 
-    cy.wait(5000);
-    cy.get('button.p-button-success', { timeout: 10000 })
-      .contains('Daftar Presensi Hari Ini')
-      .should('be.visible')
+    const today = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+    cy.get('h3').should('contain.text', today);
+
+    cy.contains('Total Hadir Hari Ini').should('exist').and('not.be.empty');
+    cy.contains('Total Absen Hari Ini').should('exist').and('not.be.empty');
+    cy.contains('Paket Aktif').should('exist').and('not.be.empty');
+
+    cy.contains('Fitur presensi').should('exist');
+    cy.contains('Fingerprint').should('exist');
+
+    cy.contains('Fingerprint')
       .parent()
-      .find('.pi.pi-sign-in')
-      .should('be.visible');
+      .find('.p-togglebutton')
+      .as('toggleButton');
 
-    cy.get('button.p-button-success')
-      .contains('Daftar Presensi Hari Ini')
-      .click();
+    // Cek apakah tombol dalam keadaan ON
+    cy.get('@toggleButton').then(($btn) => {
+      if ($btn.find('.pi-power-on').length > 0) {
+        // Jika ON, klik untuk OFF
+        cy.get('@toggleButton').click();
+        cy.wait(500); // Tunggu animasi selesai
+      }
+    });
 
-    cy.url().should('include', 'school/attendance');
-    cy.go('back');
+    // Pastikan tombol dalam keadaan OFF
+    cy.get('@toggleButton').find('.pi-power-off').should('exist');
+
+    // Klik lagi untuk mengembalikan ke ON
+    cy.get('@toggleButton').click();
+    cy.wait(500);
+
+    // Pastikan tombol sudah kembali ON
+    cy.get('@toggleButton').find('.pi-power-on').should('exist');
+
+    cy.contains('Perbandingan Kehadiran Hari Ini').parent().find('canvas').should('exist');
+    cy.contains('Perbandingan Status siswa terdaftar').parent().find('canvas').should('exist');
+    cy.contains('Perbandingan Gender Siswa').parent().find('canvas').should('exist');
 
   });
 });

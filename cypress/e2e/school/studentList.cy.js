@@ -1,5 +1,5 @@
 describe('Dashboard Page Tests', () => {
-  it('Login dan Verifikasi Halaman Dashboard', () => {
+  it('Login dan Verifikasi Halaman Dashboard Sekolah', () => {
     cy.visit('/login');
 
     cy.get('input#email').type('presentia1@gmail.com');
@@ -55,22 +55,8 @@ describe('Dashboard Page Tests', () => {
       .click();
 
     cy.url().should('include', 'school/smkn-10-bandung/dashboard');
-    cy.go('back');
-
-    cy.wait(5000);
-    cy.get('button.p-button-success', { timeout: 10000 })
-      .contains('Daftar Presensi Hari Ini')
-      .should('be.visible')
-      .parent()
-      .find('.pi.pi-sign-in')
-      .should('be.visible');
-
-    cy.get('button.p-button-success')
-      .contains('Daftar Presensi Hari Ini')
-      .click();
-
-    cy.url().should('include', 'school/attendance');
-    cy.go('back');
-
+    cy.get('.layout-sidebar', { timeout: 10000 }).should('be.visible');
+    cy.get('.layout-sidebar').contains('Daftar Siswa').click();
+    cy.url().should('include', '/school/smkn-10-bandung/student');
   });
 });
