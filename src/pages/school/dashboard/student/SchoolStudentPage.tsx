@@ -849,7 +849,7 @@ const SchoolStudentPage = () => {
                             <li className='mb-2' >
                                 <strong>Download Template:</strong> Klik tombol di bawah untuk mengunduh template.
                                 <div className="mt-2">
-                                    <a href="https://telkomuniversityofficial-my.sharepoint.com/:x:/g/personal/rezadhied_student_telkomuniversity_ac_id/EUVzkCTGZMFLkKi2dXWGlDQBqK3bdjJMitcF4FXULmevsA?e=jehdeJ" target='_blank' download="Template_Import_Siswa.xlsx">
+                                    <a href="https://drive.google.com/uc?export=download&id=1r3UtGaCg5uGXg3eehuVJHmcoj8Qj5BS0" download="Template_Import_Siswa.xlsx">
                                         <Button label="Download Template" icon="pi pi-download" className="p-button-sm w-auto" />
                                     </a>
                                 </div>
