@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TabMenu } from 'primereact/tabmenu';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -9,14 +9,17 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../../../layout/ToastContext';
 import { Toast } from 'primereact/toast';
-import { ConfirmPopup } from 'primereact/confirmpopup';
+import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
+import userService from '../../../services/userService';
 
 const UserProfilePage = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const navigate = useNavigate();
-    const { logout } = useAuth();
-    const [editData, setEditData] = useState({ name: '', address: '' });
+    const { logout, user } = useAuth();
+    const [editData, setEditData] = useState({ username: '', fullname: '', email: '' });
     const [loading, setLoading] = useState(false);
+    const [password, setPassword] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const toast = useRef<Toast>(null);
 
     const items = [
@@ -26,6 +29,76 @@ const UserProfilePage = () => {
     ];
 
     const { showToast } = useToastContext();
+
+    useEffect(() => {
+        if (user) {
+            setEditData({ username: user.username, fullname: user.fullname, email: user.email });
+        }
+    }, [user]);
+
+    const isDataChanged = editData.username !== user?.username || editData.fullname !== user?.fullname || editData.email !== user?.email;
+
+    const handleUpdate = async () => {
+        setLoading(true);
+        try {
+            if (user?.id !== undefined) {
+                const payload: {
+                    fullname: string;
+                    username: string;
+                    email: string;
+                    school_id?: number;
+                    password?: string;
+                    password_confirmation?: string;
+                } = {
+                    fullname: editData.fullname,
+                    username: editData.username,
+                    email: user.email,
+                    school_id: user.school_id ?? undefined
+                };
+
+                if (password) {
+                    payload.password = password;
+                    payload.password_confirmation = passwordConfirmation;
+                }
+
+                await userService.updateUser(user.id, payload);
+
+                toast.current?.show({
+                    severity: 'success',
+                    summary: 'Sukses',
+                    detail: 'Data berhasil diperbarui.',
+                    life: 3000
+                });
+            } else {
+                console.error("User ID is undefined");
+            }
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sukses',
+                detail: 'Data sekolah berhasil diperbarui.',
+                life: 3000
+            });
+        } catch (error) {
+            console.error("Gagal memperbarui data sekolah", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmUpdate = (event: React.MouseEvent) => {
+        confirmPopup({
+            target: event.currentTarget as HTMLElement,
+            message: 'Apakah Anda yakin ingin mengubah data?',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-success',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: handleUpdate,
+            reject: () => {
+            }
+        });
+    };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
@@ -62,20 +135,29 @@ const UserProfilePage = () => {
                             <h1>Profile Pengguna</h1>
                             <Divider></Divider>
                             <div className="field">
-                                <label>Nama Pengguna</label>
+                                <label>Username</label>
                                 <InputText
-                                    value={editData.name}
-                                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                                    placeholder="Masukkan Nama Pengguna "
+                                    value={editData.username}
+                                    onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                                    placeholder="Masukkan Username"
                                     className="w-full"
                                 />
                             </div>
                             <div className="field mt-3">
-                                <label>Alamat</label>
+                                <label>Nama Lengkap</label>
                                 <InputText
-                                    value={editData.address}
-                                    onChange={(e) => setEditData({ ...editData, address: e.target.value })}
-                                    placeholder="Masukkan Alamat"
+                                    value={editData.fullname}
+                                    onChange={(e) => setEditData({ ...editData, fullname: e.target.value })}
+                                    placeholder="Masukkan Nama Lengkap"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="field mt-3">
+                                <label>Email</label>
+                                <InputText
+                                    value={editData.email}
+                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                    placeholder="Masukkan Email"
                                     className="w-full"
                                 />
                             </div>
@@ -94,7 +176,7 @@ const UserProfilePage = () => {
                                 <Button
                                     label="Batal"
                                     className="p-button-secondary"
-                                    onClick={() => setEditData({ name: school.name, address: school.address })}
+                                    onClick={() => setEditData({ username: user?.username || '', fullname: user?.fullname || '', email: user?.email || '' })}
                                     disabled={loading || !isDataChanged}
                                 />
                             </div>

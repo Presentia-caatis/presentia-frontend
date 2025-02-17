@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { createContext, useContext, useState } from 'react';
 import authServices from '../services/authService';
 import { useNavigate } from 'react-router-dom';
+import { useToastContext } from '../layout/ToastContext';
 
 interface User {
     id: number;
@@ -34,6 +36,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return null;
         }
     });
+
+    const { showToast } = useToastContext();
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
+        showToast({
+            severity: severity,
+            summary: summary,
+            detail: detail
+        });
+    }
 
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
@@ -69,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 return false;
             }
         } else {
-            logout();
+            localStorage.clear();
             return false;
         }
         return false;
@@ -78,14 +89,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const logout = async () => {
         try {
             await authServices.logout();
+            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
         } catch (error) {
             localStorage.clear();
+            callToast(showToast, 'error', 'Sesi habis', 'Silahkan login kembali');
             console.error("Error during logout:", error);
         } finally {
             localStorage.clear();
             setUser(null);
             setToken(null);
-            if (window.location.pathname !== '/') {
+            if (window.location.pathname !== '/' && window.location.pathname !== '/register') {
                 navigate('/login');
             }
         }

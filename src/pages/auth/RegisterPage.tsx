@@ -7,8 +7,11 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
 import authServices from '../../services/authService';
 import { useToastContext } from '../../layout/ToastContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Divider } from 'primereact/divider';
+import { useAuth } from '../../context/AuthContext';
+import { Helmet } from 'react-helmet';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 interface RegisterFormInputs {
     fullname: string;
@@ -22,7 +25,39 @@ const RegisterPage = () => {
     const navigate = useNavigate();
     const { control, register, handleSubmit, setError, watch, formState: { errors } } = useForm<RegisterFormInputs>();
     const [loading, setLoading] = useState(false);
+    const [loadingPage, setLoadingPage] = useState(true);
     const { showToast } = useToastContext();
+    const { setAuth, checkAuth } = useAuth();
+
+    useEffect(() => {
+        const authenticate = async () => {
+            const isAuth = await checkAuth();
+            if (isAuth) {
+                console.log("tes")
+                navigate('/user/dashboard');
+            }
+            setLoadingPage(false);
+        };
+        authenticate();
+    }, []);
+
+    useEffect(() => {
+        if (!state?.email && !state?.googleId) {
+            navigate("/login");
+        }
+    }, [state, navigate]);
+
+    if (!state?.email && !state?.googleId) {
+        return null;
+    }
+
+    if (loadingPage) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
+                <ProgressSpinner />
+            </div>
+        );
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
@@ -51,8 +86,7 @@ const RegisterPage = () => {
             });
 
             if (responseData?.token) {
-                localStorage.setItem('token', responseData.token);
-                localStorage.setItem('user', JSON.stringify(responseData.user));
+                setAuth(responseData.user, responseData.token);
 
                 callToast(showToast, 'success', 'Registrasi Berhasil', 'Berhasil login dengan akun yang didaftarkan');
                 setLoading(false);
@@ -99,6 +133,9 @@ const RegisterPage = () => {
 
     return (
         <div className="min-h-screen flex align-items-center justify-content-center">
+            <Helmet>
+                <title>Register | Presentia</title>
+            </Helmet>
             <div
                 style={{
                     borderRadius: '56px',

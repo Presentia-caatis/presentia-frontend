@@ -2,8 +2,10 @@
 import axiosClient from '../utils/axiosClient';
 
 class CheckInStatusService {
-    async getAll(): Promise<any> {
-        const response = await axiosClient.get('/check-in-status');
+    async getAll(page: number = 1, perPage: number = 10): Promise<any> {
+        const response = await axiosClient.get('/check-in-status', {
+            params: { page, perPage }
+        });
         return { responseData: response.data, status: response.status };
     }
 

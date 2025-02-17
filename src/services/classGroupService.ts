@@ -2,8 +2,10 @@
 import axiosClient from '../utils/axiosClient';
 
 class ClassGroupService {
-    async getClassGroups(): Promise<any> {
-        const response = await axiosClient.get(`/class-group`);
+    async getClassGroups(page: number = 1, perPage: number = 10): Promise<any> {
+        const response = await axiosClient.get(`/class-group`, {
+            params: { page, perPage }
+        });
         return { responseData: response.data, status: response.status };
     }
 
@@ -12,12 +14,12 @@ class ClassGroupService {
         return { responseData: response.data, status: response.status };
     }
 
-    async createClassGroup(payload: { school_id: number; class_name: string; amount_of_students: number }): Promise<any> {
+    async createClassGroup(payload: { school_id: number; class_name: string }): Promise<any> {
         const response = await axiosClient.post('/class-group', payload);
         return { responseData: response.data, status: response.status };
     }
 
-    async updateClassGroup(classGroupId: number, payload: { school_id: number; class_name: string; amount_of_students: number }): Promise<any> {
+    async updateClassGroup(classGroupId: number, payload: { school_id: number; class_name: string }): Promise<any> {
         const response = await axiosClient.put(`/class-group/${classGroupId}`, payload);
         return { responseData: response.data, status: response.status };
     }

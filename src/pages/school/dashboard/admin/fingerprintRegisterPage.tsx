@@ -16,6 +16,8 @@ import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
 import { FilterMatchMode } from 'primereact/api';
 import { Tag } from 'primereact/tag';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import classGroupService from '../../../../services/classGroupService';
 
 const FingerprintPage = () => {
     const { user, checkAuth } = useAuth();
@@ -29,17 +31,20 @@ const FingerprintPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [loadingTable, setLoadingTable] = useState(true);
+    const [loadingStudentTable, setLoadingStudentTable] = useState(true);
+    const [loadingStudentDropdown, setLoadingStudentDropdown] = useState(false);
+    const [loadingKelas, setLoadingKelas] = useState(true);
 
-    const [students, setStudents] = useState<any[]>([]);
-    const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
-    const [filteredStudentsTable, setFilteredStudentsTable] = useState<any[]>([]);
+    const [studentsDropdown, setStudentsDropdown] = useState<any[]>([]);
+    const [studentsTableData, setStudentsTableData] = useState<any[]>([]);
     const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [selectedClassTable, setSelectedClassTable] = useState<string | null>(null);
     const [selectedStudentFingerprint, setSelectedStudentFingerprint] = useState<any | null>(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedFingerprintStatus, setSelectedFingerprintStatus] = useState<string | null>(null);
+    const [listKelas, setListKelas] = useState([]);
+
 
     const fingerprintStatusOptions = [
         { label: 'Semua', value: null },
@@ -47,6 +52,13 @@ const FingerprintPage = () => {
         { label: 'Belum Terdaftar', value: 'notRegistered' }
     ];
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
+
+    const [searchStudentDropdown, setSearchStudentDropdown] = useState("");
+    const [searchStudentTable, setSearchStudentTable] = useState("");
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const [selectedFinger, setSelectedFinger] = useState<number>(7);
     const retryCount = 2;
@@ -102,7 +114,6 @@ const FingerprintPage = () => {
 
     useEffect(() => {
         const validateAuth = async () => {
-            console.log("tes");
             const isAuthenticated = await checkAuth();
             if (!isAuthenticated) {
                 handleLogout();
@@ -110,14 +121,35 @@ const FingerprintPage = () => {
         };
 
         validateAuth();
+
+        if (isLoggedIn && user) {
+            fetchKelas();
+            fetchFingerprintData();
+            fetchStudentsTable();
+        }
     }, []);
 
-    useEffect(() => {
-        if (isLoggedIn && user) {
-            fetchStudents();
-            fetchFingerprintData();
-        }
-    }, [isLoggedIn, user]);
+    // useEffect(() => {
+    //     let filtered = studentsTableData;
+
+    //     switch (selectedFingerprintStatus) {
+    //         case 'registered':
+    //             filtered = filtered.filter(student =>
+    //                 fingerprintData.some(fp => fp.pin === student.id.toString())
+    //             );
+    //             break;
+    //         case 'notRegistered':
+    //             filtered = filtered.filter(student =>
+    //                 !fingerprintData.some(fp => fp.pin === student.id.toString())
+    //             );
+    //             break;
+    //         default:
+    //             break;
+    //     }
+
+    //     setStudentsTableDataFiltered(filtered);
+    // }, []);
+
 
     const fetchFingerprintData = async () => {
         try {
@@ -151,52 +183,49 @@ const FingerprintPage = () => {
         return fingerprintData.some(fp => fp.pin === studentId.toString()) ? 'registered' : 'notRegistered';
     };
 
-    useEffect(() => {
-        if (selectedClass) {
-            setFilteredStudents(
-                students.filter(student => student.class_group?.class_name === selectedClass)
-            );
+    const fetchStudentsDropdown = async (classGroupId?: number | string, search?: string) => {
+        setStudentsDropdown([]);
+        if (!classGroupId && (!search || search.trim().length < 2)) return;
+        try {
+            setLoadingStudentDropdown(true);
+            const response = await studentService.getStudent(1, 1000, classGroupId, search);
+            setStudentsDropdown(response.data.data);
+        } catch (error) {
+            console.error("Error fetching studentsDropdown:", error);
+        } finally {
+            setLoadingStudentDropdown(false);
+        }
+    };
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const query = e.target.value;
+        setSearchStudentDropdown(query);
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        if (query.length >= 2 || selectedClass) {
+            typingTimeoutRef.current = setTimeout(() => {
+                fetchStudentsDropdown(selectedClass ?? undefined, query);
+            }, 500);
         } else {
-            setFilteredStudents(students);
+            setStudentsDropdown([]);
         }
-    }, [selectedClass, students]);
+    };
 
-    useEffect(() => {
-        let filtered = students;
-
-        if (selectedClassTable) {
-            filtered = filtered.filter(student => student.class_group?.class_name === selectedClassTable);
-        }
-
-        switch (selectedFingerprintStatus) {
-            case 'registered':
-                filtered = filtered.filter(student =>
-                    fingerprintData.some(fp => fp.pin === student.id.toString())
-                );
-                break;
-            case 'notRegistered':
-                filtered = filtered.filter(student =>
-                    !fingerprintData.some(fp => fp.pin === student.id.toString())
-                );
-                break;
-            default:
-                break;
-        }
-
-        setFilteredStudentsTable(filtered);
-    }, [selectedClassTable, selectedFingerprintStatus, students, fingerprintData]);
-
-
-    const fetchStudents = async () => {
+    const fetchStudentsTable = async (page = 1, perPage = 10, classGroupId?: number | string, search?: string) => {
         try {
             if (!user?.school_id) return;
-            const data = await studentService.getStudent();
-            setStudents(data.data);
-            setFilteredStudents(data.data);
+            setLoadingStudentTable(true);
+            setStudentsTableData([]);
+            const response = await studentService.getStudent(page, perPage, classGroupId, search);
+            setStudentsTableData(response.data.data);
+            setTotalRecords(response.data.total);
         } catch (error) {
-            console.error('Error fetching students:', error);
+            console.error('Error fetching studentsDropdown:', error);
         } finally {
-            setLoadingTable(false);
+            setLoadingStudentTable(false);
         }
     };
 
@@ -206,6 +235,9 @@ const FingerprintPage = () => {
             const token = await loginToADMSJS(username, password);
             setIsLoggedIn(true);
             localStorage.setItem('admsjs_token', token);
+            fetchKelas();
+            fetchFingerprintData();
+            fetchStudentsTable();
             toast.current?.show({ severity: 'success', summary: 'Login Berhasil', detail: 'Anda berhasil login.', life: 3000 });
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Login Gagal', detail: 'Periksa kembali kredensial Anda.', life: 3000 });
@@ -302,9 +334,22 @@ const FingerprintPage = () => {
         );
     };
 
-    const classOptions = Array.from(new Set(students.map(student => student.class_group?.class_name)))
-        .map(className => ({ label: className, value: className }));
+    const fetchKelas = async () => {
+        try {
+            if (!user?.school_id) return;
+            setLoadingKelas(true);
+            const response = await classGroupService.getClassGroups(1, 100);
+            setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
+                label: kelas.class_name,
+                value: kelas.id
+            })));
 
+        } catch (error) {
+            console.error('Error fetching studentsDropdown:', error);
+        } finally {
+            setLoadingKelas(false);
+        }
+    };
 
     const [filters, setFilters] = useState({
         student_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -321,8 +366,12 @@ const FingerprintPage = () => {
         return (
             <Dropdown
                 value={options.value}
-                options={classOptions}
-                onChange={(e: DropdownChangeEvent) => options.filterApplyCallback(e.value)}
+                options={listKelas}
+                onChange={(e: DropdownChangeEvent) => {
+                    options.filterApplyCallback(e.value);
+                    setCurrentPage(1);
+                    fetchStudentsTable(currentPage, rowsPerPage, e.value, searchStudentTable)
+                }}
                 optionLabel="label"
                 placeholder="Pilih Kelas"
                 className="p-column-filter"
@@ -359,6 +408,31 @@ const FingerprintPage = () => {
         );
     };
 
+    const handleSearchFilterTable = (options: ColumnFilterElementTemplateOptions) => {
+        return (
+            <InputText
+                value={options.value || ""}
+                onChange={(e) => {
+                    const query = e.target.value;
+                    options.filterApplyCallback(query);
+
+                    if (typingTimeoutRef.current) {
+                        clearTimeout(typingTimeoutRef.current);
+                    }
+
+                    typingTimeoutRef.current = setTimeout(() => {
+                        setCurrentPage(1);
+                        fetchStudentsTable(1, rowsPerPage, selectedClass ?? undefined, query);
+                    }, 500);
+
+                    setSearchStudentTable(query);
+                }}
+                placeholder="Cari Nama Siswa"
+                className="p-column-filter"
+            />
+        );
+    };
+
 
     return (
         <>
@@ -390,30 +464,44 @@ const FingerprintPage = () => {
                     </div>
                 ) : (
                     <div className="p-fluid grid">
-                        <div className="field col-12 md:col-6">
+                        <div className="field col-12 ">
                             <label>Pilih Kelas</label>
                             <Dropdown
+                                loading={loadingKelas}
                                 value={selectedClass}
-                                options={classOptions}
-                                onChange={(e) => setSelectedClass(e.value)}
-                                placeholder="Pilih Kelas"
+                                options={listKelas}
+                                onChange={(e) => {
+                                    setSelectedClass(e.value);
+                                    fetchStudentsDropdown(e.value, searchStudentDropdown);
+                                }}
+                                placeholder={loadingKelas ? "Sedang memuat data kelas..." : "Pilih Kelas"}
+                                optionLabel="label"
                                 showClear
                                 filter
                             />
                         </div>
-                        <div className="field col-12 md:col-6">
-                            <label>Pilih Siswa <span className='text-red-600'>*</span></label>
-                            <Dropdown
-                                value={selectedStudent}
-                                options={filteredStudents}
-                                onChange={(e) => setSelectedStudent(e.value)}
-                                optionLabel="student_name"
-                                placeholder="Pilih Siswa"
-                                filter
-                                filterBy="student_name"
-                                itemTemplate={studentItemTemplate}
+                        <div className="field col-12">
+                            <label>Cari Siswa <span className="text-red-600">*</span></label>
+                            <InputText
+                                value={searchStudentDropdown}
+                                onChange={handleSearchChange}
+                                placeholder="Ketik minimal 2 huruf nama siswa untuk mencari siswa..."
                             />
                         </div>
+                        <div className="field col-12 ">
+                            <label>Pilih Siswa <span className="text-red-600">*</span></label>
+                            <Dropdown
+                                value={selectedStudent}
+                                options={studentsDropdown}
+                                onChange={(e) => setSelectedStudent(e.value)}
+                                optionLabel="student_name"
+                                placeholder={loadingStudentDropdown ? "Sedang mencari siswa..." : "Pilih siswa"}
+                                loading={loadingStudentDropdown}
+                                itemTemplate={studentItemTemplate}
+                                emptyMessage={searchStudentDropdown ? `Tidak ada siswa dengan nama ${searchStudentDropdown}` : "Ketik nama siswa di kolom cari siswa"}
+                            />
+                        </div>
+
                         <div className="field col-12 md:col-6">
                             <label>Pilih Jari <span className='text-red-600'>*</span></label>
                             <Dropdown
@@ -444,26 +532,59 @@ const FingerprintPage = () => {
             </div>
 
             {isLoggedIn ? <div className='card'>
-                <DataTable value={filteredStudentsTable} paginator rows={10} dataKey="id" className="mt-4" filters={filters} filterDisplay="row" header={
-                    <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                        <h5 className="m-0">Daftar Sidik Jari Siswa</h5>
-                        <span className="text-sm text-secondary">Total Siswa: {filteredStudentsTable.length}</span>
-                    </div>
-                } rowsPerPageOptions={[10, 50, 75, 100]} emptyMessage={
-                    loadingTable ? (
-                        <div className="flex flex-column align-items-sm-start">
-                            <div className="py-1 text-start text-sm text-secondary">Loading...</div>
+                <DataTable value={studentsTableData}
+                    dataKey="id" className="mt-4"
+                    filters={filters}
+                    filterDisplay="row"
+                    header={
+                        <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 className="m-0">Daftar Sidik Jari Siswa</h5>
+                            <span className="text-sm text-secondary">Total Siswa: {totalRecords}</span>
                         </div>
-                    ) : "Belum ada siswa"
-                } tableStyle={{ minWidth: '50rem' }}>
+                    }
+                    emptyMessage={
+                        loadingStudentTable ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                <span className="text-gray-500 font-semibold">Memuat data siswa...</span>
+                            </div>
+                        ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-filter-slash text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Tidak ada siswa yang sesuai dengan pencarian Anda</span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Belum ada data siswa</span>
+                                <small className="text-gray-400">Silakan tambahkan siswa melalui tombol siswa baru atau import.</small>
+                            </div>
+                        )
+                    }
+                    paginator
+                    lazy
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPage={(event) => {
+                        setCurrentPage((event.page ?? 0) + 1);
+                        setRowsPerPage(event.rows);
+                        fetchStudentsTable((event.page ?? 0) + 1, event.rows, selectedClassTable ?? undefined, searchStudentTable)
+                    }}
+                    rowsPerPageOptions={[10, 20, 50, 100]}
+                    tableStyle={{ minWidth: "50rem" }}
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa"
+                    stripedRows
+                >
                     <Column
                         field="student_name"
                         header="Nama Siswa"
                         sortable
                         filter
                         filterPlaceholder="Cari Nama Siswa"
-                        filterField="student_name"
-                        showFilterMenu={true}
+                        filterElement={handleSearchFilterTable}
+                        showFilterMenu={false}
                     />
                     <Column field="class_group.class_name" header="Kelas" showFilterMenu={false} sortable body={classBodyTemplate} filter filterElement={classRowFilterTemplate}></Column>
                     <Column
@@ -475,7 +596,6 @@ const FingerprintPage = () => {
                     />
                     <Column header="Aksi" body={actionBodyTemplate}></Column>
                 </DataTable>
-
                 <Dialog
                     visible={modalVisible}
                     header="Daftar Sidik Jari"
@@ -488,9 +608,7 @@ const FingerprintPage = () => {
                         <p style={{ fontSize: '14px', marginBottom: '20px' }}>
                             <strong>Kelas:</strong> {selectedStudentFingerprint?.class_group?.class_name}
                         </p>
-
                         <div style={{ fontWeight: '600', marginBottom: '15px' }}>Daftar Sidik Jari:</div>
-
                         {fingerprintData.filter((fp) => fp.pin === selectedStudentFingerprint?.id.toString()).length > 0 ? (
                             <ul style={{ listStyleType: 'none', paddingLeft: '0' }}>
                                 {fingerprintData

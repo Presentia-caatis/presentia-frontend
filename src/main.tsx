@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { SchoolProvider } from "./context/SchoolContext";
 import { BrowserRouter } from "react-router-dom";
 
+
 createRoot(document.getElementById("root")!).render(
   <ToastContextProvider>
     <PrimeReactProvider>

@@ -38,4 +38,4 @@ class UserService {
     }
 }
 
-export default new UserService();ss
+export default new UserService();

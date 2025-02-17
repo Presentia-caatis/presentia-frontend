@@ -11,26 +11,39 @@ import { absencePermitTypeService } from '../../../../services/absencePermitServ
 import { useAuth } from '../../../../context/AuthContext';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
+import { Messages } from 'primereact/messages';
+import { useMountEffect } from 'primereact/hooks';
+import { Skeleton } from 'primereact/skeleton';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
-const SchoolAttendanceStatusPage = () => {
+const SchoolAbsenceStatusPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
-    const [permitTypeData, setPermitTypeData] = useState<any>({ permit_name: '', is_active: '' });
+    const [permitTypeData, setPermitTypeData] = useState<any>({ permit_name: '', is_active: 1 });
     const [selectedPermits, setSelectedPermits] = useState<any[]>([]);
+    const [loadingButton, setLoadingButton] = useState(false);
     const [permitList, setPermitList] = useState<any[]>([]);
     const { user } = useAuth();
     const toast = useRef<Toast>(null);
+    const [loading, setLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
 
     useEffect(() => {
-        fetchPermitTypes();
-    }, []);
+        fetchPermitTypes(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
 
-    const fetchPermitTypes = async () => {
+    const fetchPermitTypes = async (page = 1, perPage = 10) => {
         try {
-            const data = await absencePermitTypeService.getAll();
-            setPermitList(Array.isArray(data) ? data : []);
+            setLoading(true);
+            const response = await absencePermitTypeService.getAll(page, perPage);
+            setPermitList(response.data.data);
+            setTotalRecords(response.data.total);
         } catch (error) {
             console.error("Error fetching permit types:", error);
             setPermitList([]);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -57,6 +70,8 @@ const SchoolAttendanceStatusPage = () => {
 
     const handleSave = async () => {
         try {
+            setLoadingButton(true);
+
             if (permitTypeData.id) {
                 await absencePermitTypeService.update(permitTypeData.id, permitTypeData);
                 toast.current?.show({
@@ -87,6 +102,8 @@ const SchoolAttendanceStatusPage = () => {
                 detail: 'Terjadi kesalahan saat menyimpan tipe izin.',
                 life: 3000,
             });
+        } finally {
+            setLoadingButton(false);
         }
     };
 
@@ -95,16 +112,31 @@ const SchoolAttendanceStatusPage = () => {
         fetchPermitTypes();
     };
 
+    const msgs = useRef<Messages>(null);
+
+    useMountEffect(() => {
+        msgs.current?.clear();
+        msgs.current?.show({
+            id: '1',
+            sticky: true,
+            severity: 'info',
+            detail: 'Status absensi yang aktif, dapat digunakan untuk menentukan status siswa yang tidak hadir.',
+            closable: false,
+        });
+    });
+
     return (
         <div className="card">
+            <h1>Daftar Status Absensi</h1>
             <Toast ref={toast} />
+            <Messages ref={msgs} />
             <ConfirmPopup />
             <div className="flex justify-content-between p-4 card">
                 <div className="flex gap-2">
-                    <Button icon="pi pi-plus" severity="success" label="Status Baru" onClick={() => setShowAddDialog(true)} />
+                    <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowAddDialog(true)} />
                     <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedPermits?.length} />
                 </div>
-                <Button icon="pi pi-upload" severity="help" label="Export" />
+                {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
             </div>
 
             <Tooltip className='p-1' target=".student-count-tooltip" />
@@ -115,28 +147,64 @@ const SchoolAttendanceStatusPage = () => {
                 onSelectionChange={(e) => setSelectedPermits(e.value)}
                 value={permitList}
                 paginator
-                rows={20}
-                emptyMessage="No status available"
+                first={(currentPage - 1) * rowsPerPage
+                }
+                rows={rowsPerPage}
+                totalRecords={totalRecords}
+                onPage={(event) => {
+                    setCurrentPage((event.page ?? 0) + 1);
+                    setRowsPerPage(event.rows);
+                }}
+                rowsPerPageOptions={[10, 20, 50, 100]}
+                tableStyle={{ minWidth: "50rem" }}
+                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                emptyMessage={
+                    loading ? (
+                        <div className="flex flex-column align-items-center gap-3 py-4">
+                            <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                            <span className="text-gray-500 font-semibold">Memuat data status absensi...</span>
+                        </div>
+                    ) : (
+                        <div className="flex flex-column align-items-center gap-3 py-4">
+                            <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
+                            <span className="text-gray-500 font-semibold">Belum ada data status absensi</span>
+                            <small className="text-gray-400">Silakan tambahkan status absensi melalui tombol tambah status.</small>
+                        </div>
+                    )
+                }
             >
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                <Column field="name" header="Name" sortable />
-                <Column field="status" header="Status" sortable />
+                <Column field="permit_name" body={(rowData) =>
+                    loading ? <Skeleton width="80%" height="1rem" /> : rowData.permit_name
+                } header="Nama Status" sortable />
+                <Column field="is_active" body={(rowData) =>
+                    loading ? <Skeleton width="60%" height="1rem" /> : rowData.is_active ? "Aktif" : "Tidak Aktif"
+                } header="Status" sortable />
                 <Column
                     body={(rowData: any) => (
-                        <div className='flex gap-2'>
-                            <Button
-                                icon="pi pi-pencil"
-                                className="p-button-success p-button-rounded"
-                                tooltip="Perbarui"
-                                onClick={() => { setPermitTypeData(rowData); setShowAddDialog(true); }}
-                            />
-                            <Button
-                                icon="pi pi-trash"
-                                className="p-button-danger p-button-rounded"
-                                tooltip="Hapus"
-                                onClick={() => handleDelete(rowData.id)}
-                            />
-                        </div>
+                        loading ? (
+                            <div className="flex gap-2">
+                                <Skeleton shape="circle" size="2rem" />
+                                <Skeleton shape="circle" size="2rem" />
+                            </div>
+                        ) : (
+                            <div className='flex gap-2'>
+                                <Button
+                                    icon="pi pi-pencil"
+                                    className="p-button-success p-button-rounded"
+                                    tooltip="Perbarui"
+                                    loading={loadingButton}
+                                    onClick={() => { setPermitTypeData(rowData); setShowAddDialog(true); }}
+                                />
+                                <Button
+                                    icon="pi pi-trash"
+                                    className="p-button-danger p-button-rounded"
+                                    tooltip="Hapus"
+                                    onClick={() => handleDelete(rowData.id)}
+                                />
+                            </div>
+                        )
                     )}
                 />
             </DataTable>
@@ -149,7 +217,7 @@ const SchoolAttendanceStatusPage = () => {
                 footer={
                     <div>
                         <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => setShowAddDialog(false)} />
-                        <Button label="Simpan" disabled={!permitTypeData.permit_name || !permitTypeData.is_active} icon="pi pi-check" onClick={(e) => confirmSavePermitType(e)} />
+                        <Button label="Simpan" loading={loadingButton} disabled={!permitTypeData.permit_name} icon="pi pi-check" onClick={(e) => confirmSavePermitType(e)} />
                     </div>
                 }
                 modal
@@ -196,4 +264,4 @@ const SchoolAttendanceStatusPage = () => {
     );
 };
 
-export default SchoolAttendanceStatusPage;
+export default SchoolAbsenceStatusPage;

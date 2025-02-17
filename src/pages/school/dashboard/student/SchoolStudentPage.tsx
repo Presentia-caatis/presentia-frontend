@@ -17,6 +17,7 @@ import { Skeleton } from 'primereact/skeleton';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { FilterMatchMode } from 'primereact/api';
 import { FileUpload } from 'primereact/fileupload';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 
 type StudentData = {
@@ -40,6 +41,7 @@ const SchoolStudentPage = () => {
     const [tempEditStudentData, setTempEditStudentData] = useState<StudentData | null>(null);
     const [loading, setLoading] = useState(true);
     const [loadingKelas, setLoadingKelas] = useState(true);
+    const [loadingExport, setLoadingExport] = useState(false);
     const [saveLoading, setSaveLoading] = useState(false);
     const [showImportDialog, setShowImportDialog] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
@@ -79,6 +81,9 @@ const SchoolStudentPage = () => {
     });
     const fileUploadRef = useRef<FileUpload>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
 
     const handleFileSelect = (event: any) => {
         setSelectedFile(event.files[0]);
@@ -94,6 +99,37 @@ const SchoolStudentPage = () => {
         setSelectedFile(null);
         fileUploadRef.current?.clear();
     };
+
+    const handleExport = async () => {
+        try {
+            setLoadingExport(true);
+            toast.current?.show({
+                severity: 'info',
+                summary: 'Loading...',
+                detail: 'Sedang melakukan export data siswa!',
+                life: 3000
+            });
+
+            await studentService.exportStudents();
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Sukses',
+                detail: 'Export data siswa berhasil!',
+                life: 3000
+            });
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: 'Terjadi kesalahan saat export data siswa.',
+                life: 3000
+            });
+        } finally {
+            setLoadingExport(false);
+        }
+    };
+
 
     const confirmImport = (event: React.MouseEvent) => {
         if (!selectedFile) {
@@ -115,12 +151,6 @@ const SchoolStudentPage = () => {
             rejectLabel: 'Tidak',
             accept: handleImport,
             reject: () => {
-                toast.current?.show({
-                    severity: 'info',
-                    summary: 'Dibatalkan',
-                    detail: 'Proses upload dibatalkan.',
-                    life: 3000
-                });
             }
         });
     };
@@ -143,12 +173,19 @@ const SchoolStudentPage = () => {
             formData.append('file', selectedFile);
             formData.append('school_id', user.school_id.toString());
 
+            toast.current?.show({
+                severity: 'info',
+                summary: 'Loading...',
+                detail: 'Sedang melakukan import data siswa!',
+                life: 3000
+            });
+
             await studentService.storeViaFile(formData);
 
             toast.current?.show({
                 severity: 'success',
                 summary: 'Sukses',
-                detail: 'File berhasil diupload.',
+                detail: 'Data berhasil di import!',
                 life: 3000
             });
 
@@ -193,19 +230,24 @@ const SchoolStudentPage = () => {
     );
 
     useEffect(() => {
-        fetchStudents();
         fetchKelas();
     }, []);
 
-    const fetchStudents = async () => {
+    useEffect(() => {
+        fetchStudents(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
+
+    const fetchStudents = async (page = 1, perPage = 10) => {
         try {
             setLoading(true);
             if (!user?.school_id) return;
-            const response = await studentService.getStudent();
-            setStudentData(response.data);
+            setStudentData([]);
+            const response = await studentService.getStudent(page, perPage);
+            setStudentData(response.data.data);
+            setTotalRecords(response.data.total);
 
         } catch (error) {
-            console.error('Error fetching students:', error);
+            console.error("Error fetching students:", error);
         } finally {
             setLoading(false);
         }
@@ -215,8 +257,8 @@ const SchoolStudentPage = () => {
         try {
             if (!user?.school_id) return;
             setLoadingKelas(true);
-            const response = await classGroupService.getClassGroups();
-            setListKelas(response.responseData.data.map((kelas: { id: number; class_name: string }) => ({
+            const response = await classGroupService.getClassGroups(1, 100);
+            setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
                 value: kelas.id
             })));
@@ -418,13 +460,12 @@ const SchoolStudentPage = () => {
         }
     }
 
-
-
     return (
         <>
             <Toast ref={toast} />
             <ConfirmPopup />
             <div className="card">
+                <h1>Daftar Siswa {school?.name ?? 'Loading...'}</h1>
                 <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
                     <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
                         <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
@@ -438,26 +479,52 @@ const SchoolStudentPage = () => {
                         />
                         <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
                     </div>
-                    <Button icon="pi pi-upload" severity='help' label='Export' />
+                    <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
+                        handleExport();
+                    }} label='Export' />
                 </div>
 
                 <DataTable
                     dataKey="id"
                     selection={selectedStudents!}
                     selectionMode="multiple"
+                    value={studentData}
                     onSelectionChange={(e) => setSelectedStudents(e.value)}
+                    emptyMessage={
+                        loading ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                <span className="text-gray-500 font-semibold">Memuat data siswa...</span>
+                            </div>
+                        ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) || globalFilter ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-filter-slash text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Tidak ada siswa yang sesuai dengan pencarian Anda</span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Belum ada data siswa</span>
+                                <small className="text-gray-400">Silakan tambahkan siswa melalui tombol siswa baru atau import.</small>
+                            </div>
+                        )
+                    }
                     paginator
-                    rows={10}
-                    rowsPerPageOptions={[10, 50, 75, 100]}
-                    emptyMessage={loading ? "Loading..." : "Belum ada siswa"}
-                    tableStyle={{ minWidth: "50rem" }}
+                    lazy
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPage={(event) => {
+                        setCurrentPage((event.page ?? 0) + 1);
+                        setRowsPerPage(event.rows);
+                    }}
+                    rowsPerPageOptions={[10, 20, 50, 100]}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
                     stripedRows
-                    value={studentData}
-                    filters={filters}
-                    filterDisplay="row"
-                    globalFilter={globalFilter}
+                    // filterDisplay="row"
+                    // filters={filters}
+                    // globalFilter={globalFilter}
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 className="m-0">Data Siswa {school ? school.name : "Loading"}</h5>
@@ -504,8 +571,12 @@ const SchoolStudentPage = () => {
 
                     <Column
                         field="gender"
-                        header="Gender"
-                        body={(rowData) => (loading ? <Skeleton width="40%" height="1.5rem" /> : rowData.gender)}
+                        header="Jenis Kelamin"
+                        body={(rowData) =>
+                            loading ? <Skeleton width="40%" height="1.5rem" />
+                                : rowData.gender === "male" ? "Laki-Laki"
+                                    : "Perempuan"
+                        }
                         filter
                         filterElement={dropdownFilterTemplate("gender", listKelamin)}
                         showFilterMenu={false}
@@ -623,9 +694,9 @@ const SchoolStudentPage = () => {
                             placeholder="Pilih Kelas" />
                     </div>
                     <div className='field'>
-                        <label htmlFor="kelamin">Kelamin  <span className='text-red-600'>*</span></label>
+                        <label htmlFor="Jenis Kelamin">Jenis Kelamin  <span className='text-red-600'>*</span></label>
                         <Dropdown value={newStudentData.gender} onChange={(e) => setNewStudentData({ ...newStudentData, gender: e.value })} options={listKelamin} optionLabel="label"
-                            placeholder="Pilih Kelamin" />
+                            placeholder="Pilih Jenis Kelamin" />
                     </div>
                     <div className='field'>
                         <label htmlFor="status">Status Siswa  <span className='text-red-600'>*</span></label>
@@ -729,14 +800,14 @@ const SchoolStudentPage = () => {
                         />
                     </div>
                     <div className="field">
-                        <label htmlFor="edit-gender">Kelamin  <span className='text-red-600'>*</span></label>
+                        <label htmlFor="edit-gender">Jenis Kelamin  <span className='text-red-600'>*</span></label>
                         <Dropdown
                             value={editStudentData?.gender}
                             onChange={(e) =>
                                 setEditStudentData({ ...editStudentData!, gender: e.value })
                             }
                             options={listKelamin}
-                            placeholder="Pilih Gender"
+                            placeholder="Pilih Jenis Kelamin"
                         />
                     </div>
                     <div className='field'>
@@ -788,7 +859,7 @@ const SchoolStudentPage = () => {
                             </li>
                             <li className='mb-2'>
                                 <strong>Upload File:</strong> Pilih file yang sudah diisi sesuai template.
-                                <div className="mt-2">
+                                <div className="mt-2 flex gap-2">
                                     <FileUpload
                                         ref={fileUploadRef}
                                         mode="basic"
@@ -800,8 +871,10 @@ const SchoolStudentPage = () => {
                                         onClear={handleClearFile}
                                         auto={false}
                                     />
-
-
+                                    <div>
+                                        <Button severity='danger' disabled={fileUploadRef.current === null} onClick={handleClearFile} icon="pi pi-trash">
+                                        </Button>
+                                    </div>
                                 </div>
                             </li>
                             <li>
@@ -820,7 +893,7 @@ const SchoolStudentPage = () => {
 
                         <div className="flex justify-content-end gap-2 mt-4">
                             <Button label="Batal" severity="secondary" icon="pi pi-times" onClick={handleImportDialogClose} disabled={importLoading} />
-                            <Button label="Confirm Import" severity="success" icon="pi pi-check" onClick={confirmImport} loading={importLoading} />
+                            <Button label="Confirm Import" severity="success" disabled={fileUploadRef.current === null} icon="pi pi-check" onClick={confirmImport} loading={importLoading} />
                         </div>
                     </div>
                 </Dialog>

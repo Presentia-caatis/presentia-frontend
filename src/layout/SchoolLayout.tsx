@@ -17,7 +17,7 @@ const SchoolLayout = () => {
     const { darkMode } = useLayoutConfig();
     const [containerClass, setContainerClass] = useState('');
     const { checkAuth } = useAuth();
-    const { school, loading } = useSchool();
+    const { school, schoolLoading } = useSchool();
     const { schoolName } = useParams();
     const navigate = useNavigate();
 
@@ -28,7 +28,6 @@ const SchoolLayout = () => {
 
         authenticate();
     }, []);
-
 
     useEffect(() => {
         setContainerClass(
@@ -42,7 +41,7 @@ const SchoolLayout = () => {
         }
     }, [school, schoolName, navigate]);
 
-    if (loading) {
+    if (schoolLoading) {
         return (
             <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
                 <ProgressSpinner />

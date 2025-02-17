@@ -7,12 +7,12 @@ import Dashboard from './pages/school/dashboard/dashboard/SchoolDashboardPage';
 import StudentListPage from './pages/school/dashboard/student/SchoolStudentPage';
 import StudentAttendanceInPage from './pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceInPage';
 import StudentAttendanceOutPage from './pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceOutPage';
-import StudentAttendance from './pages/school/dashboard/attendance/SchoolStudentAttendance';
+import StudentAttendancePage from './pages/school/dashboard/attendance/SchoolStudentAttendancePage';
 import StudentAttendanceRecordResultPage from './pages/school/dashboard/attendance/SchoolStudentAttendanceRecordResultPage';
 import CustomEventPage from './pages/school/dashboard/attendance/SchoolCustomEventPage';
 import ClassroomListPage from './pages/school/dashboard/classgroup/SchoolClassgroupPage';
 import DefaultAttendanceTimePage from './pages/school/dashboard/attendance/SchoolSetAttendanceTimePage';
-import AttendanceStatusListPage from './pages/school/dashboard/attendance/SchoolAttendanceStatusPage';
+import AbsenceStatusListPage from './pages/school/dashboard/attendance/SchoolAbsenceStatusPage';
 // import AchievementListPage from './pages/school/dashboard/achievement/SchoolAchievementPage';
 // import StudentAchievementListPage from './pages/school/dashboard/achievement/SchoolStudentAchievementPage';
 // import ViolationPage from './pages/school/dashboard/violation/SchoolViolationPage';
@@ -34,6 +34,7 @@ import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionP
 import RegisterPage from './pages/auth/RegisterPage';
 import SchoolStudentAttendanceListPage from './pages/school/dashboard/student/SchoolAttendanceListPage';
 import FingerprintPage from './pages/school/dashboard/admin/FingerprintRegisterPage';
+import SchoolCheckInStatusPage from './pages/school/dashboard/attendance/SchoolCheckInStatusPage';
 
 const AppRoutes = () => {
     return (
@@ -66,11 +67,12 @@ const AppRoutes = () => {
                 <Route path="student">
                     <Route index element={<StudentListPage />} />
                 </Route>
-                <Route path='attendance' element={<StudentAttendance />} />
+                <Route path='attendance' element={<StudentAttendancePage />} />
                 <Route path='attendance-record-result' element={<StudentAttendanceRecordResultPage />} />
                 <Route path='custom-event' element={<CustomEventPage />} />
                 <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
-                <Route path='attendance/status' element={<AttendanceStatusListPage />} />
+                <Route path='check-in/status' element={<SchoolCheckInStatusPage />} />
+                <Route path='attendance/status' element={<AbsenceStatusListPage />} />
 
                 <Route path='classroom' element={<ClassroomListPage />} />
 

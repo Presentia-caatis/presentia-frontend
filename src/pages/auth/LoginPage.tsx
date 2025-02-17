@@ -44,8 +44,12 @@ const LoginPage = () => {
             }
             setIsLoggedIn(false);
         };
-
-        authenticate();
+        const queryParams = new URLSearchParams(location.search);
+        const status = queryParams.get('status');
+        const token = queryParams.get('token');
+        if (!status && !token) {
+            authenticate();
+        }
     }, []);
 
 
@@ -55,6 +59,7 @@ const LoginPage = () => {
         const token = queryParams.get('token');
 
         const handleLoginFlow = async () => {
+            setIsLoggedIn(true);
             if (status === 'new_user') {
                 const fullname = queryParams.get('name');
                 const email = queryParams.get('email');
@@ -65,8 +70,8 @@ const LoginPage = () => {
                     localStorage.setItem('token', token);
                     try {
                         const response = await authServices.getProfile();
-                        localStorage.setItem('user', JSON.stringify(response.data));
-                        callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+                        setAuth(response.data, token);
+                        callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
                         navigate('/user/dashboard');
                     } catch (error) {
                         callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
@@ -76,9 +81,11 @@ const LoginPage = () => {
                 const message = queryParams.get('message');
                 callToast(showToast, 'error', 'Login Failed', message || 'An unknown error occurred');
             }
+
+            setIsLoggedIn(false);
         };
 
-        if (status && token) {
+        if (status) {
             handleLoginFlow();
         }
     }, [navigate, showToast]);
@@ -100,23 +107,9 @@ const LoginPage = () => {
 
                 setAuth(user, token);
 
-                callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
+                callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
                 navigate('/user/dashboard');
             }
-            //     try {
-            //         const redirectResponse = await authServices.authenticated();
-            //         const { token, user } = redirectResponse;
-
-            //         localStorage.setItem('token', token);
-            //         localStorage.setItem('user', JSON.stringify(user));
-
-            //         setIsLoggedIn(true);
-            //         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah login');
-            //         navigate('/user/dashboard');
-            //     } catch (authError) {
-            //         callToast(showToast, 'error', 'Login Gagal', 'Gagal mendapatkan data user');
-            //     }
-            // }
         } catch (error: any) {
             callToast(showToast, 'error', 'Login Gagal', 'Email atau Password salah');
         } finally {
@@ -128,45 +121,6 @@ const LoginPage = () => {
     const handleGoogleLogin = async () => {
         authServices.googleLogin();
     };
-
-
-    const authCheck = async () => {
-        const response = await authServices.getProfile()
-        return response;
-    }
-
-
-    // useEffect(() => {
-    //     const token = localStorage.getItem('token');
-
-    //     if (!token || token === 'undefined') {
-    //         localStorage.clear();
-    //         setIsLoggedIn(false);
-    //         navigate('/login');
-    //     } else {
-    //         const checkTokenValidity = async () => {
-    //             try {
-    //                 const response = await authCheck();
-    //                 if (response.status === "success") {
-    //                     setIsLoggedIn(true);
-    //                     navigate('/user/dashboard');
-    //                 } else {
-    //                     localStorage.clear();
-    //                     setIsLoggedIn(false);
-    //                     navigate('/login');
-    //                 }
-    //             } catch (error) {
-    //                 console.error('Error during token validation', error);
-    //                 localStorage.clear();
-    //                 setIsLoggedIn(false);
-    //                 navigate('/login');
-    //             }
-    //         };
-
-    //         checkTokenValidity();
-    //     }
-    // }, [navigate]);
-
 
     return (
         <>

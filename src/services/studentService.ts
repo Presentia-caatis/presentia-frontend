@@ -2,15 +2,18 @@
 import axiosClient from '../utils/axiosClient';
 
 class StudentService {
-    async getStudent() {
+    async getStudent(page: number = 1, perPage: number = 10, classGroupId?: string | number, search?: string) {
         try {
-            const response = await axiosClient.get(`/student`);
+            const response = await axiosClient.get(`/student`, {
+                params: { page, perPage, class_group_id: classGroupId, search }
+            });
             return response.data;
         } catch (error) {
-            console.error(`Error fetching students`, error);
+            console.error("Error fetching students", error);
             throw error;
         }
     }
+
 
     async addStudent(payload: any) {
         try {
@@ -31,6 +34,36 @@ class StudentService {
             throw error;
         }
     }
+
+    async exportStudents() {
+        try {
+            const response = await axiosClient.get('/student/csv', {
+                responseType: 'blob'
+            });
+            const contentDisposition = response.headers['content-disposition'];
+            let fileName = 'students.csv';
+
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="(.+)"/);
+                if (match?.[1]) {
+                    fileName = match[1];
+                }
+            }
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting students', error);
+            throw error;
+        }
+    }
+
+
 
     async updateStudent(schoolId: string | number, studentId: string | number, payload: any) {
         try {

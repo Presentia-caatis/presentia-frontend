@@ -138,7 +138,7 @@ const SchoolCustomEventPage = () => {
             id: '1',
             sticky: true,
             severity: 'info',
-            detail: 'Custom Event akan mengubah jadwal absensi masuk dan keluar sesuai jam yang ditentukan',
+            detail: 'Event akan mengubah jadwal absensi masuk dan keluar sesuai jam yang ditentukan',
             closable: false
         });
     });
@@ -146,7 +146,7 @@ const SchoolCustomEventPage = () => {
     return (
         <>
             <div className="card">
-                <h1>Custom Event Baru</h1>
+                <h1>Buat Event Sekolah</h1>
                 <Messages ref={msgs} />
                 <div className='flex justify-content-between p-4 card mt-4'>
                     <div className='flex gap-2'>
@@ -163,7 +163,7 @@ const SchoolCustomEventPage = () => {
                     onSelectionChange={(e) => setSelectedEvents(e.value)}
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 className="m-0">Daftar Custom Event</h5>
+                            <h5 className="m-0">Daftar Event</h5>
                             <span className="block mt-2 md:mt-0 p-input-icon-left">
                                 <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
                                 <InputText className='py-2 pl-5' placeholder="Search..." />

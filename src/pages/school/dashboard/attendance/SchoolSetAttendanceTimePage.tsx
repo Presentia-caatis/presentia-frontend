@@ -9,8 +9,8 @@ import { useMountEffect } from 'primereact/hooks';
 import attendanceScheduleService from '../../../../services/attendanceScheduleService';
 import { useAuth } from '../../../../context/AuthContext';
 import { parseToDate } from '../../../../utils/formatTime';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { Dialog } from 'primereact/dialog';
+import { Skeleton } from 'primereact/skeleton';
 
 const SchoolSetAttendanceTimePage = () => {
     const [entryStartTime, setEntryStartTime] = useState<Date | null>(null);
@@ -205,85 +205,54 @@ const SchoolSetAttendanceTimePage = () => {
                     </div>
                 </div>
                 <Messages ref={msgs} />
-                {loading ? (
-                    <div className="flex justify-content-center align-items-center" style={{ height: '400px' }}>
-                        <ProgressSpinner />
-                    </div>
-                ) : (
-                    <div>
-                        <div className="mt-5">
-                            <h5>Jam Masuk</h5>
-                            <div className="flex gap-3">
-                                <div className="flex flex-column gap-2">
-                                    <label htmlFor="entry-start-time">Mulai jam masuk</label>
-                                    <Calendar
-                                        id="entry-start-time"
-                                        value={entryStartTime}
-                                        onChange={(e) => setEntryStartTime(e.value as Date)}
-                                        timeOnly
-                                        hourFormat="24"
-                                        showIcon
-                                    />
-                                </div>
-                                <div className="align-self-center mt-4">-</div>
-                                <div className="flex flex-column gap-2">
-                                    <label htmlFor="entry-end-time">Selesai jam masuk</label>
-                                    <Calendar
-                                        id="entry-end-time"
-                                        value={entryEndTime}
-                                        onChange={(e) => setEntryEndTime(e.value as Date)}
-                                        timeOnly
-                                        hourFormat="24"
-                                        showIcon
-                                    />
-                                </div>
-                            </div>
-                            {entryError && <small className="p-error">{entryError}</small>}
-                        </div>
 
-                        <div className="mt-4">
-                            <h5>Jam Pulang</h5>
-                            <div className="flex gap-3">
-                                <div className="flex flex-column gap-2">
-                                    <label htmlFor="exit-start-time">Mulai jam pulang</label>
-                                    <Calendar
-                                        id="exit-start-time"
-                                        value={exitStartTime}
-                                        onChange={(e) => setExitStartTime(e.value as Date)}
-                                        timeOnly
-                                        hourFormat="24"
-                                        showIcon
-                                    />
-                                </div>
-                                <div className="align-self-center mt-4">-</div>
-                                <div className="flex flex-column gap-2">
-                                    <label htmlFor="exit-end-time">Selesai jam pulang</label>
-                                    <Calendar
-                                        id="exit-end-time"
-                                        value={exitEndTime}
-                                        onChange={(e) => setExitEndTime(e.value as Date)}
-                                        timeOnly
-                                        hourFormat="24"
-                                        showIcon
-                                    />
-                                </div>
+                <div>
+                    <div className="mt-5">
+                        <h5>Jam Masuk</h5>
+                        <div className="flex gap-3">
+                            <div className="flex flex-column gap-2">
+                                <label htmlFor="entry-start-time">Mulai jam masuk</label>
+                                {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
+                                    <Calendar value={entryStartTime} onChange={(e) => setEntryStartTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                )}
                             </div>
-                            {exitError && <small className="p-error">{exitError}</small>}
+                            <div className="align-self-center mt-4">-</div>
+                            <div className="flex flex-column gap-2">
+                                <label htmlFor="entry-end-time">Selesai jam masuk</label>
+                                {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
+                                    <Calendar value={entryEndTime} onChange={(e) => setEntryEndTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                )}
+                            </div>
                         </div>
-
-                        <div className="mt-3">
-                            <h5>Terakhir diperbarui</h5>
-                            <Calendar
-                                id="last-update-time"
-                                value={lastUpdated}
-                                disabled
-                                showTime
-                            />
-                        </div>
-                        <Divider />
+                        {entryError && <small className="p-error">{entryError}</small>}
                     </div>
 
-                )}
+                    <div className="mt-4">
+                        <h5>Jam Pulang</h5>
+                        <div className="flex gap-3">
+                            <div className="flex flex-column gap-2">
+                                <label htmlFor="exit-start-time">Mulai jam pulang</label>
+                                {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
+                                    <Calendar value={exitStartTime} onChange={(e) => setExitStartTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                )}
+                            </div>
+                            <div className="align-self-center mt-4">-</div>
+                            <div className="flex flex-column gap-2">
+                                <label htmlFor="exit-end-time">Selesai jam pulang</label>
+                                {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
+                                    <Calendar value={exitEndTime} onChange={(e) => setExitEndTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                )}
+                            </div>
+                        </div>
+                        {exitError && <small className="p-error">{exitError}</small>}
+                    </div>
+
+                    <div className="mt-3">
+                        <h5>Terakhir diperbarui</h5>
+                        {loading ? <Skeleton width="15rem" height="2rem" /> : <Calendar value={lastUpdated} disabled showTime />}
+                    </div>
+                    <Divider />
+                </div>
                 <div className="p-d-flex p-ai-center">
                     <Button label="Reset" icon="pi pi-refresh" disabled={
                         !initialData ||

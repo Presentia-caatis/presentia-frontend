@@ -11,11 +11,13 @@ import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 import { useSchool } from '../../../../context/SchoolContext';
 import { FilterMatchMode } from 'primereact/api';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import studentService from '../../../../services/studentService';
 
 type ClassgroupData = {
     id?: number;
     class_name: string;
-    amount_of_students: number;
+    students_count?: number;
 };
 
 const SchoolClassgroupPage = () => {
@@ -23,35 +25,69 @@ const SchoolClassgroupPage = () => {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [showEditDialog, setShowEditDialog] = useState(false);
     const [classgroupData, setClassgroupData] = useState<ClassgroupData>({
-        class_name: '',
-        amount_of_students: 0,
+        class_name: ''
     });
     const [tempClassgroupData, setTempClassgroupData] = useState<ClassgroupData>({
-        class_name: '',
-        amount_of_students: 0,
+        class_name: ''
     });
     const [classgroupList, setClassgroupList] = useState<any[]>([]);
     const [selectedClassgroups, setSelectedClassgroups] = useState<any[]>([]);
+    const [activatedClassGroup, setActivatedClassGroup] = useState<ClassgroupData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [studentLoading, setStudentLoading] = useState(false);
     const { school } = useSchool();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [studentCurrentPage, setStudentCurrentPage] = useState(1);
+    const [studentRowsPerPage, setStudentRowsPerPage] = useState(10);
+    const [studentTotalRecords, setStudentTotalRecords] = useState(0);
+
+    const [showStudentDialog, setShowStudentDialog] = useState(false);
+    const [students, setStudents] = useState([]);
 
     useEffect(() => {
-        fetchClassgroups();
-    }, []);
+        fetchClassgroups(currentPage, rowsPerPage);
+    }, [currentPage, rowsPerPage]);
 
     const [filters, setFilters] = useState({
         class_name: { value: '', matchMode: FilterMatchMode.CONTAINS },
     });
 
-    const fetchClassgroups = async () => {
+    const fetchClassgroups = async (page = 1, perPage = 10) => {
         try {
-            const { responseData } = await classGroupService.getClassGroups();
-            setClassgroupList(responseData.data);
+            setLoading(true);
+            setClassgroupList([]);
+            const { responseData } = await classGroupService.getClassGroups(page, perPage);
+            setClassgroupList(responseData.data.data);
+            setTotalRecords(responseData.data.total);
         } catch (error: any) {
             console.error('Failed to fetch classgroups:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openStudentDialog = (classGroup: any) => {
+        setShowStudentDialog(true);
+        setStudentCurrentPage(1);
+        setStudentRowsPerPage(10);
+        setActivatedClassGroup(classGroup);
+        fetchStudents(1, studentRowsPerPage, classGroup.id);
+    };
+
+    const fetchStudents = async (page = 1, perPage = 10, classGroupId: number) => {
+        try {
+            setStudentLoading(true);
+            setStudents([]);
+            const response = await studentService.getStudent(page, perPage, classGroupId);
+            setStudents(response.data.data);
+            setStudentTotalRecords(response.data.total);
+        } catch (error) {
+            console.error("Error fetching students:", error);
+        } finally {
+            setStudentLoading(false);
         }
     };
 
@@ -68,11 +104,11 @@ const SchoolClassgroupPage = () => {
 
     const handleCreateClassgroup = async () => {
         try {
+            if (!school) return;
             setSaveLoading(true);
             const payload = {
                 school_id: school.id,
                 class_name: classgroupData.class_name,
-                amount_of_students: 0
             }
             await classGroupService.createClassGroup(payload);
 
@@ -100,11 +136,11 @@ const SchoolClassgroupPage = () => {
 
     const handleEditClassgroup = async () => {
         try {
+            if (!school) return;
             setSaveLoading(true);
             const payload = {
                 school_id: school.id,
-                class_name: classgroupData.class_name,
-                amount_of_students: classgroupData.amount_of_students
+                class_name: classgroupData.class_name
             }
             if (classgroupData.id !== undefined) {
                 await classGroupService.updateClassGroup(classgroupData.id, payload);
@@ -192,18 +228,15 @@ const SchoolClassgroupPage = () => {
     const closeDialog = (type: string) => {
         if (type === 'edit') {
             setClassgroupData({
-                class_name: '',
-                amount_of_students: 0,
+                class_name: ''
             });
             setTempClassgroupData({
-                class_name: '',
-                amount_of_students: 0,
+                class_name: ''
             });
             setShowEditDialog(false);
         } else {
             setClassgroupData({
-                class_name: '',
-                amount_of_students: 0,
+                class_name: ''
             });
             setShowCreateDialog(false);
         }
@@ -214,15 +247,18 @@ const SchoolClassgroupPage = () => {
         <span
             className=""
         >
-            {rowData.amount_of_students}
+            {rowData.students_count}
         </span>
     );
+
+
 
     return (
         <>
             <Toast ref={toast} />
             <ConfirmPopup />
             <div className="card">
+                <h1>Daftar Kelas</h1>
                 <div className="flex justify-content-between p-4 card">
                     <div className="flex gap-2">
                         <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
@@ -239,27 +275,53 @@ const SchoolClassgroupPage = () => {
                     selectionMode="multiple"
                     onSelectionChange={(e) => setSelectedClassgroups(e.value)}
                     value={classgroupList}
-                    paginator
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 className="m-0">Daftar Kelas</h5>
                         </div>
                     }
-                    rows={20}
-                    rowsPerPageOptions={[20, 50, 75, 100]}
-                    emptyMessage={loading ? "Loading..." : "Belum ada kelas"}
-                    tableStyle={{ minWidth: '30rem' }}
-                    filters={filters}
-                    filterDisplay="row"
+                    emptyMessage={
+                        loading ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                <span className="text-gray-500 font-semibold">Memuat data kelas...</span>
+                            </div>
+                        ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-filter-slash text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Tidak ada kelas yang sesuai dengan pencarian Anda</span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Belum ada data kelas</span>
+                                <small className="text-gray-400">Silakan tambahkan kelas melalui tombol kelas baru atau import.</small>
+                            </div>
+                        )
+                    }
+                    lazy
+                    paginator
+                    first={(currentPage - 1) * rowsPerPage}
+                    rows={rowsPerPage}
+                    totalRecords={totalRecords}
+                    onPage={(event) => {
+                        setCurrentPage((event.page ?? 0) + 1);
+                        setRowsPerPage(event.rows);
+                    }}
+                    rowsPerPageOptions={[10, 50, 75, 100]}
+                    tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} classes"
+                    stripedRows
+                    filters={filters}
+                    filterDisplay="row"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                     <Column field="class_name" header="Nama" sortable filter
                         filterElement={inputFilterTemplate("class_name")}
                         showFilterMenu={false} />
                     <Column
-                        field="amount_of_students"
+                        field="students_count"
                         header="Jumlah Murid"
                         sortable
                         body={renderStudentCount}
@@ -272,7 +334,7 @@ const SchoolClassgroupPage = () => {
                                     className="p-button-info p-button-rounded"
                                     tooltip="Lihat daftar siswa"
                                     tooltipOptions={{ position: 'top' }}
-                                    onClick={() => alert('Open student list for this class')}
+                                    onClick={() => openStudentDialog(rowData)}
                                 />
                                 <Button
                                     icon="pi pi-pencil"
@@ -350,6 +412,67 @@ const SchoolClassgroupPage = () => {
                             autoFocus
                         />
                     </div>
+                </Dialog>
+                <Dialog
+                    visible={showStudentDialog}
+                    style={{ width: "50vw" }}
+                    onHide={() => {
+                        setShowStudentDialog(false);
+                        setStudentCurrentPage(1);
+                        setStudentRowsPerPage(10);
+                        setStudents([]);
+                    }}
+                    header={`Daftar Siswa Kelas ${activatedClassGroup?.class_name || ''}`}
+                >
+                    {loading ? (
+                        <div className="flex justify-content-center align-items-center">
+                            <ProgressSpinner />
+                        </div>
+                    ) : (
+                        <DataTable paginator
+                            lazy
+                            first={(studentCurrentPage - 1) * studentRowsPerPage}
+                            rows={studentRowsPerPage}
+                            totalRecords={studentTotalRecords}
+                            onPage={(event) => {
+                                setStudentCurrentPage((event.page ?? 0) + 1);
+                                setStudentRowsPerPage(event.rows);
+                                if (activatedClassGroup && activatedClassGroup.id !== undefined) {
+                                    fetchStudents(event.page, event.rows, activatedClassGroup.id);
+                                }
+                            }}
+                            rowsPerPageOptions={[10, 20, 50, 100]}
+                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa"
+                            stripedRows value={students} emptyMessage={
+                                studentLoading ? (
+                                    <div className="flex flex-column align-items-center gap-3 py-4">
+                                        <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                        <span className="text-gray-500 font-semibold">Memuat data siswa...</span>
+                                    </div>
+                                ) : Object.values(filters).some((filter) => filter.value !== null && filter.value !== undefined) ? (
+                                    <div className="flex flex-column align-items-center gap-3 py-4">
+                                        <i className="pi pi-filter-slash text-gray-400" style={{ fontSize: "2rem" }} />
+                                        <span className="text-gray-500 font-semibold">Tidak ada siswa yang sesuai dengan pencarian Anda</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-column align-items-center gap-3 py-4">
+                                        <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
+                                        <span className="text-gray-500 font-semibold">Belum ada data siswa</span>
+                                        <small className="text-gray-400">Silakan tambahkan siswa melalui tombol siswa baru atau import.</small>
+                                    </div>
+                                )
+                            }>
+                            <Column field="nis" header="NIS" />
+                            <Column field="student_name" header="Nama" />
+                            <Column
+                                field="gender"
+                                header="Jenis Kelamin"
+                                body={(rowData) => rowData.gender === "male" ? "Laki-Laki" : "Perempuan"}
+                            />
+                            <Column field="class_group.class_name" header="Kelas" />
+                        </DataTable>
+                    )}
                 </Dialog>
             </div>
         </>
