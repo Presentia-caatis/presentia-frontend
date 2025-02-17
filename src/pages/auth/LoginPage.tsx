@@ -209,7 +209,7 @@ const LoginPage = () => {
                             </form>
                             <Button
                                 type='button'
-                                label="Sign in with Google"
+                                label="Sign up with Google"
                                 icon="pi pi-google"
                                 className="w-full p-3 text-xl p-button-outlined"
                                 onClick={handleGoogleLogin}
