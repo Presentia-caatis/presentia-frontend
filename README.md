@@ -17,7 +17,7 @@ Ensure you have the following installed on your system before proceeding:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repository/presentia-frontend.git
+   git clone https://github.com/Presentia-caatis/presentia-frontend
    cd presentia-frontend
    ```
 
