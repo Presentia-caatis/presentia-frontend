@@ -44,7 +44,7 @@ const SchoolStudentAttendanceListPage = () => {
     const [exitStartTime, setExitStartTime] = useState<Date | null>(null);
     const [exitEndTime, setExitEndTime] = useState<Date | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
     const [showLeaderboard, setShowLeaderboard] = useState(true);
     const [topThree, setTopThree] = useState<any[]>([]);
@@ -129,7 +129,7 @@ const SchoolStudentAttendanceListPage = () => {
         fetchAttendance(currentPage, rowsPerPage, aIndex);
     };
 
-    const fetchAttendance = async (page = 1, perPage = 10, activeIndex?: number) => {
+    const fetchAttendance = async (page = 1, perPage = 20, activeIndex?: number) => {
         if (!user?.school_id) {
             return;
         }
@@ -292,7 +292,7 @@ const SchoolStudentAttendanceListPage = () => {
                                 showGridlines
                                 stripedRows
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa">
                                 <Column field="indexNumber" header="Nomor" style={{ width: "1%" }}
                                     body={(rowData) => loading ? <Skeleton width="20px" /> : rowData.indexNumber}
                                 />
@@ -389,7 +389,7 @@ const SchoolStudentAttendanceListPage = () => {
                                 showGridlines
                                 stripedRows
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa">
                                 <Column field="indexNumber" header="Nomor" style={{ width: "1%" }}
                                     body={(rowData) => loading ? <Skeleton width="20px" /> : rowData.indexNumber}
                                 />

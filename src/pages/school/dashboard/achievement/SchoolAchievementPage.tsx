@@ -68,7 +68,7 @@ const SchoolAchievementPage = () => {
                     emptyMessage="No achivement available"
                     tableStyle={{ minWidth: '30rem' }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} classes"
+                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} kelas"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                     <Column field="name" header="Name" sortable />

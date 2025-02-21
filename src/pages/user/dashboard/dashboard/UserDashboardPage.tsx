@@ -153,14 +153,18 @@ const UserDashboardPage = () => {
                                         <i className="pi pi-calendar text-xl mr-2"></i>
                                         <div className='flex sm:flex-row flex-column'>
                                             <strong className='mr-2 white-space-nowrap'>Terdaftar Sejak:</strong>
-                                            <span>{school ? new Date(school.registeredAt).toLocaleDateString() : "Loading..."}</span>
+                                            <span>{school ? new Date(school.registeredAt).toLocaleDateString("id-ID") : "Loading..."}</span>
                                         </div>
                                     </div>
                                     <div className="mb-3 flex">
                                         <i className="pi pi-calendar-times text-xl mr-2"></i>
-                                        <div className='flex sm:flex-row flex-column'>
-                                            <strong className='mr-2 white-space-nowrap'>Terakhir Berlangganan:</strong>
-                                            <span>{school?.latest_subscription ?? "Loading..."}</span>
+                                        <div className="flex sm:flex-row flex-column">
+                                            <strong className="mr-2 whitespace-nowrap">Terakhir Berlangganan:</strong>
+                                            <span>
+                                                {school?.latest_subscription
+                                                    ? new Date(school.latest_subscription).toLocaleDateString("id-ID")
+                                                    : "Loading..."}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="mb-3">

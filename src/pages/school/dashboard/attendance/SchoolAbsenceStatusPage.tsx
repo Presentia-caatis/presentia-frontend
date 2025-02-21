@@ -26,14 +26,14 @@ const SchoolAbsenceStatusPage = () => {
     const toast = useRef<Toast>(null);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
     useEffect(() => {
         fetchPermitTypes(currentPage, rowsPerPage);
     }, [currentPage, rowsPerPage]);
 
-    const fetchPermitTypes = async (page = 1, perPage = 10) => {
+    const fetchPermitTypes = async (page = 1, perPage = 20) => {
         try {
             setLoading(true);
             const response = await absencePermitTypeService.getAll(page, perPage);
@@ -158,7 +158,7 @@ const SchoolAbsenceStatusPage = () => {
                 rowsPerPageOptions={[10, 20, 50, 100]}
                 tableStyle={{ minWidth: "50rem" }}
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} status absensi"
                 emptyMessage={
                     loading ? (
                         <div className="flex flex-column align-items-center gap-3 py-4">

@@ -53,7 +53,7 @@ const FingerprintPage = () => {
     ];
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
     const [searchStudentDropdown, setSearchStudentDropdown] = useState("");
@@ -72,7 +72,7 @@ const FingerprintPage = () => {
             id: '1',
             sticky: true,
             severity: 'warn',
-            detail: 'Hubungin admin jika lupa dengan akun untuk mendaftarkan sidik jari.',
+            detail: 'Hubungi Admin jika membutuhkan akun pendaftaran sidik jari.',
             closable: false,
         });
     });
@@ -214,7 +214,7 @@ const FingerprintPage = () => {
         }
     };
 
-    const fetchStudentsTable = async (page = 1, perPage = 10, classGroupId?: number | string, search?: string) => {
+    const fetchStudentsTable = async (page = 1, perPage = 20, classGroupId?: number | string, search?: string) => {
         try {
             if (!user?.school_id) return;
             setLoadingStudentTable(true);
