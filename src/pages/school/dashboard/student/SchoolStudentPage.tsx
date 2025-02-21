@@ -577,7 +577,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="student_name"
                         header="Nama"
-                        body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name)}
+                        body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name?.toUpperCase())}
                         filter
                         filterElement={inputFilterTemplate("student_name")}
                         showFilterMenu={false}

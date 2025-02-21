@@ -327,7 +327,7 @@ const FingerprintPage = () => {
         return (
             <div className="flex align-items-center justify-content-between">
                 <span>
-                    {option.student_name} - {option.class_group?.class_name || 'Tanpa Kelas'} - {option.id}
+                    {option.student_name?.toUpperCase()} - {option.class_group?.class_name || 'Tanpa Kelas'} - {option.id}
                 </span>
                 {isRegistered && <i className="ml-2 pi pi-check text-green-500"></i>}
             </div>

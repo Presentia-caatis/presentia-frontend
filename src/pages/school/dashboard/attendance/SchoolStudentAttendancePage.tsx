@@ -383,7 +383,11 @@ const SchoolStudentAttendancePage = () => {
                     currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} kehadiran"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column field="student.student_name" header="Nama"></Column>
+                    <Column
+                        field="student.student_name"
+                        header="Nama"
+                        body={(rowData) => rowData.student?.student_name?.toUpperCase()}
+                    />
                     <Column field="student.nis" header="NIS"></Column>
                     <Column field="student.gender" header="Kelamin" body={(rowData) => rowData.student.gender === "male" ? "Laki-laki" : "Perempuan"}></Column>
                     <Column field="student.class_group.class_name" header="Kelas"></Column>

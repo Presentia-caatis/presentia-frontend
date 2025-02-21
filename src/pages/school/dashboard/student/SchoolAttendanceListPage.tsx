@@ -300,7 +300,7 @@ const SchoolStudentAttendanceListPage = () => {
                                     className="text-lg"
                                     headerStyle={{ width: "50%", minWidth: "200px" }}
                                     bodyStyle={{ width: "50%", minWidth: "200px" }}
-                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name}
+                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
                                 />
                                 <Column field="check_in_time" header="Waktu"
                                     className="text-lg"
@@ -397,7 +397,7 @@ const SchoolStudentAttendanceListPage = () => {
                                     className="text-lg"
                                     headerStyle={{ width: "50%", minWidth: "200px" }}
                                     bodyStyle={{ width: "50%", minWidth: "200px" }}
-                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name}
+                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
                                 />
                                 <Column field="check_out_time" header="Waktu"
                                     className="text-lg"
