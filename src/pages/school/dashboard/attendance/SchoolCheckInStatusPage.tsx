@@ -37,6 +37,7 @@ const SchoolCheckInStatusPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
+    const disableDefaultStatusForm = checkInStatusData.late_duration === -1 || checkInStatusData.late_duration === 0;
 
     useEffect(() => {
         fetchCheckInStatus(currentPage, rowsPerPage);
@@ -133,12 +134,12 @@ const SchoolCheckInStatusPage = () => {
             setShowDialog(false);
             fetchCheckInStatus();
             resetForm();
-        } catch (error) {
-            console.error('Error saving check-in status:', error);
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Terjadi kesalahan, coba lagi nanti.';
             toast.current?.show({
                 severity: 'error',
                 summary: 'Gagal',
-                detail: 'Terjadi kesalahan saat menyimpan status presensi.',
+                detail: errorMessage,
                 life: 3000,
             });
         } finally {
@@ -163,12 +164,12 @@ const SchoolCheckInStatusPage = () => {
                 life: 3000,
             });
             fetchCheckInStatus();
-        } catch (error) {
-            console.error('Error deleting check-in status:', error);
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Terjadi kesalahan, coba lagi nanti.';
             toast.current?.show({
                 severity: 'error',
                 summary: 'Gagal',
-                detail: 'Terjadi kesalahan saat menghapus status presensi.',
+                detail: errorMessage,
                 life: 3000,
             });
         } finally {
@@ -193,7 +194,10 @@ const SchoolCheckInStatusPage = () => {
                 dataKey="id"
                 selection={selectedCheckInStatus}
                 selectionMode="multiple"
-                onSelectionChange={(e) => setSelectedCheckInStatus(e.value)}
+                onSelectionChange={(e) => {
+                    const filteredSelection = e.value.filter((student) => student.late_duration > 1);
+                    setSelectedCheckInStatus(filteredSelection)
+                }}
                 value={checkInStatusList}
                 paginator
                 first={(currentPage - 1) * rowsPerPage
@@ -281,7 +285,7 @@ const SchoolCheckInStatusPage = () => {
                                     icon="pi pi-trash"
                                     className="p-button-danger p-button-rounded"
                                     tooltip="Hapus"
-                                    disabled={loadingDelete}
+                                    disabled={loadingDelete || rowData.late_duration === 0 || rowData.late_duration === -1}
                                     onClick={(e) => confirmDeleteCheckInStatus(e, rowData.id)}
                                 />
                             </div>
@@ -330,6 +334,7 @@ const SchoolCheckInStatusPage = () => {
                         id="late_duration"
                         type="number"
                         value={checkInStatusData.late_duration}
+                        disabled={disableDefaultStatusForm}
                         onChange={(e) => setCheckInStatusData({ ...checkInStatusData, late_duration: parseInt(e.target.value) })}
                     />
                 </div>
@@ -343,6 +348,7 @@ const SchoolCheckInStatusPage = () => {
                                 value={1}
                                 onChange={() => setCheckInStatusData({ ...checkInStatusData, is_active: 1 })}
                                 checked={checkInStatusData.is_active === 1}
+                                disabled={disableDefaultStatusForm}
                             />
                             <label htmlFor="status1" className="ml-2">Aktif</label>
                         </div>
@@ -353,6 +359,7 @@ const SchoolCheckInStatusPage = () => {
                                 value={0}
                                 onChange={() => setCheckInStatusData({ ...checkInStatusData, is_active: 0 })}
                                 checked={checkInStatusData.is_active === 0}
+                                disabled={disableDefaultStatusForm}
                             />
                             <label htmlFor="status2" className="ml-2">Tidak Aktif</label>
                         </div>

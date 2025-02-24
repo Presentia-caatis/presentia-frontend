@@ -8,7 +8,6 @@ import { Dialog } from 'primereact/dialog';
 import { RadioButton } from 'primereact/radiobutton';
 import { Tooltip } from 'primereact/tooltip';
 import { absencePermitTypeService } from '../../../../services/absencePermitService';
-import { useAuth } from '../../../../context/AuthContext';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 import { Messages } from 'primereact/messages';
@@ -22,7 +21,6 @@ const SchoolAbsenceStatusPage = () => {
     const [selectedPermits, setSelectedPermits] = useState<any[]>([]);
     const [loadingButton, setLoadingButton] = useState(false);
     const [permitList, setPermitList] = useState<any[]>([]);
-    const { user } = useAuth();
     const toast = useRef<Toast>(null);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -71,7 +69,6 @@ const SchoolAbsenceStatusPage = () => {
     const handleSave = async () => {
         try {
             setLoadingButton(true);
-
             if (permitTypeData.id) {
                 await absencePermitTypeService.update(permitTypeData.id, permitTypeData);
                 toast.current?.show({
@@ -81,10 +78,9 @@ const SchoolAbsenceStatusPage = () => {
                     life: 3000,
                 });
             } else {
-                await absencePermitTypeService.create({
-                    ...permitTypeData,
-                    school_id: user?.school_id,
-                });
+                await absencePermitTypeService.create(
+                    permitTypeData
+                );
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Berhasil',
