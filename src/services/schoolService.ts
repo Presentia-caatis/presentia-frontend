@@ -29,12 +29,11 @@ class SchoolService {
   }
 
   async update(id: number, school: FormData) {
-    const response = await axiosClient.put(`/school/${id}`, school, {
+    const response = await axiosClient.post(`/school/${id}`, school, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
   }
-
 
   async delete(id: number) {
     await axiosClient.delete(`/school/${id}`);

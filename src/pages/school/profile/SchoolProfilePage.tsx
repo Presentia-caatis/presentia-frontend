@@ -8,6 +8,8 @@ import schoolService from '../../../services/schoolService';
 import { Toast } from 'primereact/toast';
 import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import defaultLogoSekolah from '../../../assets/defaultLogoSekolah.png';
+import { formatSchoolName } from '../../../utils/formatSchoolName';
+import { useNavigate } from 'react-router-dom';
 
 const SchoolProfilePage = () => {
     const { school, setSchool } = useSchool();
@@ -17,28 +19,63 @@ const SchoolProfilePage = () => {
     const [logoImage, setLogoImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isModified, setIsModified] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (school) {
             setEditData({ name: school.name, address: school.address, logo_image: school.logoImagePath, remove_image: false });
-            setImagePreview("");
+            setImagePreview(school.logoImagePath);
         }
     }, [school]);
+
+
+    useEffect(() => {
+        if (!school) return;
+
+        const isChanged = (
+            editData.name !== school.name ||
+            editData.address !== school.address ||
+            (editData.remove_image && imagePreview !== school.logoImagePath) ||
+            logoImage !== null
+        );
+
+        setIsModified(isChanged);
+    }, [editData, school, logoImage, imagePreview]);
+
 
     const handleUpdate = async () => {
         setLoading(true);
         try {
             const formData = new FormData();
-            formData.append("school_name", editData.name);
+            formData.append("name", editData.name);
             formData.append("address", editData.address);
 
             if (logoImage) {
                 formData.append("logo_image", logoImage);
             }
 
+            if (editData.remove_image) {
+                formData.append("remove_image", "1");
+            }
+
             if (school) {
                 const updatedSchool = await schoolService.update(school.id, formData as any);
-                setSchool(updatedSchool.data);
+
+                if (updatedSchool.data) {
+                    setSchool((prev) => prev ? {
+                        ...prev,
+                        name: updatedSchool.data.name,
+                        address: updatedSchool.data.address,
+                        logoImagePath: updatedSchool.data.logo_image_path,
+                        status: updatedSchool.data.status ?? prev.status,
+                        latest_subscription: updatedSchool.data.latest_subscription
+                    } : updatedSchool.data);
+
+                    setImagePreview(updatedSchool.data.logo_image_path);
+                    const newSchoolName = formatSchoolName(updatedSchool.data.name);
+                    navigate(`/school/${newSchoolName}/profile`, { replace: true });
+                }
             }
 
             toast.current?.show({
@@ -90,10 +127,13 @@ const SchoolProfilePage = () => {
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
                 setLogoImage(file);
+
+                event.target.value = '';
             };
             reader.readAsDataURL(file);
         }
     };
+
 
 
     const handleRemoveLogo = () => {
@@ -110,33 +150,35 @@ const SchoolProfilePage = () => {
                 <h1>Profile Sekolah</h1>
                 <Divider />
                 <div className="field">
-                    <label>Logo Sekolah</label>
+                    <label>Logo</label>
                     <div className="flex items-center gap-4">
-                        <div onClick={handleAvatarClick} className="cursor-pointer">
-                            <img src={imagePreview || defaultLogoSekolah} alt="" className='w-5rem h-5rem border-circle' />
+                        <div >
+                            <img loading="lazy" src={imagePreview || defaultLogoSekolah} alt="" className='w-5rem h-5rem border-circle' />
                             <input
                                 type="file"
                                 accept="image/*"
                                 ref={fileInputRef}
                                 style={{ display: 'none' }}
                                 onChange={handleImageChange}
+                                disabled={loading}
                             />
                         </div>
                         <div className="flex flex-col gap-2">
                             <div className='my-auto flex gap-2'>
-                                <Button label="Ganti Logo" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
-                                <Button label="Hapus Logo" icon="pi pi-trash" disabled={!imagePreview} className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
+                                <Button disabled={loading} label="Ganti Logo" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
+                                <Button disabled={!imagePreview || loading} label="Hapus Logo" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className="field">
-                    <label>Nama Sekolah</label>
+                    <label>Nama</label>
                     <InputText
                         value={editData.name}
                         onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                         placeholder="Masukkan Nama Sekolah"
                         className="w-full"
+                        disabled={loading}
                     />
                 </div>
                 <div className="field mt-3">
@@ -146,6 +188,7 @@ const SchoolProfilePage = () => {
                         onChange={(e) => setEditData({ ...editData, address: e.target.value })}
                         placeholder="Masukkan Alamat"
                         className="w-full"
+                        disabled={loading}
                     />
                 </div>
                 <Divider />
@@ -156,16 +199,22 @@ const SchoolProfilePage = () => {
                         className="p-button-primary"
                         onClick={confirmUpdate}
                         loading={loading}
-                        disabled={!editData.name || !editData.address}
+                        disabled={loading || !isModified}
                     />
                     <Button
                         label="Batal"
                         className="p-button-secondary"
                         onClick={() => {
                             if (!school) return;
-                            setEditData({ name: school.name, address: school.address, logo_image: school.logoImagePath, remove_image: false })
+                            setImagePreview(school.logoImagePath);
+                            setLogoImage(null);
+                            if (fileInputRef.current) {
+                                fileInputRef.current.value = '';
+                            }
+                            setEditData({ name: school.name, address: school.address, logo_image: school.logoImagePath, remove_image: false });
+
                         }}
-                        disabled={loading}
+                        disabled={loading || !isModified}
                     />
                 </div>
             </div>
