@@ -1,46 +1,42 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSchool } from '../../context/SchoolContext';
-import logoImage from '../../assets/Logo-SMK-10-Bandung.png';
-import { Toast } from 'primereact/toast';
 import { formatSchoolName } from '../../utils/formatSchoolName';
 import { useLayoutConfig } from '../../context/LayoutConfigContext';
+import defaultLogoSekolah from '../../assets/defaultLogoSekolah.png';
+import { useAuth } from '../../context/AuthContext';
+import { Avatar } from 'primereact/avatar';
+import { Tag } from 'primereact/tag';
+import defaultProfileUser from '../../assets/defaultProfileUser.png';
 
 const SchoolTopbar = () => {
-
     const containerRef = useRef<HTMLDivElement>(null);
-    const toast = useRef<Toast>(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
-
-    const [user, setUser] = useState<{ fullname: string } | null>(null);
-    const { school, loading } = useSchool();
+    const { school } = useSchool();
+    const { user } = useAuth();
 
     const { setIsSidebarVisible } = useLayoutConfig();
 
-    useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
-    }, []);
-
     const profileItems = [
         {
-            label: 'Profile',
+            label: 'Profile Pengguna',
             icon: 'pi pi-user',
             action: () => {
-                navigate(`/school/${formatSchoolName(school.name)}/profile`);
+                handleLogoutSchool();
+                navigate(`/user/profile`);
             },
         },
-        // {
-        //     label: 'Settings',
-        //     icon: 'pi pi-cog',
-        //     action: () => {
-        //         console.log('Open Settings');
-        //     },
-        // },
+        {
+            label: 'Profile Sekolah',
+            icon: 'pi pi-graduation-cap',
+            action: () => {
+                if (school) {
+                    navigate(`/school/${formatSchoolName(school.name)}/profile`);
+                }
+            },
+        },
         {
             label: 'Keluar Dashboard Sekolah',
             icon: 'pi pi-sign-out',
@@ -77,8 +73,11 @@ const SchoolTopbar = () => {
 
     return (
         <div className="layout-topbar flex justify-content-between gap-2">
-            <Link to={`/school/${formatSchoolName(school?.name) || 'default-school'}/dashboard`} className="layout-topbar-logo text-center">
-                <img src={logoImage} alt="logo" />
+            <Link
+                to={school ? `/school/${formatSchoolName(school.name)}/dashboard` : "/user/dashboard"}
+                className="layout-topbar-logo text-center"
+            >
+                <img loading="lazy" src={school?.logoImagePath || defaultLogoSekolah} alt="logo" />
                 <div className='white-space-nowrap overflow-hidden text-overflow-ellipsis hidden sm:block'>
                     {school?.name || 'Loading...'}
                 </div>
@@ -95,14 +94,18 @@ const SchoolTopbar = () => {
                     aria-controls="popup_profile_menu"
                     aria-haspopup
                 >
-
-                    <div className='lg:white-space-nowrap'>
-                        {user?.fullname || 'Guest'}
+                    <div className='my-auto flex flex-column'>
+                        <div className='school-profile'>
+                            {user?.fullname || 'Loading...'}
+                        </div>
+                        <div className='text-left md:text-right'>
+                            <Tag>Admin</Tag>
+                        </div>
                     </div>
-                    <div>
-                        <i className='pi pi-user'></i>
+                    <div className=''>
+                        <Avatar shape="circle" className='border border-1' size='large' image={user?.profile_image_path || defaultProfileUser}></Avatar>
                     </div>
-                    <div>
+                    <div className='my-auto'>
                         <i
                             className={`pi ${profileOpen ? 'pi-angle-up' : 'pi-angle-down'
                                 } transition-all duration-300`}

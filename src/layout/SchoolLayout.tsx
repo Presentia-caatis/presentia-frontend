@@ -43,7 +43,7 @@ const SchoolLayout = () => {
 
     useEffect(() => {
         if (!school && !schoolLoading) {
-            navigate('/login');
+            navigate('/404');
         }
     }, [school, schoolLoading, navigate]);
 

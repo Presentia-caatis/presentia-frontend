@@ -83,7 +83,7 @@ const SchoolSideBar = () => {
             ],
         },
         {
-            label: 'Presensi',
+            label: 'Konfigurasi Presensi',
             items: [
                 {
                     label: 'Kehadiran Siswa',

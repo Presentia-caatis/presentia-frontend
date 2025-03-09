@@ -13,6 +13,8 @@ import { useSchool } from '../../../../context/SchoolContext';
 import { FilterMatchMode } from 'primereact/api';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import studentService from '../../../../services/studentService';
+import { Dropdown } from 'primereact/dropdown';
+import { Skeleton } from 'primereact/skeleton';
 
 type ClassgroupData = {
     id?: number;
@@ -35,31 +37,83 @@ const SchoolClassgroupPage = () => {
     const [activatedClassGroup, setActivatedClassGroup] = useState<ClassgroupData | null>(null);
     const [loading, setLoading] = useState(true);
     const [saveLoading, setSaveLoading] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [studentLoading, setStudentLoading] = useState(false);
     const { school } = useSchool();
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
     const [studentCurrentPage, setStudentCurrentPage] = useState(1);
-    const [studentRowsPerPage, setStudentRowsPerPage] = useState(10);
+    const [studentRowsPerPage, setStudentRowsPerPage] = useState(20);
     const [studentTotalRecords, setStudentTotalRecords] = useState(0);
 
     const [showStudentDialog, setShowStudentDialog] = useState(false);
     const [students, setStudents] = useState([]);
 
-    useEffect(() => {
-        fetchClassgroups(currentPage, rowsPerPage);
-    }, [currentPage, rowsPerPage]);
-
     const [filters, setFilters] = useState({
-        class_name: { value: '', matchMode: FilterMatchMode.CONTAINS },
+        class_name: { value: '' },
     });
 
-    const fetchClassgroups = async (page = 1, perPage = 10) => {
+    const [filtersStudent, setFiltersStudent] = useState({
+        student_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        nis: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        nisn: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        gender: { value: null, matchMode: FilterMatchMode.EQUALS },
+        class_group_id: { value: null, matchMode: FilterMatchMode.EQUALS },
+        is_active: { value: null, matchMode: FilterMatchMode.EQUALS },
+    });
+
+    const listKelamin = [
+        { label: 'Laki-Laki', value: 'male' },
+        { label: 'Perempuan', value: 'female' }];
+
+    const inputFilterTemplateStudent = (field: keyof typeof filtersStudent) => (
+        <InputText
+            value={filtersStudent[field]?.value || ""}
+            onChange={(e) => setFiltersStudent({
+                ...filtersStudent,
+                [field]: { value: e.target.value }
+            })}
+            placeholder="Filter..."
+            className="p-column-filter"
+        />
+    );
+
+    const dropdownFilterTemplateStudent = (field: keyof typeof filtersStudent, options: any) => (
+        <Dropdown
+            value={filtersStudent[field].value}
+            options={options}
+            onChange={(e) =>
+                setFiltersStudent({ ...filtersStudent, [field]: { value: e.value, matchMode: FilterMatchMode.EQUALS } })
+            }
+            placeholder="Pilih..."
+            showClear
+            className="p-column-filter"
+        />
+    );
+
+    const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedFilters(filters);
+            setCurrentPage(1);
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [filters]);
+
+    useEffect(() => {
+        fetchClassgroups(currentPage, rowsPerPage, debouncedFilters);
+    }, [currentPage, rowsPerPage, debouncedFilters]);
+
+    const fetchClassgroups = async (page = 1, perPage = 20, filters?: Record<string, any>) => {
         try {
             setLoading(true);
             setClassgroupList([]);
-            const { responseData } = await classGroupService.getClassGroups(page, perPage);
+            const { responseData } = await classGroupService.getClassGroups(page, perPage, filters);
             setClassgroupList(responseData.data.data);
             setTotalRecords(responseData.data.total);
         } catch (error: any) {
@@ -77,7 +131,7 @@ const SchoolClassgroupPage = () => {
         fetchStudents(1, studentRowsPerPage, classGroup.id);
     };
 
-    const fetchStudents = async (page = 1, perPage = 10, classGroupId: number) => {
+    const fetchStudents = async (page = 1, perPage = 20, classGroupId: number) => {
         try {
             setStudentLoading(true);
             setStudents([]);
@@ -95,12 +149,13 @@ const SchoolClassgroupPage = () => {
         <InputText
             value={filters[field].value || ""}
             onChange={(e) =>
-                setFilters({ ...filters, [field]: { value: e.target.value, matchMode: FilterMatchMode.CONTAINS } })
+                setFilters({ ...filters, [field]: { value: e.target.value } })
             }
             placeholder="Filter..."
             className="p-column-filter"
         />
     );
+
 
     const handleCreateClassgroup = async () => {
         try {
@@ -124,8 +179,8 @@ const SchoolClassgroupPage = () => {
         } catch (error: any) {
             toast.current?.show({
                 severity: 'error',
-                summary: 'Error',
-                detail: `Gagal membuat kelas baru!`,
+                summary: 'Gagal menambahkan kelas',
+                detail: `Nama kelas tidak boleh sama dengan yang sudah terdaftar!`,
                 life: 3000
             });
             console.error('Failed to create classgroups:', error);
@@ -170,23 +225,78 @@ const SchoolClassgroupPage = () => {
         }
     };
 
-    const handleDeleteClassgroup = async () => {
+    const handleDeleteClassgroup = async (classgroup: any) => {
         try {
+            setDeleteLoading(true);
             toast.current?.show({
                 severity: 'info',
-                summary: 'Loading...',
-                detail: `Sedang menghapus kelas ${selectedClassgroups[0].class_name}!`,
+                summary: 'Menghapus...',
+                detail: `Menghapus kelas ${classgroup.class_name}`,
+                life: 2000
+            });
+
+            await classGroupService.deleteClassGroup(classgroup.id);
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Berhasil',
+                detail: `Kelas ${classgroup.class_name} telah dihapus!`,
                 life: 3000
             });
-            for (const classgroup of selectedClassgroups) {
-                await classGroupService.deleteClassGroup(classgroup.id);
-            }
-            setSelectedClassgroups([]);
+
             fetchClassgroups();
-        } catch (error: any) {
-            console.error('Failed to delete classgroups:', error);
+        } catch (error) {
+            console.error('Gagal menghapus kelas:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: 'Gagal menghapus kelas',
+                life: 3000
+            });
+        } finally {
+            setDeleteLoading(false);
         }
     };
+
+    const handleDeleteMultipleClassgroups = async () => {
+        if (!selectedClassgroups.length) return;
+
+        try {
+            setDeleteLoading(true);
+            toast.current?.show({
+                severity: 'info',
+                summary: 'Menghapus...',
+                detail: `Menghapus ${selectedClassgroups.length} kelas`,
+                life: 2000
+            });
+
+            await Promise.all(selectedClassgroups.map(classgroup =>
+                classGroupService.deleteClassGroup(classgroup.id)
+            ));
+
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Berhasil',
+                detail: `${selectedClassgroups.length} kelas telah dihapus!`,
+                life: 3000
+            });
+
+            setSelectedClassgroups([]);
+            fetchClassgroups();
+        } catch (error) {
+            console.error('Gagal menghapus kelas:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: 'Gagal menghapus beberapa kelas',
+                life: 3000
+            });
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+
 
     const confirmCreateClassgroup = (event: React.MouseEvent) => {
         confirmPopup({
@@ -213,17 +323,20 @@ const SchoolClassgroupPage = () => {
         });
     };
 
-    const confirmDeleteClassgroup = (event: React.MouseEvent) => {
+    const confirmDeleteClassgroup = (event: React.MouseEvent, classgroup?: any) => {
         confirmPopup({
             target: event.currentTarget as HTMLElement,
-            message: 'Apakah Anda yakin ingin menghapus kelas ini?',
+            message: classgroup
+                ? `Apakah Anda yakin ingin menghapus kelas "${classgroup.class_name}"?`
+                : `Apakah Anda yakin ingin menghapus ${selectedClassgroups.length} kelas?`,
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
             acceptLabel: 'Ya',
             rejectLabel: 'Tidak',
-            accept: () => handleDeleteClassgroup(),
+            accept: () => classgroup ? handleDeleteClassgroup(classgroup) : handleDeleteMultipleClassgroups(),
         });
     };
+
 
     const closeDialog = (type: string) => {
         if (type === 'edit') {
@@ -262,7 +375,7 @@ const SchoolClassgroupPage = () => {
                 <div className="flex justify-content-between p-4 card">
                     <div className="flex gap-2">
                         <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
-                        <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedClassgroups?.length} onClick={(e) => {
+                        <Button icon="pi pi-trash" loading={deleteLoading} severity="danger" label="Hapus" disabled={!selectedClassgroups?.length} onClick={(e) => {
                             confirmDeleteClassgroup(e)
                         }} />
                     </div>
@@ -308,12 +421,11 @@ const SchoolClassgroupPage = () => {
                         setCurrentPage((event.page ?? 0) + 1);
                         setRowsPerPage(event.rows);
                     }}
-                    rowsPerPageOptions={[10, 50, 75, 100]}
+                    rowsPerPageOptions={[10, 20, 50, 100]}
                     tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} classes"
+                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} kelas"
                     stripedRows
-                    filters={filters}
                     filterDisplay="row"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
@@ -334,12 +446,14 @@ const SchoolClassgroupPage = () => {
                                     className="p-button-info p-button-rounded"
                                     tooltip="Lihat daftar siswa"
                                     tooltipOptions={{ position: 'top' }}
+                                    disabled={deleteLoading}
                                     onClick={() => openStudentDialog(rowData)}
                                 />
                                 <Button
                                     icon="pi pi-pencil"
                                     className="p-button-success p-button-rounded"
                                     tooltip="Perbarui"
+                                    disabled={deleteLoading}
                                     tooltipOptions={{ position: 'top' }}
                                     onClick={() => { setShowEditDialog(true); setTempClassgroupData(rowData); setClassgroupData(rowData); }}
                                 />
@@ -348,7 +462,8 @@ const SchoolClassgroupPage = () => {
                                     className="p-button-danger p-button-rounded"
                                     tooltip="Hapus"
                                     tooltipOptions={{ position: 'top' }}
-                                    onClick={(e) => confirmDeleteClassgroup(e)}
+                                    loading={deleteLoading}
+                                    onClick={(e) => confirmDeleteClassgroup(e, rowData)}
                                 />
                             </div>
                         )}
@@ -415,7 +530,7 @@ const SchoolClassgroupPage = () => {
                 </Dialog>
                 <Dialog
                     visible={showStudentDialog}
-                    style={{ width: "50vw" }}
+                    style={{ minWidth: "50vw", maxWidth: "90vw" }}
                     onHide={() => {
                         setShowStudentDialog(false);
                         setStudentCurrentPage(1);
@@ -431,6 +546,7 @@ const SchoolClassgroupPage = () => {
                     ) : (
                         <DataTable paginator
                             lazy
+                            filterDisplay='row'
                             first={(studentCurrentPage - 1) * studentRowsPerPage}
                             rows={studentRowsPerPage}
                             totalRecords={studentTotalRecords}
@@ -463,14 +579,35 @@ const SchoolClassgroupPage = () => {
                                     </div>
                                 )
                             }>
-                            <Column field="nis" header="NIS" />
-                            <Column field="student_name" header="Nama" />
+                            <Column
+                                field="nis"
+                                header="NIS"
+                                body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nis)}
+                                filter
+                                filterElement={inputFilterTemplateStudent("nis")}
+                                showFilterMenu={false}
+                            />
+                            <Column
+                                field="student_name"
+                                header="Nama"
+                                body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name?.toUpperCase())}
+                                filter
+                                filterElement={inputFilterTemplateStudent("student_name")}
+                                showFilterMenu={false} />
                             <Column
                                 field="gender"
                                 header="Jenis Kelamin"
-                                body={(rowData) => rowData.gender === "male" ? "Laki-Laki" : "Perempuan"}
+                                body={(rowData) =>
+                                    studentLoading ? <Skeleton width="40%" height="1.5rem" />
+                                        : rowData.gender === "male" ? "Laki-Laki"
+                                            : "Perempuan"
+                                }
+                                filter
+                                filterElement={dropdownFilterTemplateStudent("gender", listKelamin)}
+                                showFilterMenu={false}
                             />
-                            <Column field="class_group.class_name" header="Kelas" />
+                            <Column field="class_group.class_name" header="Kelas" body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
+                            />
                         </DataTable>
                     )}
                 </Dialog>

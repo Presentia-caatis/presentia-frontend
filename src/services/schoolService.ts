@@ -28,8 +28,10 @@ class SchoolService {
     return response.data;
   }
 
-  async update(id: number, school: Partial<Omit<School, 'id'>>) {
-    const response = await axiosClient.put(`/school/${id}`, school);
+  async update(id: number, school: FormData) {
+    const response = await axiosClient.post(`/school/${id}`, school, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
   }
 

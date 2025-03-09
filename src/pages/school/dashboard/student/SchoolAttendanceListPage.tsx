@@ -28,8 +28,9 @@ const SchoolStudentAttendanceListPage = () => {
         return JSON.parse(localStorage.getItem("autoSwitch") || "true");
     });
     const [pauseCountdown, setPauseCountdown] = useState<boolean>(false);
-    const { school } = useSchool();
+    const { school, schoolLoading } = useSchool();
     const { user } = useAuth();
+    const { checkAuth } = useAuth();
     const [activeIndex, setActiveIndex] = useState(0);
     const [attendanceData, setAttendanceData] = useState<any>([]);
     const [loading, setLoading] = useState(true);
@@ -44,46 +45,15 @@ const SchoolStudentAttendanceListPage = () => {
     const [exitStartTime, setExitStartTime] = useState<Date | null>(null);
     const [exitEndTime, setExitEndTime] = useState<Date | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
     const [showLeaderboard, setShowLeaderboard] = useState(true);
     const [topThree, setTopThree] = useState<any[]>([]);
-
 
     const items = [
         { label: 'Presensi Masuk', icon: 'pi pi-sign-in' },
         { label: 'Presensi Pulang', icon: 'pi pi-sign-out' },
     ];
-
-    useEffect(() => {
-        localStorage.setItem("autoSwitch", JSON.stringify(autoSwitch));
-    }, [autoSwitch]);
-
-    const eventDetail = {
-        isEvent: false,
-        name: 'Pekan Kreativitas',
-        startTime: '08:00',
-        endTime: '12:00',
-    };
-
-    // const fetchLeaderboard = async () => {
-    //     try {
-    //         const response = await AttendanceService.getAttendances({
-    //             type: "in",
-    //             sortBy: "time",
-    //             order: "asc",
-    //             limit: 3
-    //         });
-
-    //         setTopThree(response.data.data);
-    //     } catch (error) {
-    //         console.error("Failed to fetch leaderboard", error);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     fetchLeaderboard();
-    // }, []);
 
     const fetchDefaultAttendanceSchedule = async () => {
         if (!user?.school_id) return;
@@ -108,7 +78,6 @@ const SchoolStudentAttendanceListPage = () => {
     };
 
     const handleRefresh = async () => {
-        console.log(entryStartTime, exitStartTime);
         if (!entryStartTime || !exitStartTime) {
             return;
         }
@@ -129,7 +98,7 @@ const SchoolStudentAttendanceListPage = () => {
         fetchAttendance(currentPage, rowsPerPage, aIndex);
     };
 
-    const fetchAttendance = async (page = 1, perPage = 10, activeIndex?: number) => {
+    const fetchAttendance = async (page = 1, perPage = 20, activeIndex?: number) => {
         if (!user?.school_id) {
             return;
         }
@@ -139,11 +108,6 @@ const SchoolStudentAttendanceListPage = () => {
                 page,
                 perPage
             };
-
-            // const dates = [
-            //     new Date(2025, 1, 12),
-            //     new Date(2025, 1, 12),
-            // ];
 
             const dates = ([
                 new Date(),
@@ -184,6 +148,24 @@ const SchoolStudentAttendanceListPage = () => {
         }
     };
 
+    useEffect(() => {
+        const authenticate = async () => {
+            await checkAuth();
+        };
+
+        authenticate();
+    }, []);
+
+    useEffect(() => {
+        if (!school && !schoolLoading) {
+            navigate('/404');
+        }
+    }, [school, schoolLoading, navigate]);
+
+
+    useEffect(() => {
+        localStorage.setItem("autoSwitch", JSON.stringify(autoSwitch));
+    }, [autoSwitch]);
 
     useEffect(() => {
         const initialize = async () => {
@@ -217,11 +199,43 @@ const SchoolStudentAttendanceListPage = () => {
         };
     }, [loading, pauseCountdown]);
 
-
     useEffect(() => {
         fetchAttendance(currentPage, rowsPerPage, activeIndex);
     }, [currentPage, rowsPerPage]);
 
+    if (!school) {
+        return (
+            <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
+                <ProgressSpinner />
+            </div>
+        );
+    }
+
+    const eventDetail = {
+        isEvent: false,
+        name: 'Pekan Kreativitas',
+        startTime: '08:00',
+        endTime: '12:00',
+    };
+
+    // const fetchLeaderboard = async () => {
+    //     try {
+    //         const response = await AttendanceService.getAttendances({
+    //             type: "in",
+    //             sortBy: "time",
+    //             order: "asc",
+    //             limit: 3
+    //         });
+
+    //         setTopThree(response.data.data);
+    //     } catch (error) {
+    //         console.error("Failed to fetch leaderboard", error);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     fetchLeaderboard();
+    // }, []);
 
     const renderContent = () => {
         switch (activeIndex) {
@@ -292,7 +306,7 @@ const SchoolStudentAttendanceListPage = () => {
                                 showGridlines
                                 stripedRows
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa">
                                 <Column field="indexNumber" header="Nomor" style={{ width: "1%" }}
                                     body={(rowData) => loading ? <Skeleton width="20px" /> : rowData.indexNumber}
                                 />
@@ -300,7 +314,7 @@ const SchoolStudentAttendanceListPage = () => {
                                     className="text-lg"
                                     headerStyle={{ width: "50%", minWidth: "200px" }}
                                     bodyStyle={{ width: "50%", minWidth: "200px" }}
-                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name}
+                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
                                 />
                                 <Column field="check_in_time" header="Waktu"
                                     className="text-lg"
@@ -389,7 +403,7 @@ const SchoolStudentAttendanceListPage = () => {
                                 showGridlines
                                 stripedRows
                                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa">
                                 <Column field="indexNumber" header="Nomor" style={{ width: "1%" }}
                                     body={(rowData) => loading ? <Skeleton width="20px" /> : rowData.indexNumber}
                                 />
@@ -397,7 +411,7 @@ const SchoolStudentAttendanceListPage = () => {
                                     className="text-lg"
                                     headerStyle={{ width: "50%", minWidth: "200px" }}
                                     bodyStyle={{ width: "50%", minWidth: "200px" }}
-                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name}
+                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
                                 />
                                 <Column field="check_out_time" header="Waktu"
                                     className="text-lg"

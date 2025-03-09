@@ -19,7 +19,7 @@
         display: flex;
         align-items: center;
         color: var(--surface-900);
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 500;
         width: 300px;
         border-radius: 12px;
@@ -89,6 +89,10 @@
     }
 }
 
+.school-profile {
+    white-space: nowrap;
+}
+
 @media (max-width: 991px) {
     .layout-topbar {
         justify-content: space-between;
@@ -149,4 +153,9 @@
             }
         }
     }
+
+    .school-profile {
+        white-space: normal;
+    }
+
 }

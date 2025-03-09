@@ -33,7 +33,7 @@ const SchoolStudentAttendanceRecordResultPage = () => {
                     </div>
                 } rows={20} rowsPerPageOptions={[20, 50, 75, 100]} emptyMessage="Belum ada data" tableStyle={{ minWidth: '50rem' }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students">
+                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa">
                     <Column sortable field="nama" header="Nama"></Column>
                     <Column sortable field="nis" header="NIS"></Column>
                     <Column sortable field="nisn" header="NISN"></Column>

@@ -54,7 +54,7 @@ const SchoolStudentAttendancePage = () => {
     const [endDate, setEndDate] = useState<Date | null>(new Date());
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
     const [showExportDialog, setShowExportDialog] = useState(false);
@@ -172,11 +172,7 @@ const SchoolStudentAttendancePage = () => {
         }
     };
 
-
-
-
-
-    const fetchAttendances = async (page = 1, perPage = 10) => {
+    const fetchAttendances = async (page = 1, perPage = 20) => {
         try {
             setLoadingAttendance(true);
             setListAttendances([]);
@@ -387,7 +383,11 @@ const SchoolStudentAttendancePage = () => {
                     currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} kehadiran"
                 >
                     <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-                    <Column field="student.student_name" header="Nama"></Column>
+                    <Column
+                        field="student.student_name"
+                        header="Nama"
+                        body={(rowData) => rowData.student?.student_name?.toUpperCase()}
+                    />
                     <Column field="student.nis" header="NIS"></Column>
                     <Column field="student.gender" header="Kelamin" body={(rowData) => rowData.student.gender === "male" ? "Laki-laki" : "Perempuan"}></Column>
                     <Column field="student.class_group.class_name" header="Kelas"></Column>
@@ -491,7 +491,7 @@ const SchoolStudentAttendancePage = () => {
             <Dialog
                 header="Export Data Kehadiran"
                 visible={showExportDialog}
-                style={{}}
+                style={{ width: "90vw", maxWidth: "600px" }}
                 onHide={() => { setExportKelas([]); setExportStartDate(new Date()); setExportEndDate(new Date()); setShowExportDialog(false); }}
             >
                 <div className="flex flex-column gap-3">
@@ -537,7 +537,10 @@ const SchoolStudentAttendancePage = () => {
                         showClear
                         multiple
                         filter
+                        style={{ width: "100%", maxWidth: "100%" }}
+                        panelStyle={{ maxHeight: "300px", overflowY: "auto" }}
                     />
+
                     <Button
                         label="Export"
                         icon="pi pi-download"
