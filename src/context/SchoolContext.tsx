@@ -6,6 +6,7 @@ import dashboardService from "../services/dashboardService";
 import attendanceService from "../services/attendanceService";
 import { useAuth } from "./AuthContext";
 import { useToastContext } from "../layout/ToastContext";
+import { setResetSchoolCallback } from "../utils/schoolUtils";
 
 interface SchoolData {
     id: number;
@@ -34,7 +35,6 @@ interface SchoolContextProps {
     setSchool: React.Dispatch<React.SetStateAction<SchoolData | null>>;
     schoolLoading: boolean;
     handleExportAttendance: (params: any) => Promise<void>;
-    resetSchool: () => void;
     loadingExportAttendance: boolean;
 }
 
@@ -61,6 +61,9 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
         setSchool(null);
     };
 
+    useEffect(() => {
+        setResetSchoolCallback(resetSchool);
+    }, []);
 
     useEffect(() => {
         const fetchSchool = async () => {
@@ -138,7 +141,7 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <SchoolContext.Provider value={{ school, setSchool, schoolLoading, handleExportAttendance, loadingExportAttendance, resetSchool }}>
+        <SchoolContext.Provider value={{ school, setSchool, schoolLoading, handleExportAttendance, loadingExportAttendance }}>
             {children}
         </SchoolContext.Provider>
     );

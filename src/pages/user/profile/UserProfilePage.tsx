@@ -211,7 +211,7 @@ const UserProfilePage = () => {
                                     <div className="flex flex-col gap-2">
                                         <div className='my-auto flex gap-2'>
                                             <Button disabled={loading} label="Ganti Foto" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
-                                            <Button disabled={!imagePreview || loading} label="Hapus Fotos" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
+                                            <Button disabled={!imagePreview || loading} label="Hapus Foto" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
                                         </div>
                                     </div>
                                 </div>
