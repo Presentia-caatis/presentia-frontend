@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
 import { useNavigate } from 'react-router-dom';
 import { useSchool } from '../../../../context/SchoolContext';
-import logo from "../../../../assets/Logo-SMK-10-Bandung.png"
+import defaultLogoSekolah from "../../../../assets/defaultLogoSekolah.png";
 import AttendanceService from '../../../../services/attendanceService';
 import { Helmet } from 'react-helmet';
 import { useAuth } from '../../../../context/AuthContext';
@@ -121,7 +121,7 @@ const SchoolStudentAttendanceListPage = () => {
 
             params.type = activeIndex === 0 ? "in" : "out";
 
-            console.log(params, activeIndex);
+            params.simplify = "true";
 
             const response: any = await AttendanceService.getAttendances(params);
             const total = response.data.total;
@@ -312,9 +312,15 @@ const SchoolStudentAttendanceListPage = () => {
                                 />
                                 <Column field="student.student_name" header="Nama"
                                     className="text-lg"
-                                    headerStyle={{ width: "50%", minWidth: "200px" }}
-                                    bodyStyle={{ width: "50%", minWidth: "200px" }}
+                                    headerStyle={{ width: "40%", minWidth: "200px" }}
+                                    bodyStyle={{ width: "40%", minWidth: "200px" }}
                                     body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
+                                />
+                                <Column field="student.class_group.class_name" header="Kelas"
+                                    className="text-lg"
+                                    headerStyle={{ width: "10%", minWidth: "60px" }}
+                                    bodyStyle={{ width: "10%", minWidth: "60px" }}
+                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.class_group.class_name?.toUpperCase()}
                                 />
                                 <Column field="check_in_time" header="Waktu"
                                     className="text-lg"
@@ -413,6 +419,12 @@ const SchoolStudentAttendanceListPage = () => {
                                     bodyStyle={{ width: "50%", minWidth: "200px" }}
                                     body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
                                 />
+                                <Column field="student.class_group.class_name" header="Kelas"
+                                    className="text-lg"
+                                    headerStyle={{ width: "10%", minWidth: "60px" }}
+                                    bodyStyle={{ width: "10%", minWidth: "60px" }}
+                                    body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.class_group.class_name?.toUpperCase()}
+                                />
                                 <Column field="check_out_time" header="Waktu"
                                     className="text-lg"
                                     headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
@@ -450,7 +462,7 @@ const SchoolStudentAttendanceListPage = () => {
 
                 <div className='my-auto text-center flex gap-3'>
                     <img
-                        src={logo}
+                        loading="lazy" src={school?.logoImagePath || defaultLogoSekolah}
                         alt="Logo Sekolah"
                         className='w-4rem h-4rem '
                         onError={(e) => e.currentTarget.style.display = 'none'}

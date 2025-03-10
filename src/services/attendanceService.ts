@@ -23,7 +23,7 @@ class AttendanceService {
 
     async exportAttendance(params = {}) {
         try {
-            const response = await axiosClient.get('/attendance/export-attendance', {
+            const response = await axiosClient.get('/attendance/export', {
                 params,
                 responseType: 'blob'
             });

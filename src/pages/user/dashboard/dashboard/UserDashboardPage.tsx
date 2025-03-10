@@ -217,15 +217,18 @@ const UserDashboardPage = () => {
                         </div>
                     </Panel>
                 ) : <Card className='shadow-1' title="Selamat Datang di Presentia">
-                    <p className="text-sm mb-4">
+                    {/* <p className="text-sm mb-4">
                         Anda belum memiliki sekolah yang terdaftar. Buat sekolah untuk memulai pengelolaan presensi.
+                    </p> */}
+                    <p className="text-sm mb-4">
+                        Anda belum memiliki sekolah yang terdaftar. Hubungi admin untuk mendaftarkan sekolah.
                     </p>
-                    <Button
+                    {/* <Button
                         icon="pi pi-plus"
                         label="Buat Sekolah"
                         className="p-button-success"
                         onClick={() => setModalVisible(true)}
-                    />
+                    /> */}
                 </Card>}
             </div>
             {/* <UserCreateSchoolModal

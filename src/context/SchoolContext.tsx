@@ -34,6 +34,7 @@ interface SchoolContextProps {
     setSchool: React.Dispatch<React.SetStateAction<SchoolData | null>>;
     schoolLoading: boolean;
     handleExportAttendance: (params: any) => Promise<void>;
+    resetSchool: () => void;
     loadingExportAttendance: boolean;
 }
 
@@ -56,6 +57,9 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
         }, position);
     }
 
+    const resetSchool = () => {
+        setSchool(null);
+    };
 
 
     useEffect(() => {
@@ -134,7 +138,7 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <SchoolContext.Provider value={{ school, setSchool, schoolLoading, handleExportAttendance, loadingExportAttendance }}>
+        <SchoolContext.Provider value={{ school, setSchool, schoolLoading, handleExportAttendance, loadingExportAttendance, resetSchool }}>
             {children}
         </SchoolContext.Provider>
     );
