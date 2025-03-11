@@ -198,7 +198,9 @@ const UserProfilePage = () => {
                                 <label>Foto Profile</label>
                                 <div className="flex items-center gap-4">
                                     <div >
-                                        <img loading="lazy" src={imagePreview || defaultProfileUser} alt="" className='w-5rem h-5rem border-circle' />
+                                        <img loading="lazy" src={imagePreview || defaultProfileUser} alt="" className='w-5rem h-5rem border-circle' onError={(e) => {
+                                            (e.target as HTMLImageElement).src = defaultProfileUser;
+                                        }} />
                                         <input
                                             type="file"
                                             accept="image/*"

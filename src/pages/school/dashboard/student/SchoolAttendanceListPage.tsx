@@ -50,6 +50,7 @@ const SchoolStudentAttendanceListPage = () => {
     const [showLeaderboard, setShowLeaderboard] = useState(true);
     const [topThree, setTopThree] = useState<any[]>([]);
 
+
     const items = [
         { label: 'Presensi Masuk', icon: 'pi pi-sign-in' },
         { label: 'Presensi Pulang', icon: 'pi pi-sign-out' },
@@ -109,14 +110,14 @@ const SchoolStudentAttendanceListPage = () => {
                 perPage
             };
 
-            const dates = ([
+            const dates = [
                 new Date(),
                 new Date(),
-            ]);
+            ];
 
             if (dates && dates.length === 2 && dates[0] && dates[1]) {
-                params.startDate = dates[0].toISOString().split("T")[0];
-                params.endDate = dates[1].toISOString().split("T")[0];
+                params.startDate = dates[0].toLocaleDateString("en-CA");
+                params.endDate = dates[1].toLocaleDateString("en-CA");
             }
 
             params.type = activeIndex === 0 ? "in" : "out";
@@ -443,7 +444,6 @@ const SchoolStudentAttendanceListPage = () => {
 
     return (
         <div className='flex flex-column align-items-center'>
-
             <Helmet>
                 <title>{school ? school.name : "Presentia"}</title>
             </Helmet>
@@ -465,7 +465,9 @@ const SchoolStudentAttendanceListPage = () => {
                         loading="lazy" src={school?.logoImagePath || defaultLogoSekolah}
                         alt="Logo Sekolah"
                         className='w-4rem h-4rem '
-                        onError={(e) => e.currentTarget.style.display = 'none'}
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = defaultLogoSekolah;
+                        }}
                     />
                     <div className=' text-lg md:text-6xl font-bold text-black-alpha-90 my-auto hidden md:block'>{school ? school.name : "Loading..."}</div>
                 </div>

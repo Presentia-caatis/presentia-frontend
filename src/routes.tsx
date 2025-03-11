@@ -72,7 +72,7 @@ const AppRoutes = () => {
                 <Route path='custom-event' element={<CustomEventPage />} />
                 <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
                 <Route path='check-in/status' element={<SchoolCheckInStatusPage />} />
-                <Route path='attendance/status' element={<AbsenceStatusListPage />} />
+                <Route path='absence-permit/type' element={<AbsenceStatusListPage />} />
 
                 <Route path='classroom' element={<ClassroomListPage />} />
 

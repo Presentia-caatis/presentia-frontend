@@ -112,8 +112,8 @@ const SchoolSideBar = () => {
                 {
                     label: 'Daftar Status Absensi',
                     icon: 'pi pi-times-circle',
-                    command: () => navigate(`/school/${schoolName}/attendance/status`),
-                    className: currentPath === `/school/${schoolName}/attendance/status` ? 'active-route' : 'menu-item',
+                    command: () => navigate(`/school/${schoolName}/absence-permit/type`),
+                    className: currentPath === `/school/${schoolName}/absence-permit/type` ? 'active-route' : 'menu-item',
                 },
             ],
         },

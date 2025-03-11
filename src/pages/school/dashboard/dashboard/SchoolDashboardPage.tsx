@@ -60,15 +60,30 @@ const SchoolDashboardPage = () => {
             const dailyKeys: string[] = Object.keys(school.dailyData);
             const dailyValues: number[] = Object.values(school.dailyData).map(Number);
 
-            setDailyChart({
-                labels: dailyKeys,
-                datasets: [
-                    {
-                        data: dailyValues,
-                        backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
-                    },
-                ],
-            });
+            const allValuesZero = dailyValues.every((value) => value === 0);
+
+            if (allValuesZero) {
+                setDailyChart({
+                    labels: [],
+                    datasets: [
+                        {
+                            data: [],
+                            backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
+                        },
+                    ],
+                });
+            } else {
+                setDailyChart({
+                    labels: dailyKeys,
+                    datasets: [
+                        {
+                            data: dailyValues,
+                            backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
+                        },
+                    ],
+                });
+            }
+
             setDailyChartLoading(false);
         }
     }, [school?.dailyData]);

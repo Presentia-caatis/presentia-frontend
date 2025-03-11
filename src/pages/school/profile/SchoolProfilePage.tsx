@@ -153,7 +153,9 @@ const SchoolProfilePage = () => {
                     <label>Logo</label>
                     <div className="flex items-center gap-4">
                         <div >
-                            <img loading="lazy" src={imagePreview || defaultLogoSekolah} alt="" className='w-5rem h-5rem border-circle' />
+                            <img loading="lazy" src={imagePreview || defaultLogoSekolah} alt="" className='w-5rem h-5rem border-circle' onError={(e) => {
+                                (e.target as HTMLImageElement).src = defaultLogoSekolah;
+                            }} />
                             <input
                                 type="file"
                                 accept="image/*"
