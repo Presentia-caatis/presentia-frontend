@@ -3,7 +3,7 @@ name: Cypress Tests
 on:
   push:
     branches:
-      - e2e-testing
+      - testing
   pull_request:
     branches:
       - main
