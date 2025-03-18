@@ -6,5 +6,6 @@ module.exports = {
       // Event listener for Cypress
     },
     specPattern: "cypress/**/*.cy.js",
+    supportFile: 'cypress/support/e2e.js',
   },
 };
