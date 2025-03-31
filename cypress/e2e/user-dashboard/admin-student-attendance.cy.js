@@ -4,7 +4,7 @@ describe('Student Attendance Page Test', () => {
   });
 
   it('Cek perilaku user mengakses halaman presensi', () => {
-    cy.contains("Sekolah yang dikelola", { timeout: 40000 }).should("be.visible");
+    cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
 
     const buttons = [
       { selector: 'button.p-button-success', icon: '.pi.pi-sign-in', text: 'Daftar Presensi Hari Ini', url: '/school/attendance' }

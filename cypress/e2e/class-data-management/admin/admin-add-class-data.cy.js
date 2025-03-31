@@ -1,9 +1,9 @@
-describe('Add Student Data Test', () => {
+describe('Add Class Data Test', () => {
     beforeEach(() => {
         cy.loginAs('tester');
     });
 
-    it('Cek perilaku user menambahkan data siswa', () => {
+    it('Cek perilaku user menambahkan data kelas', () => {
         cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
 
         const buttons = [
@@ -22,21 +22,19 @@ describe('Add Student Data Test', () => {
             cy.url().should('include', url);
 
             cy.get('.layout-sidebar', { timeout: 5000 }).should('be.visible');
-            cy.get('.layout-sidebar').contains('Daftar Siswa').click();
-            cy.url().should('include', '/school/smkn-10-bandung/student');
+            cy.get('.layout-sidebar').contains('Daftar Kelas').click();
+            cy.url().should('include', '/school/smkn-10-bandung/classroom');
 
             cy.get('.card').first().should('exist').and('be.visible');
 
             cy.get('.card h1')
-                .should('contain.text', 'Daftar Siswa')
+                .should('contain.text', 'Daftar Kelas')
                 .invoke('text')
-                .should('match', /^Daftar Siswa\s+\S+/);
+                .should('match', /^Daftar Kelas\s+\S+/);
 
             const buttons = [
-                { label: 'Siswa Baru', icon: '.pi.pi-plus', shouldBeDisabled: false },
-                { label: 'Import', icon: '.pi.pi-upload', shouldBeDisabled: false },
+                { label: 'Kelas Baru', icon: '.pi.pi-plus', shouldBeDisabled: false },
                 { label: 'Hapus', icon: '.pi.pi-trash', shouldBeDisabled: true },
-                { label: 'Export', icon: '.pi.pi-upload', shouldBeDisabled: false }
             ];
 
             buttons.forEach(({ label, icon, shouldBeDisabled }) => {
@@ -52,16 +50,12 @@ describe('Add Student Data Test', () => {
             });
 
             cy.get('table').should('be.visible');
-            cy.contains('Memuat data siswa...', { timeout: 40000 }).should('not.exist');
+            cy.contains('Memuat data kelas...', { timeout: 40000 }).should('not.exist');
 
             cy.get('.card h5')
-                .should('contain.text', 'Data Siswa')
-                .invoke('text')
-                .should('match', /^Data Siswa\s+\S+/);
+                .should('contain.text', 'Daftar Kelas')
 
-            cy.get('.p-input-icon-left input[placeholder="Search..."]').should('exist');
-
-            const expectedHeaders = ["Nama", "NIS", "NISN", "Jenis Kelamin", "Kelas", "Status"];
+            const expectedHeaders = ["Nama", "Jumlah Murid"];
 
             cy.get('table thead tr').first().within(() => {
                 cy.get('th').each(($th, index, $ths) => {
@@ -87,12 +81,10 @@ describe('Add Student Data Test', () => {
                 cy.get('th').each(($th, index) => {
                     if (index === 0) {
                         cy.wrap($th).find('input.p-checkbox-input').should('exist');
-                    } else if (index === 7) {
-                        cy.wrap($th).should('be.empty');
-                    } else if ([1, 2, 3].includes(index)) {
+                    } else if (index === 1) {
                         cy.wrap($th).find('input').should('exist');
-                    } else if ([4, 5, 6].includes(index)) {
-                        cy.wrap($th).find('select').should('exist');
+                    } else if (index === 2) {
+                        cy.wrap($th).should('be.empty');
                     }
                 });
             });
@@ -106,6 +98,7 @@ describe('Add Student Data Test', () => {
                             if (colIndex === 0) {
                                 cy.wrap($cell).find('input.p-checkbox-input').should('exist');
                             } else if (colIndex === $cells.length - 1) {
+                                cy.wrap($cell).find('button.p-button-info').should('exist');
                                 cy.wrap($cell).find('button.p-button-success').should('exist');
                                 cy.wrap($cell).find('button.p-button-danger').should('exist');
                             } else {
@@ -120,14 +113,6 @@ describe('Add Student Data Test', () => {
                                                 expect(textValue).to.match(/\S+/);
                                             } else if (colIndex === 2) {
                                                 expect(textValue).to.match(/^\d+$/);
-                                            } else if (colIndex === 3) {
-                                                expect(textValue).to.match(/^\d+$/);
-                                            } else if (colIndex === 4) {
-                                                expect(textValue).to.match(/^(Laki-Laki|Perempuan)$/);
-                                            } else if (colIndex === 5) {
-                                                expect(textValue).to.match(/\S+/);
-                                            } else if (colIndex === 6) {
-                                                expect(textValue).to.match(/^(Aktif|Tidak Aktif)$/);
                                             }
                                         });
                                     });
@@ -137,59 +122,24 @@ describe('Add Student Data Test', () => {
                 });
             });
 
-            cy.contains('Siswa Baru').click();
+            cy.contains('Kelas Baru').click();
             cy.get('.p-dialog').should('be.visible');
 
-            cy.get('.p-dialog .p-dialog-title').should('have.text', 'Penambahan Data Siswa');
+            cy.get('.p-dialog .p-dialog-title').should('have.text', 'Tambah Kelas Baru');
 
-            const labels = ['Nama', 'NIS', 'NISN', 'Kelas', 'Jenis Kelamin', 'Status Siswa'];
+            const labels = ['Nama'];
 
             labels.forEach(label => {
                 cy.contains('label', label).should('be.visible');
             });
 
-            cy.get('input#nama').type('Tester Tester');
-            cy.get('input#nis').type('1234567890');
-            cy.get('input#nisn').type('9876543211');
+            cy.get('input#className').type('SE-45-01');
 
-            cy.get('.p-dialog:visible').contains('label', 'Kelas')
-                .parent()
-                .find('.p-dropdown')
-                .click();
-            cy.get('.p-dropdown-panel:visible')
-                .should('exist')
-                .should('have.length.greaterThan', 0);
-            cy.get('.p-dropdown-item').each(($el) => {
-                cy.wrap($el).invoke('text').then((text) => {
-                    cy.log(text.trim());
-                });
-            });
-            cy.get('.p-dropdown-item')
-                .contains('X BCF 1')
-                .scrollIntoView()
-                .should('be.visible')
-                .click();
-
-            cy.get('.p-dialog:visible').contains('label', 'Jenis Kelamin')
-                .parent()
-                .find('.p-dropdown')
-                .click();
-            cy.get('.p-dropdown-panel:visible')
-                .should('exist')
-                .should('have.length.greaterThan', 0);
-            cy.get('.p-dropdown-item')
-                .contains('Perempuan')
-                .scrollIntoView()
-                .should('be.visible')
-                .click();
-
-            cy.get('input#status1').should('be.checked');
-
-            cy.get('button.p-button-text').contains('Save').should('exist').click();
+            cy.get('button.p-button-text').contains('Simpan').should('exist').click();
 
             cy.get('.p-confirm-popup')
                 .should('be.visible')
-                .and('contain.text', 'Apakah Anda yakin ingin menambahkan siswa ini?')
+                .and('contain.text', 'Apakah Anda yakin ingin menambahkan kelas ini?')
                 .within(() => {
                     cy.get('.pi.pi-exclamation-triangle').should('be.visible');
                     cy.get('button.p-button-success')
@@ -201,8 +151,13 @@ describe('Add Student Data Test', () => {
             cy.wait(5000);
 
             cy.get('.p-toast', { timeout: 15000 }).should('be.visible');
-            cy.contains('.p-toast-summary', 'Siswa berhasil ditambahkan').should('be.visible');
-            cy.contains('.p-toast-detail', 'Anda berhasil menambahkan siswa.').should('be.visible');
+            cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
+            cy.get('.p-toast-detail')
+                .should('be.visible')
+                .invoke('text')
+                .then((toastText) => {
+                    expect(toastText).to.match(/Berhasil membuat kelas baru \S+!/);
+                });
         });
     });
 });

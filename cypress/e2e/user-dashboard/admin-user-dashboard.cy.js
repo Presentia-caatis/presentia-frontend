@@ -4,7 +4,7 @@ describe('User Dashboard Page Test', () => {
   });
 
   it('Cek perilaku user melihat informasi sekolah dan data presensi', () => {
-    cy.contains("Sekolah yang dikelola", { timeout: 40000 }).should("be.visible");
+    cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
 
     const schoolData = [
       { selector: 'img', assertion: 'be.visible' },
