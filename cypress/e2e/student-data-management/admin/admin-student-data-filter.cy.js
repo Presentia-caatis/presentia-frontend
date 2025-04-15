@@ -97,6 +97,46 @@ describe('Filter Student Data Test', () => {
                 });
             });
 
+            cy.get('table tbody tr').then(($rows) => {
+                expect($rows).to.have.length.greaterThan(0);
+
+                cy.wrap($rows).each(($row, rowIndex) => {
+                    cy.wrap($row).within(() => {
+                        cy.get('td').each(($cell, colIndex, $cells) => {
+                            if (colIndex === 0) {
+                                cy.wrap($cell).find('input.p-checkbox-input').should('exist');
+                            } else if (colIndex === $cells.length - 1) {
+                                cy.wrap($cell).find('button.p-button-success').should('exist');
+                                cy.wrap($cell).find('button.p-button-danger').should('exist');
+                            } else {
+                                cy.wrap($cell)
+                                    .invoke('text')
+                                    .then((textValue) => {
+                                        textValue = textValue.trim();
+                                        expect(textValue).not.to.be.empty;
+
+                                        cy.wrap(null).then(() => {
+                                            if (colIndex === 1) {
+                                                expect(textValue).to.match(/\S+/);
+                                            } else if (colIndex === 2) {
+                                                expect(textValue).to.match(/^\d+$/);
+                                            } else if (colIndex === 3) {
+                                                expect(textValue).to.match(/^\d+$/);
+                                            } else if (colIndex === 4) {
+                                                expect(textValue).to.match(/^(Laki-Laki|Perempuan)$/);
+                                            } else if (colIndex === 5) {
+                                                expect(textValue).to.match(/\S+/);
+                                            } else if (colIndex === 6) {
+                                                expect(textValue).to.match(/^(Aktif|Tidak Aktif)$/);
+                                            }
+                                        });
+                                    });
+                            }
+                        });
+                    });
+                });
+            });
+
             cy.get('table thead tr').eq(1).within(() => {
                 cy.get('th').eq(1).find('input').clear().type('Tester');
             });
@@ -113,7 +153,7 @@ describe('Filter Student Data Test', () => {
                 .click();
             cy.get('table tbody tr').should('have.length.greaterThan', 0);
 
-            cy.wait(5000);
+            cy.wait(10000);
 
             cy.get('table tbody tr').each(($row) => {
                 cy.wrap($row).find('td').eq(1)

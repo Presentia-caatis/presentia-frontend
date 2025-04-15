@@ -1,9 +1,9 @@
-describe('School Dashboard Page Test', () => {
+describe('Attendance Data on School Dashboard Page Test', () => {
   beforeEach(() => {
     cy.loginAs('tester');
   });
 
-  it('Cek perilaku user melihat informasi sekolah dan data presensi', () => {
+  it('Cek perilaku user melihat jumlah presensi dan absensi siswa', () => {
     cy.contains("Sekolah yang dikelola", { timeout: 40000 }).should("be.visible");
 
     const buttons = [

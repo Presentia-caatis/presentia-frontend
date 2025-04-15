@@ -3,7 +3,7 @@ describe('User Dashboard Page Test', () => {
     cy.loginAs('tester');
   });
 
-  it('Cek perilaku user melihat informasi sekolah dan data presensi', () => {
+  it('Cek perilaku user melihat informasi sekolah dan jumlah siswa aktif', () => {
     cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
 
     const schoolData = [

@@ -1,9 +1,9 @@
-describe('Update Student Data Test', () => {
+describe('Search Student Data Test', () => {
     beforeEach(() => {
         cy.loginAs('tester');
     });
 
-    it('Cek perilaku user memperbarui data siswa', () => {
+    it('Cek perilaku user mencari data siswa', () => {
         cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
 
         const buttons = [
@@ -135,87 +135,21 @@ describe('Update Student Data Test', () => {
                         });
                     });
                 });
-            });
 
-            cy.get('table thead tr').eq(1).within(() => {
-                cy.get('th').eq(1).find('input').clear().type('Tester Lima');
-            });
+                cy.get('.p-input-icon-left input[placeholder="Search..."]')
+                    .clear()
+                    .type('Tester');
 
-            cy.wait(15000);
+                cy.contains('Memuat data siswa...').should('exist');
+                cy.wait(5000);
 
-            cy.get('table tbody tr').should('have.length.greaterThan', 0).each(($row) => {
-                cy.wrap($row).find('td').eq(1).invoke('text').then((text) => {
-                    const nama = text.trim().toUpperCase();
-                    const filterInput = 'Tester Lima'.toUpperCase();
-
-                    if (nama.includes(filterInput)) {
-                        cy.wrap($row).find('button.p-button-success').should('exist').click();
-
-                        cy.get('.p-dialog').should('be.visible');
-
-                        cy.get('.p-dialog .p-dialog-title').should('have.text', 'Edit Data Siswa');
-
-                        const labels = ['Nama', 'NIS', 'NISN', 'Kelas', 'Jenis Kelamin', 'Status Siswa'];
-
-                        labels.forEach(label => {
-                            cy.contains('label', label).should('be.visible');
+                cy.get('table tbody tr').should('have.length.greaterThan', 0);
+                cy.get('table tbody tr').each(($row) => {
+                    cy.wrap($row).within(() => {
+                        cy.get('td').eq(1).invoke('text').then((text) => {
+                            expect(text.trim().toLowerCase()).to.include('tester');
                         });
-
-                        cy.get('#edit-nama').invoke('val').should('eq', 'Tester Lima');
-                        cy.get('#edit-nis').invoke('val').should('not.be.empty');
-                        cy.get('#edit-nisn').invoke('val').should('not.be.empty');
-
-                        cy.get('.p-dialog:visible').contains('label', 'Kelas')
-                            .parent()
-                            .find('.p-dropdown .p-dropdown-label')
-                            .invoke('text')
-                            .should('not.be.empty');
-
-                        cy.get('.p-dialog:visible').contains('label', 'Jenis Kelamin')
-                            .parent()
-                            .find('.p-dropdown .p-dropdown-label')
-                            .invoke('text')
-                            .should('not.be.empty');
-
-                        cy.get('input#status1').should('be.checked');
-
-                        cy.get('#edit-nama')
-                            .should('be.visible')
-                            .clear()
-                            .type('Tester Lima Update');
-
-                        cy.get('.p-dialog:visible').contains('label', 'Jenis Kelamin')
-                            .parent()
-                            .find('.p-dropdown')
-                            .click();
-                        cy.get('.p-dropdown-panel:visible')
-                            .should('exist')
-                            .should('have.length.greaterThan', 0);
-                        cy.get('.p-dropdown-item')
-                            .contains('Laki-Laki')
-                            .scrollIntoView()
-                            .should('be.visible')
-                            .click();
-
-                        cy.get('button.p-button-text').contains('Update').should('exist').click();
-
-                        cy.get('.p-confirm-popup')
-                            .should('be.visible')
-                            .and('contain.text', 'Apakah Anda yakin ingin memperbarui data siswa ini?')
-                            .within(() => {
-                                cy.get('.pi.pi-exclamation-triangle').should('be.visible');
-                                cy.get('button.p-button-success')
-                                    .should('be.visible')
-                                    .and('contain.text', 'Ya')
-                                    .click();
-                            });
-
-                        cy.wait(5000);
-
-                        cy.get('.p-toast', { timeout: 15000 }).should('be.visible');
-                        cy.contains('.p-toast-summary', 'Siswa berhasil diperbarui').should('be.visible');
-                        cy.contains('.p-toast-detail', 'Data siswa telah diperbarui.').should('be.visible');
-                    }
+                    });
                 });
             });
         });

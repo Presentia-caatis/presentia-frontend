@@ -121,12 +121,12 @@ const SchoolStudentPage = () => {
                 life: 3000
             });
         } catch (error) {
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Gagal',
-                detail: 'Terjadi kesalahan saat export data siswa.',
-                life: 3000
-            });
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Gagal',
+                    detail: 'Terjadi kesalahan saat export data siswa.',
+                    life: 3000
+                });
         } finally {
             setLoadingExport(false);
         }

@@ -3,10 +3,9 @@ describe('Login Page Test', () => {
         cy.visit('/');
         cy.contains('Login').click();
         cy.url().should('include', '/login');
-    });
 
-    it('Menampilkan seluruh elemen halaman login', () => {
-        const elements = [
+        // Verifikasi semua elemen halaman login
+        const loginElements = [
             { selector: 'h2', text: 'Selamat Datang!' },
             { selector: 'p', text: 'Silahkan Log In Untuk Melanjutkan Ke Dashboard' },
             { selector: 'label', text: 'Email' },
@@ -18,7 +17,7 @@ describe('Login Page Test', () => {
             { selector: 'button', text: 'Sign up with Google', visible: true }
         ];
 
-        elements.forEach(({ selector, text, visible }) => {
+        loginElements.forEach(({ selector, text, visible }) => {
             if (text) {
                 cy.get(selector).contains(text);
             }

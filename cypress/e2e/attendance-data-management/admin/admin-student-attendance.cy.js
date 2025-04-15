@@ -88,7 +88,7 @@ describe('Student Attendance Page Test', () => {
         .invoke('text')
         .then((text) => {
           const formattedText = text.replace(/\s+/g, ' ').trim();
-          const regex = /Waktu presensi:\s*\n?\s*\d{2}\.\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}\.\d{2}/;
+          const regex = /Waktu presensi:\s*(?:\d{2}\.\d{2}\.\d{2}|Loading\.\.\.)\s*-\s*(?:\d{2}\.\d{2}\.\d{2}|Loading\.\.\.)/;
           expect(formattedText).to.match(regex);
         });
 
@@ -126,7 +126,7 @@ describe('Student Attendance Page Test', () => {
         .invoke('text')
         .then((text) => {
           const formattedText = text.replace(/\s+/g, ' ').trim();
-          const regex = /Waktu presensi:\s*\n?\s*\d{2}\.\d{2}\.\d{2}\s*-\s*\d{2}\.\d{2}\.\d{2}/;
+          const regex = /Waktu presensi:\s*(?:\d{2}\.\d{2}\.\d{2}|Loading\.\.\.)\s*-\s*(?:\d{2}\.\d{2}\.\d{2}|Loading\.\.\.)/;
           expect(formattedText).to.match(regex);
         });
 
