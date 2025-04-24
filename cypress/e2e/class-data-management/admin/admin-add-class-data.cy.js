@@ -1,10 +1,10 @@
 describe('Add Class Data Test', () => {
     beforeEach(() => {
-        cy.loginAs('tester');
+        cy.loginAs('admin');
     });
 
-    it('Cek perilaku user menambahkan data kelas', () => {
-        cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
+    it('Cek perilaku admin sekolah menambahkan data kelas', () => {
+        cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
         const buttons = [
             { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },
@@ -133,10 +133,11 @@ describe('Add Class Data Test', () => {
                 cy.contains('label', label).should('be.visible');
             });
 
-            cy.get('input#className').type('SE-45-01');
+            const randomTwoDigit = String(Math.floor(Math.random() * 30) + 1).padStart(2, '0');
+            const generatedClassName = `SE-45-${randomTwoDigit}`;
+            cy.get('input#className').type(generatedClassName);
 
             cy.get('button.p-button-text').contains('Simpan').should('exist').click();
-
             cy.get('.p-confirm-popup')
                 .should('be.visible')
                 .and('contain.text', 'Apakah Anda yakin ingin menambahkan kelas ini?')

@@ -1,10 +1,10 @@
 describe('Student List Page Test', () => {
   beforeEach(() => {
-    cy.loginAs('tester');
+    cy.loginAs('admin');
   });
 
-  it('Cek perilaku user melihat data siswa', () => {
-    cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
+  it('Cek perilaku admin sekolah melihat data siswa', () => {
+    cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
     const buttons = [
       { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },

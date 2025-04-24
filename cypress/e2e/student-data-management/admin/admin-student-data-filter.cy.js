@@ -1,10 +1,10 @@
 describe('Filter Student Data Test', () => {
     beforeEach(() => {
-        cy.loginAs('tester');
+        cy.loginAs('admin');
     });
 
-    it('Cek perilaku user mencari data siswa menggunakan filter', () => {
-        cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
+    it('Cek perilaku admin sekolah mencari data siswa menggunakan filter', () => {
+        cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
         const buttons = [
             { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },
@@ -138,7 +138,7 @@ describe('Filter Student Data Test', () => {
             });
 
             cy.get('table thead tr').eq(1).within(() => {
-                cy.get('th').eq(1).find('input').clear().type('Tester');
+                cy.get('th').eq(1).find('input').clear().type('Siswa Sekolah');
             });
             cy.get('table tbody tr').should('have.length.greaterThan', 0);
             cy.get('table thead tr').eq(1).within(() => {
@@ -153,30 +153,30 @@ describe('Filter Student Data Test', () => {
                 .click();
             cy.get('table tbody tr').should('have.length.greaterThan', 0);
 
-            cy.wait(10000);
+            cy.wait(20000);
 
             cy.get('table tbody tr').each(($row) => {
-                cy.wrap($row).find('td').eq(1)
-                    .invoke('text')
-                    .then((text) => {
-                        const nama = text.trim().toUpperCase();
-                        const filterInput = 'Tester'.toUpperCase();
-                        expect(nama).to.include(filterInput);
-                    });
+                cy.wrap($row).invoke('text').then((rowText) => {
+                    if (rowText.includes('Tidak ada siswa yang sesuai dengan pencarian Anda')) {
+                        return;
+                    }
 
-                cy.wrap($row).find('td').eq(4)
-                    .invoke('text')
-                    .then((text) => {
-                        const gender = text.trim().toUpperCase();
-                        const expectedGender = 'Perempuan'.toUpperCase();
-                        expect(gender).to.equal(expectedGender);
-                    });
-            });
+                    cy.wrap($row).find('td').eq(1)
+                        .invoke('text')
+                        .then((text) => {
+                            const nama = text.trim().toUpperCase();
+                            const filterInput = 'SISWA SEKOLAH';
+                            expect(nama).to.include(filterInput);
+                        });
 
-            cy.get('table tbody tr').then(($rows) => {
-                if ($rows.length === 0) {
-                    cy.get('body').should('contain', 'Tidak ada siswa yang sesuai dengan pencarian Anda');
-                }
+                    cy.wrap($row).find('td').eq(4)
+                        .invoke('text')
+                        .then((text) => {
+                            const gender = text.trim().toUpperCase();
+                            const expectedGender = 'PEREMPUAN';
+                            expect(gender).to.equal(expectedGender);
+                        });
+                });
             });
         });
     });

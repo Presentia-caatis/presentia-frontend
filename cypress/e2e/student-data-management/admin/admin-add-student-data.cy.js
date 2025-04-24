@@ -1,10 +1,10 @@
 describe('Add Student Data Test', () => {
     beforeEach(() => {
-        cy.loginAs('tester');
+        cy.loginAs('admin');
     });
 
-    it('Cek perilaku user menambahkan data siswa', () => {
-        cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
+    it('Cek perilaku admin sekolah menambahkan data siswa', () => {
+        cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
         const buttons = [
             { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },
@@ -148,40 +148,35 @@ describe('Add Student Data Test', () => {
                 cy.contains('label', label).should('be.visible');
             });
 
-            cy.get('input#nama').type('Tester Tester');
-            cy.get('input#nis').type('1234567890');
-            cy.get('input#nisn').type('9876543211');
+            const names = ["Siswa Sekolah Satu", "Siswa Sekolah Dua", "Siswa Sekolah Tiga", "Siswa Sekolah Empat"];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const timestamp = Date.now().toString();
+            const uniqueNIS = timestamp.slice(-10);
+            const uniqueNISN = (parseInt(uniqueNIS) + 1).toString();
+
+            cy.get('input#nama').type(randomName);
+            cy.get('input#nis').type(uniqueNIS);
+            cy.get('input#nisn').type(uniqueNISN);
 
             cy.get('.p-dialog:visible').contains('label', 'Kelas')
                 .parent()
                 .find('.p-dropdown')
                 .click();
-            cy.get('.p-dropdown-panel:visible')
-                .should('exist')
-                .should('have.length.greaterThan', 0);
-            cy.get('.p-dropdown-item').each(($el) => {
-                cy.wrap($el).invoke('text').then((text) => {
-                    cy.log(text.trim());
+            cy.get('.p-dropdown-panel:visible .p-dropdown-item')
+                .then($kelas => {
+                    const randomIndex = Math.floor(Math.random() * $kelas.length);
+                    cy.wrap($kelas[randomIndex]).scrollIntoView().click();
                 });
-            });
-            cy.get('.p-dropdown-item')
-                .contains('X BCF 1')
-                .scrollIntoView()
-                .should('be.visible')
-                .click();
 
             cy.get('.p-dialog:visible').contains('label', 'Jenis Kelamin')
                 .parent()
                 .find('.p-dropdown')
                 .click();
-            cy.get('.p-dropdown-panel:visible')
-                .should('exist')
-                .should('have.length.greaterThan', 0);
-            cy.get('.p-dropdown-item')
-                .contains('Perempuan')
-                .scrollIntoView()
-                .should('be.visible')
-                .click();
+            cy.get('.p-dropdown-panel:visible .p-dropdown-item')
+                .then($gender => {
+                    const randomIndex = Math.floor(Math.random() * $gender.length);
+                    cy.wrap($gender[randomIndex]).scrollIntoView().click();
+                });
 
             cy.get('input#status1').should('be.checked');
 

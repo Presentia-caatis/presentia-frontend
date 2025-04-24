@@ -18,6 +18,30 @@ jobs:
       # and run all Cypress tests
       - name: Install Dependencies
         run: npm install
+      - name: Set Cypress Environment Variables
+        run: |
+          echo "VITE_API_BASE_URL=https://dev.api.presentia.matradipti.org/api" >> $GITHUB_ENV
+          echo "VITE_APP_ENV=development" >> $GITHUB_ENV
+          echo "VITE_APP_DEBUG=true" >> $GITHUB_ENV
+
+          echo "CYPRESS_GENERAL_USER_EMAIL=${{ secrets.CYPRESS_GENERAL_USER_EMAIL }}" >> $GITHUB_ENV
+          echo "CYPRESS_GENERAL_USER_PASSWORD=${{ secrets.CYPRESS_GENERAL_USER_PASSWORD }}" >> $GITHUB_ENV
+
+          echo "CYPRESS_STAF_EMAIL=${{ secrets.CYPRESS_STAF_EMAIL }}" >> $GITHUB_ENV
+          echo "CYPRESS_STAF_PASSWORD=${{ secrets.CYPRESS_STAF_PASSWORD }}" >> $GITHUB_ENV
+
+          echo "CYPRESS_COADMIN_EMAIL=${{ secrets.CYPRESS_COADMIN_EMAIL }}" >> $GITHUB_ENV
+          echo "CYPRESS_COADMIN_PASSWORD=${{ secrets.CYPRESS_COADMIN_PASSWORD }}" >> $GITHUB_ENV
+
+          echo "CYPRESS_ADMIN_EMAIL=${{ secrets.CYPRESS_ADMIN_EMAIL }}" >> $GITHUB_ENV
+          echo "CYPRESS_ADMIN_PASSWORD=${{ secrets.CYPRESS_ADMIN_PASSWORD }}" >> $GITHUB_ENV
+
+          echo "CYPRESS_SUPERADMIN_EMAIL=${{ secrets.CYPRESS_SUPERADMIN_EMAIL }}" >> $GITHUB_ENV
+          echo "CYPRESS_SUPERADMIN_PASSWORD=${{ secrets.CYPRESS_SUPERADMIN_PASSWORD }}" >> $GITHUB_ENV
+
+          echo "ADMS_USERNAME=${{ secrets.ADMS_USERNAME }}" >> $GITHUB_ENV
+          echo "ADMS_PASSWORD=${{ secrets.ADMS_PASSWORD }}" >> $GITHUB_ENV
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:

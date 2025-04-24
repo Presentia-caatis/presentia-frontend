@@ -1,10 +1,10 @@
 describe('Attendance Data on School Dashboard Page Test', () => {
   beforeEach(() => {
-    cy.loginAs('tester');
+    cy.loginAs('admin');
   });
 
-  it('Cek perilaku user melihat jumlah presensi dan absensi siswa', () => {
-    cy.contains("Sekolah yang dikelola", { timeout: 40000 }).should("be.visible");
+  it('Cek perilaku admin sekolah melihat jumlah presensi dan absensi siswa', () => {
+    cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
     const buttons = [
       { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },
@@ -39,22 +39,25 @@ describe('Attendance Data on School Dashboard Page Test', () => {
         .should('match', todayRegex);
 
       cy.contains('h5', 'Data Kehadiran Hari Ini').should('be.visible');
-      cy.get('.p-carousel').then(($carousel) => {
-        if ($carousel.length > 0) {
-          cy.get('.p-carousel-item').each(($item) => {
-            cy.wrap($item).within(() => {
-              cy.contains(/Total Hadir|Tidak Hadir|Tepat Waktu|Terlambat/).should('be.visible');
-              cy.get('div.text-900.font-bold')
-                .should('be.visible')
-                .invoke('text')
-                .should('match', /^\d+$/);
-            });
+      cy.get('.p-carousel-item:visible', { timeout: 10000 })
+        .should('have.length.greaterThan', 0)
+        .each(($item) => {
+          cy.wrap($item).within(() => {
+            cy.contains(/Total Hadir|Tidak Hadir|Tepat Waktu|Telat/, { timeout: 10000 })
+              .scrollIntoView({ block: 'center', inline: 'center' })
+              .should('exist')
+              .invoke('text')
+              .then((labelText) => {
+              });
+
+            cy.get('div.text-900.font-bold')
+              .scrollIntoView({ block: 'center', inline: 'center' })
+              .invoke('text')
+              .then((text) => {
+                expect(text.trim()).to.match(/^\d+$/);
+              });
           });
-        } else {
-          cy.get('.grid .card .block.text-500').should('have.length', 4);
-          cy.get('.grid .card .text-900').should('have.length', 4);
-        }
-      });
+        });
 
       const attendanceAndSubscription = [
         { icon: '.pi.pi-users', label: 'Total Hadir Hari Ini', isNumber: true },

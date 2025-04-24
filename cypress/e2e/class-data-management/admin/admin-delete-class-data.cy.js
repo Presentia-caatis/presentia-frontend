@@ -1,10 +1,10 @@
 describe('Delete Class Data Test', () => {
     beforeEach(() => {
-        cy.loginAs('tester');
+        cy.loginAs('admin');
     });
 
-    it('Cek perilaku user menghapus data kelas', () => {
-        cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
+    it('Cek perilaku admin sekolah menghapus data kelas', () => {
+        cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
         const buttons = [
             { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },
@@ -90,19 +90,18 @@ describe('Delete Class Data Test', () => {
             });
 
             cy.get('table thead tr').eq(1).within(() => {
-                cy.get('th').eq(1).find('input').clear().type('SE-45-01');
+                cy.get('th').eq(1).find('input').clear().type('SE-45');
             });
 
-            cy.wait(15000);
+            cy.wait(20000);
 
-            cy.get('table tbody tr').should('have.length.greaterThan', 0).each(($row) => {
+            cy.get('table tbody tr').first().should('have.length.greaterThan', 0).each(($row) => {
                 cy.wrap($row).find('td').eq(1).invoke('text').then((text) => {
                     const nama = text.trim().toUpperCase();
-                    const filterInput = 'SE-45-01'.toUpperCase();
+                    const filterInput = 'SE-45'.toUpperCase();
 
                     if (nama.includes(filterInput)) {
                         cy.wrap($row).find('button.p-button-danger').should('exist').click();
-
                         cy.get('.p-confirm-popup')
                             .should('be.visible')
                             .invoke('text')

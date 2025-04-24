@@ -1,6 +1,6 @@
 "use strict";
 import "cypress-real-events/support";
-import 'cypress-wait-until';
+import "cypress-wait-until";
 /// <reference types="cypress" />
 // ***********************************************
 // This example commands.ts shows you how to
@@ -39,23 +39,36 @@ import 'cypress-wait-until';
 //   }
 // }
 
+Cypress.Commands.add("loginAs", (role) => {
+    const upperRole = role.toUpperCase();
 
-Cypress.Commands.add('loginAs', (role) => {
-    const user = Cypress.env('users')[role];
+    let email = Cypress.env(`${upperRole}_EMAIL`);
+    let password = Cypress.env(`${upperRole}_PASSWORD`);
 
-    if (!user) {
-        throw new Error(`Role "${role}" tidak ditemukan di Cypress.env()`);
+    if (!email || !password) {
+        const users = Cypress.env("users");
+        const localUser = users?.[role];
+
+        if (!localUser) {
+            throw new Error(
+                `Data login untuk role "${role}" tidak ditemukan di environment variable maupun env.json`
+            );
+        }
+
+        email = localUser.email;
+        password = localUser.password;
     }
 
-    cy.visit('/');
-    cy.contains('Login').click();
-    cy.url().should('include', '/login');
-    cy.get('#email').type(user.email);
-    cy.get('#password').type(user.password);
+    cy.visit("/");
+    cy.contains("Login").click();
+    cy.url().should("include", "/login");
+    cy.get("#email").type(email);
+    cy.get("#password").type(password);
     cy.get('button[type="submit"]').click();
 
-    cy.url({ timeout: 50000 }).should('include', '/user/dashboard');
-    cy.get('.p-toast-message').should('contain', 'Login Berhasil')
-        .and('contain', 'Sekarang kamu sudah masuk ke dalam aplikasi')
-        .should('be.visible');
+    cy.url({ timeout: 50000 }).should("include", "/user/dashboard");
+    cy.get(".p-toast-message")
+        .should("contain", "Login Berhasil")
+        .and("contain", "Sekarang kamu sudah masuk ke dalam aplikasi")
+        .should("be.visible");
 });

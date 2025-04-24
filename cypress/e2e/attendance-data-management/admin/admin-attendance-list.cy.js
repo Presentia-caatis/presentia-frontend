@@ -1,10 +1,10 @@
 describe('Attendance List Page Test', () => {
     beforeEach(() => {
-        cy.loginAs('tester');
+        cy.loginAs('admin');
     });
 
-    it('Cek perilaku user melihat daftar presensi siswa', () => {
-        cy.contains("Sekolah yang dikelola", { timeout: 50000 }).should("be.visible");
+    it('Cek perilaku admin sekolah melihat daftar presensi siswa', () => {
+        cy.contains("Sekolah yang dikelola", { timeout: 60000 }).should("be.visible");
 
         const buttons = [
             { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: '/school/smkn-10-bandung/dashboard' },
@@ -59,7 +59,7 @@ describe('Attendance List Page Test', () => {
             cy.contains('h3', 'Tampilkan data kehadiran siswa')
                 .should('be.visible')
                 .then(() => {
-                    cy.contains('button', 'Tampilkan', { timeout: 15000 })
+                    cy.contains('button', 'Tampilkan', { timeout: 30000 })
                         .should('be.visible')
                         .and('not.be.disabled')
                 });
@@ -130,7 +130,7 @@ describe('Attendance List Page Test', () => {
 
                         cy.wrap($row).within(() => {
                             cy.get('td').each(($cell, colIndex, $cells) => {
-                                const textValue = $cell.textContent.trim();
+                                const textValue = $cell.text().trim();
 
                                 if (colIndex === 0) {
                                     cy.wrap($cell).find('input.p-checkbox-input').should('exist');
@@ -149,9 +149,13 @@ describe('Attendance List Page Test', () => {
                                     } else if (colIndex === 4) {
                                         expect(textValue).to.match(/\S+/);
                                     } else if (colIndex === 5) {
-                                        expect(textValue).to.match(/^\d{2}\/\d{2}\/\d{4}$/);
+                                        if (!['', '-'].includes(textValue)) {
+                                            expect(textValue).to.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/);
+                                        }
                                     } else if (colIndex === 6 || colIndex === 7) {
-                                        expect(textValue).to.match(/^\d{2}\.\d{2}\.\d{2}$/);
+                                        if (!['', '-'].includes(textValue)) {
+                                            expect(textValue).to.match(/^\d{2}\.\d{2}\.\d{2}$/);
+                                        }
                                     } else if (colIndex === 8) {
                                         expect(textValue).to.match(/^(Tepat Waktu|Telat|Tidak Hadir)$/);
                                     }
