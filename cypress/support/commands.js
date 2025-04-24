@@ -66,7 +66,7 @@ Cypress.Commands.add("loginAs", (role) => {
     cy.get("#password").type(password);
     cy.get('button[type="submit"]').click();
 
-    cy.url({ timeout: 50000 }).should("include", "/user/dashboard");
+    cy.url().should("include", "/user/dashboard");
     cy.get(".p-toast-message")
         .should("contain", "Login Berhasil")
         .and("contain", "Sekarang kamu sudah masuk ke dalam aplikasi")
