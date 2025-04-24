@@ -31,7 +31,7 @@ const UserSupportDetailPage = lazy(() => import('./pages/user/dashboard/support/
 const AdminSubscribtionPage = lazy(() => import('./pages/admin/subscription/AdminSubscriptionPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const SchoolStudentAttendanceListPage = lazy(() => import('./pages/school/dashboard/student/SchoolAttendanceListPage'));
-const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/FingerprintRegisterPage'));
+const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/fingerprintRegisterPage'));
 const SchoolCheckInStatusPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolCheckInStatusPage'));
 
 const CenteredLoader = () => (
