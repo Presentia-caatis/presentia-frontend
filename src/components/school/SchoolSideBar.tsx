@@ -52,6 +52,12 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolName}/dashboard` ? 'active-route' : 'menu-item',
                 },
                 {
+                    label: 'Presensi Manual',
+                    icon: 'pi pi-address-book',
+                    command: () => window.open(`${window.origin}/school/student/attendance/in`, '_blank'),
+                    className: currentPath === `/school/student/attendance/in` ? 'active-route' : 'menu-item',
+                },
+                {
                     label: 'Presensi Hari Ini',
                     icon: 'pi pi-calendar',
                     command: () => window.open(`${window.origin}/school/attendance`, '_blank'),

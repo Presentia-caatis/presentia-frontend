@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosClient from '../utils/axiosClient';
+export interface ManualAttendancePayload {
+    attendance_window_id: number;
+    student_id: number;
+    absence_permit_id?: number | null;
+    check_in_time?: string | null; // format: 'YYYY-MM-DD HH:mm:ss'
+    check_out_time?: string | null;
+    check_out_status_id?: number | null;
+    check_in_status_id?: number | null;
+}
 
 class AttendanceService {
     async getAttendances(params = {}) {
@@ -20,6 +29,17 @@ class AttendanceService {
             throw error;
         }
     }
+
+    async manualAttendance(nis: number) {
+        try {
+            const response = await axiosClient.post('/attendance/manual/nis', { nis });
+            return response.data;
+        } catch (error: any) {
+            console.error('Error manual attendance:', error);
+            throw error?.response?.data || error;
+        }
+    }
+
 
     async exportAttendance(params = {}) {
         try {

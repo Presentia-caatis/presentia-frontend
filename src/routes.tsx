@@ -34,72 +34,71 @@ const SchoolStudentAttendanceListPage = lazy(() => import('./pages/school/dashbo
 const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/FingerprintRegisterPage'));
 const SchoolCheckInStatusPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolCheckInStatusPage'));
 
+const CenteredLoader = () => (
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f9f9f9'
+    }}>
+        <ProgressSpinner style={{ width: '50px', height: '50px' }} />
+    </div>
+);
 
-const CenteredLoader = () => {
-    return (
-        <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100vh',
-            backgroundColor: '#f9f9f9'
-        }}>
-            <ProgressSpinner style={{ width: '50px', height: '50px' }} />
-        </div>
-    );
-};
+const withSuspense = (Component: React.ComponentType): JSX.Element => (
+    <Suspense fallback={<CenteredLoader />}>
+        <Component />
+    </Suspense>
+);
 
 const AppRoutes = () => {
     return (
-        <Suspense fallback={<CenteredLoader />}>
-            <Routes>
-                <Route path="/" element={<PublicLayout />} >
-                    <Route path='/' element={<LandingPage />} />
+        <Routes>
+            <Route path="/" element={withSuspense(PublicLayout)}>
+                <Route path="/" element={withSuspense(LandingPage)} />
+            </Route>
+
+            <Route path="/login" element={withSuspense(Login)} />
+            <Route path="/register" element={withSuspense(RegisterPage)} />
+
+            <Route path="/user" element={withSuspense(UserLayout)}>
+                <Route path="dashboard" element={withSuspense(UserDashboard)} />
+                <Route path="dashboard/billing" element={withSuspense(UserBillingPage)} />
+                <Route path="invoice/:id" element={withSuspense(UserInvoiceDetailPage)} />
+                <Route path="dashboard/support" element={withSuspense(UserSupportPage)} />
+                <Route path="support/ticket/:id" element={withSuspense(UserSupportDetailPage)} />
+                <Route path="profile" element={withSuspense(UserProfilePage)} />
+            </Route>
+
+            <Route path="/admin/*" element={withSuspense(AdminLayout)}>
+                <Route path="mainpage" element={withSuspense(AdminDashboard)} />
+                <Route path="schools" element={withSuspense(AdminSchoolPage)} />
+                <Route path="subscriptions" element={withSuspense(AdminSubscribtionPage)} />
+            </Route>
+
+            <Route path="/school/:schoolName/*" element={withSuspense(SchoolLayout)}>
+                <Route path="dashboard" element={withSuspense(Dashboard)} />
+                <Route path="profile" element={withSuspense(SchoolProfilePage)} />
+                <Route path="student">
+                    <Route index element={withSuspense(StudentListPage)} />
                 </Route>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<RegisterPage />} />
+                <Route path="attendance" element={withSuspense(StudentAttendancePage)} />
+                <Route path="attendance-record-result" element={withSuspense(StudentAttendanceRecordResultPage)} />
+                <Route path="custom-event" element={withSuspense(CustomEventPage)} />
+                <Route path="default-attendance-time" element={withSuspense(DefaultAttendanceTimePage)} />
+                <Route path="check-in/status" element={withSuspense(SchoolCheckInStatusPage)} />
+                <Route path="absence-permit/type" element={withSuspense(AbsenceStatusListPage)} />
+                <Route path="classroom" element={withSuspense(ClassroomListPage)} />
+                <Route path="fingerprint" element={withSuspense(FingerprintPage)} />
+            </Route>
 
-                <Route path="user" element={<UserLayout />}>
-                    <Route path="dashboard" element={<UserDashboard />} />
-                    <Route path="dashboard/billing" element={<UserBillingPage />} />
-                    <Route path="invoice/:id" element={<UserInvoiceDetailPage />} />
-                    <Route path="dashboard/support" element={<UserSupportPage />} />
-                    <Route path="support/ticket/:id" element={<UserSupportDetailPage />} />
-                    <Route path="profile" element={<UserProfilePage />} />
-                </Route>
+            <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
+            <Route path="/school/student/attendance/in" element={withSuspense(StudentAttendanceInPage)} />
+            <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
 
-                <Route path="/admin/*" element={<AdminLayout />}>
-                    <Route path="mainpage" element={<AdminDashboard />} />
-                    <Route path="schools" element={<AdminSchoolPage />} />
-                    <Route path="subscriptions" element={<AdminSubscribtionPage />} />
-                </Route>
-
-                <Route path="/school/:schoolName/*" element={<SchoolLayout />}>
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="profile" element={<SchoolProfilePage />} />
-
-                    <Route path="student">
-                        <Route index element={<StudentListPage />} />
-                    </Route>
-                    <Route path='attendance' element={<StudentAttendancePage />} />
-                    <Route path='attendance-record-result' element={<StudentAttendanceRecordResultPage />} />
-                    <Route path='custom-event' element={<CustomEventPage />} />
-                    <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
-                    <Route path='check-in/status' element={<SchoolCheckInStatusPage />} />
-                    <Route path='absence-permit/type' element={<AbsenceStatusListPage />} />
-
-                    <Route path='classroom' element={<ClassroomListPage />} />
-
-                    <Route path='fingerprint' element={<FingerprintPage />} />
-                </Route>
-
-                <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
-                <Route path="/school/student/attendance/in" element={<StudentAttendanceInPage />} />
-                <Route path="/school/student/attendance/out" element={<StudentAttendanceOutPage />} />
-
-                <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-        </Suspense>
+            <Route path="*" element={withSuspense(NotFoundPage)} />
+        </Routes>
     );
 };
 

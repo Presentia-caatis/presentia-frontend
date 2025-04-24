@@ -153,6 +153,7 @@ const SchoolStudentAttendancePage = () => {
             setExportEndDate(localDate);
         }
     };
+    
     const formatToWIB = (dateInput: string | Date | null) => {
         if (!dateInput) return null;
 
