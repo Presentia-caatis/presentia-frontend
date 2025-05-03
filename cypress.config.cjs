@@ -1,13 +1,14 @@
-const { defineConfig } = require("cypress");
-
-module.exports = defineConfig({
-  defaultCommandTimeout: 200000,
+module.exports = {
   e2e: {
-    baseUrl: "http://localhost:8080/",
-    supportFile: 'cypress/support/e2e.js',
-    specPattern: "cypress/**/*.cy.js",
+    baseUrl: "https://presentia.matradipti.org/",
+    supportFile: false,
     setupNodeEvents(on, config) {
-      // Event listener for Cypress, seperti plugin atau logging custom bisa ditambahkan di sini
+      // Event listener for Cypress
     },
+    specPattern: "cypress/**/*.cy.js",
+    supportFile: 'cypress/support/e2e.js',
+    env: {
+      schoolName: 'smk-telkom-bandung'
+    }
   },
-});
+};

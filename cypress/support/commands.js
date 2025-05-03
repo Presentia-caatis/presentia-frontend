@@ -42,10 +42,10 @@ import "cypress-wait-until";
 Cypress.Commands.add("loginAs", (role) => {
     const upperRole = role.toUpperCase();
 
-    let email = Cypress.env(`${upperRole}_EMAIL`);
+    let username = Cypress.env(`${upperRole}_USERNAME`);
     let password = Cypress.env(`${upperRole}_PASSWORD`);
 
-    if (!email || !password) {
+    if (!username || !password) {
         const users = Cypress.env("users");
         const localUser = users?.[role];
 
@@ -55,14 +55,14 @@ Cypress.Commands.add("loginAs", (role) => {
             );
         }
 
-        email = localUser.email;
+        username = localUser.username;
         password = localUser.password;
     }
 
     cy.visit("/");
     cy.contains("Login").click();
     cy.url().should("include", "/login");
-    cy.get("#email").type(email);
+    cy.get("#email").type(username);
     cy.get("#password").type(password);
     cy.get('button[type="submit"]').click();
 
