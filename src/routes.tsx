@@ -1,95 +1,103 @@
+import { ProgressSpinner } from 'primereact/progressspinner';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Login from './pages/auth/LoginPage';
-import AdminLayout from './layout/AdminLayout';
-import SchoolLayout from './layout/SchoolLayout';
-import NotFoundPage from './pages/NotFoundPage';
-import Dashboard from './pages/school/dashboard/dashboard/SchoolDashboardPage';
-import StudentListPage from './pages/school/dashboard/student/SchoolStudentPage';
-import StudentAttendanceInPage from './pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceInPage';
-import StudentAttendanceOutPage from './pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceOutPage';
-import StudentAttendancePage from './pages/school/dashboard/attendance/SchoolStudentAttendancePage';
-import StudentAttendanceRecordResultPage from './pages/school/dashboard/attendance/SchoolStudentAttendanceRecordResultPage';
-import CustomEventPage from './pages/school/dashboard/attendance/SchoolCustomEventPage';
-import ClassroomListPage from './pages/school/dashboard/classgroup/SchoolClassgroupPage';
-import DefaultAttendanceTimePage from './pages/school/dashboard/attendance/SchoolSetAttendanceTimePage';
-import AbsenceStatusListPage from './pages/school/dashboard/attendance/SchoolAbsenceStatusPage';
-// import AchievementListPage from './pages/school/dashboard/achievement/SchoolAchievementPage';
-// import StudentAchievementListPage from './pages/school/dashboard/achievement/SchoolStudentAchievementPage';
-// import ViolationPage from './pages/school/dashboard/violation/SchoolViolationPage';
-// import StudentViolationPage from './pages/school/dashboard/violation/SchoolStudentViolationPage';
-// import ViolationStudentPointReport from './pages/school/dashboard/violation/SchoolViolationStudentPointReport';
-import AdminDashboard from './pages/admin/dashboard/MainPage';
-import SchoolProfilePage from './pages/school/profile/SchoolProfilePage';
-import PublicLayout from './layout/PublicLayout';
-import LandingPage from './pages/public/LandingPage';
-import UserLayout from './layout/UserLayout';
-import UserDashboard from './pages/user/dashboard/dashboard/UserDashboardPage';
-import UserProfilePage from './pages/user/profile/UserProfilePage';
-import AdminSchoolPage from './pages/admin/school-management/AdminSchoolPage';
-import UserBillingPage from './pages/user/dashboard/invoice/UserInvoicePage';
-import UserInvoiceDetailPage from './pages/user/dashboard/invoice/UserInvoiceDetailPage';
-import UserSupportPage from './pages/user/dashboard/support/UserSupportPage';
-import UserSupportDetailPage from './pages/user/dashboard/support/UserSupportDetailPage';
-import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import SchoolStudentAttendanceListPage from './pages/school/dashboard/student/SchoolAttendanceListPage';
-import FingerprintPage from './pages/school/dashboard/admin/FingerprintRegisterPage';
-import SchoolCheckInStatusPage from './pages/school/dashboard/attendance/SchoolCheckInStatusPage';
+
+const Login = lazy(() => import('./pages/auth/LoginPage'));
+const AdminLayout = lazy(() => import('./layout/AdminLayout'));
+const SchoolLayout = lazy(() => import('./layout/SchoolLayout'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const Dashboard = lazy(() => import('./pages/school/dashboard/dashboard/SchoolDashboardPage'));
+const StudentListPage = lazy(() => import('./pages/school/dashboard/student/SchoolStudentPage'));
+const StudentAttendanceInPage = lazy(() => import('./pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceInPage'));
+const StudentAttendanceOutPage = lazy(() => import('./pages/school/dashboard/student/studentAttendance/SchoolStudentAttendanceOutPage'));
+const StudentAttendancePage = lazy(() => import('./pages/school/dashboard/attendance/SchoolStudentAttendancePage'));
+const StudentAttendanceRecordResultPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolStudentAttendanceRecordResultPage'));
+const CustomEventPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolCustomEventPage'));
+const ClassroomListPage = lazy(() => import('./pages/school/dashboard/classgroup/SchoolClassgroupPage'));
+const DefaultAttendanceTimePage = lazy(() => import('./pages/school/dashboard/attendance/SchoolSetAttendanceTimePage'));
+const AbsenceStatusListPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolAbsenceStatusPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/dashboard/MainPage'));
+const SchoolProfilePage = lazy(() => import('./pages/school/profile/SchoolProfilePage'));
+const PublicLayout = lazy(() => import('./layout/PublicLayout'));
+const LandingPage = lazy(() => import('./pages/public/LandingPage'));
+const UserLayout = lazy(() => import('./layout/UserLayout'));
+const UserDashboard = lazy(() => import('./pages/user/dashboard/dashboard/UserDashboardPage'));
+const UserProfilePage = lazy(() => import('./pages/user/profile/UserProfilePage'));
+const AdminSchoolPage = lazy(() => import('./pages/admin/school-management/AdminSchoolPage'));
+const UserBillingPage = lazy(() => import('./pages/user/dashboard/invoice/UserInvoicePage'));
+const UserInvoiceDetailPage = lazy(() => import('./pages/user/dashboard/invoice/UserInvoiceDetailPage'));
+const UserSupportPage = lazy(() => import('./pages/user/dashboard/support/UserSupportPage'));
+const UserSupportDetailPage = lazy(() => import('./pages/user/dashboard/support/UserSupportDetailPage'));
+const AdminSubscribtionPage = lazy(() => import('./pages/admin/subscription/AdminSubscriptionPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const SchoolStudentAttendanceListPage = lazy(() => import('./pages/school/dashboard/student/SchoolAttendanceListPage'));
+const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/fingerprintRegisterPage'));
+const SchoolCheckInStatusPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolCheckInStatusPage'));
+
+const CenteredLoader = () => (
+    <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f9f9f9'
+    }}>
+        <ProgressSpinner style={{ width: '50px', height: '50px' }} />
+    </div>
+);
+
+const withSuspense = (Component: React.ComponentType): JSX.Element => (
+    <Suspense fallback={<CenteredLoader />}>
+        <Component />
+    </Suspense>
+);
 
 const AppRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<PublicLayout />} >
-                <Route path='/' element={<LandingPage />} />
-            </Route>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<RegisterPage />} />
-
-            <Route path="user" element={<UserLayout />}>
-                <Route path="dashboard" element={<UserDashboard />} />
-                <Route path="dashboard/billing" element={<UserBillingPage />} />
-                <Route path="invoice/:id" element={<UserInvoiceDetailPage />} />
-                <Route path="dashboard/support" element={<UserSupportPage />} />
-                <Route path="support/ticket/:id" element={<UserSupportDetailPage />} />
-                <Route path="profile" element={<UserProfilePage />} />
+            <Route path="/" element={withSuspense(PublicLayout)}>
+                <Route path="/" element={withSuspense(LandingPage)} />
             </Route>
 
-            <Route path="/admin/*" element={<AdminLayout />}>
-                <Route path="mainpage" element={<AdminDashboard />} />
-                <Route path="schools" element={<AdminSchoolPage />} />
-                <Route path="subscriptions" element={<AdminSubscribtionPage />} />
+            <Route path="/login" element={withSuspense(Login)} />
+            <Route path="/register" element={withSuspense(RegisterPage)} />
+
+            <Route path="/user" element={withSuspense(UserLayout)}>
+                <Route path="dashboard" element={withSuspense(UserDashboard)} />
+                <Route path="dashboard/billing" element={withSuspense(UserBillingPage)} />
+                <Route path="invoice/:id" element={withSuspense(UserInvoiceDetailPage)} />
+                <Route path="dashboard/support" element={withSuspense(UserSupportPage)} />
+                <Route path="support/ticket/:id" element={withSuspense(UserSupportDetailPage)} />
+                <Route path="profile" element={withSuspense(UserProfilePage)} />
             </Route>
 
-            <Route path="/school/:schoolName/*" element={<SchoolLayout />}>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="profile" element={<SchoolProfilePage />} />
+            <Route path="/admin/*" element={withSuspense(AdminLayout)}>
+                <Route path="mainpage" element={withSuspense(AdminDashboard)} />
+                <Route path="schools" element={withSuspense(AdminSchoolPage)} />
+                <Route path="subscriptions" element={withSuspense(AdminSubscribtionPage)} />
+            </Route>
 
+            <Route path="/school/:schoolName/*" element={withSuspense(SchoolLayout)}>
+                <Route path="dashboard" element={withSuspense(Dashboard)} />
+                <Route path="profile" element={withSuspense(SchoolProfilePage)} />
                 <Route path="student">
-                    <Route index element={<StudentListPage />} />
+                    <Route index element={withSuspense(StudentListPage)} />
                 </Route>
-                <Route path='attendance' element={<StudentAttendancePage />} />
-                <Route path='attendance-record-result' element={<StudentAttendanceRecordResultPage />} />
-                <Route path='custom-event' element={<CustomEventPage />} />
-                <Route path='default-attendance-time' element={<DefaultAttendanceTimePage />} />
-                <Route path='check-in/status' element={<SchoolCheckInStatusPage />} />
-                <Route path='attendance/status' element={<AbsenceStatusListPage />} />
-
-                <Route path='classroom' element={<ClassroomListPage />} />
-
-                {/* <Route path='achievement' element={<AchievementListPage />} />
-                    <Route path='achievement/student' element={<StudentAchievementListPage />} />
-
-                    <Route path='violation' element={<ViolationPage />} />
-                    <Route path='violation/student' element={<StudentViolationPage />} />
-                    <Route path='violation/student-point-report' element={<ViolationStudentPointReport />} /> */}
-                <Route path='fingerprint' element={<FingerprintPage />} />
+                <Route path="attendance" element={withSuspense(StudentAttendancePage)} />
+                <Route path="attendance-record-result" element={withSuspense(StudentAttendanceRecordResultPage)} />
+                <Route path="custom-event" element={withSuspense(CustomEventPage)} />
+                <Route path="default-attendance-time" element={withSuspense(DefaultAttendanceTimePage)} />
+                <Route path="check-in/status" element={withSuspense(SchoolCheckInStatusPage)} />
+                <Route path="absence-permit/type" element={withSuspense(AbsenceStatusListPage)} />
+                <Route path="classroom" element={withSuspense(ClassroomListPage)} />
+                <Route path="fingerprint" element={withSuspense(FingerprintPage)} />
             </Route>
 
-            <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
-            <Route path="/school/student/attendance/in" element={<StudentAttendanceInPage />} />
-            <Route path="/school/student/attendance/out" element={<StudentAttendanceOutPage />} />
+            <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
+            <Route path="/school/student/attendance/in" element={withSuspense(StudentAttendanceInPage)} />
+            <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
 
-            <Route path="*" element={<NotFoundPage />} />
+            <Route path="*" element={withSuspense(NotFoundPage)} />
         </Routes>
     );
 };

@@ -19,7 +19,7 @@
         display: flex;
         align-items: center;
         color: var(--surface-900);
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 500;
         width: 300px;
         border-radius: 12px;
@@ -27,10 +27,6 @@
         img {
             height: 2.5rem;
             margin-right: .5rem;
-        }
-
-        &:focus {
-            @include mixins.focused();
         }
     }
 
@@ -87,6 +83,10 @@
             margin-left: 1rem;
         }
     }
+}
+
+.school-profile {
+    white-space: nowrap;
 }
 
 @media (max-width: 991px) {
@@ -149,4 +149,9 @@
             }
         }
     }
+
+    .school-profile {
+        white-space: normal;
+    }
+
 }

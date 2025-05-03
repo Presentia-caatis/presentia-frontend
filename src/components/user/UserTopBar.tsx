@@ -4,23 +4,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Toast } from 'primereact/toast';
 import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { useSchool } from '../../context/SchoolContext';
+import { formatSchoolName } from '../../utils/formatSchoolName';
+import { Avatar } from 'primereact/avatar';
+import defaultProfileUser from '../../assets/defaultProfileUser.png';
 
 const UserTopBar = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = React.useRef<Toast>(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
+    const { school } = useSchool();
     const [loading, setLoading] = useState(false);
-
-    const [user, setUser] = useState<{ fullname: string } | null>(null);
-
-    useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            setUser(JSON.parse(userData));
-        }
-    }, []);
 
     const { showToast } = useToastContext();
 
@@ -50,18 +46,27 @@ const UserTopBar = () => {
 
     const profileItems = [
         {
-            label: 'Profile',
+            label: 'Profile Pengguna',
             icon: 'pi pi-user',
-            action: () => {
-                navigate('/user/profile');
-            },
+            action: () => navigate('/user/profile'),
         },
+        ...(school
+            ? [
+                {
+                    label: 'Profile Sekolah',
+                    icon: 'pi pi-graduation-cap',
+                    action: () => {
+                        if (school) {
+                            navigate(`/school/${formatSchoolName(school.name)}/profile`);
+                        }
+                    },
+                },
+            ]
+            : []),
         {
             label: 'Logout',
             icon: 'pi pi-sign-out',
-            action: () => {
-                handleLogout();
-            },
+            action: handleLogout,
         },
     ];
 
@@ -87,7 +92,7 @@ const UserTopBar = () => {
 
     return (
         <div className="layout-topbar flex justify-content-between">
-            <Link to={"/"} className="layout-topbar-logo">
+            <Link to={"/"} className="layout-topbar-logo text-center">
                 <span>My Presentia</span>
             </Link>
             <Toast ref={toast} />
@@ -98,10 +103,13 @@ const UserTopBar = () => {
                 aria-controls="popup_profile_menu"
                 aria-haspopup
             >
-                <div className=''>
-                    {user?.fullname || 'Guest'}
+                <div className='my-auto'>
+                    {user?.fullname || 'Loading...'}
                 </div>
-                <div>
+                <div className=''>
+                    <Avatar shape="circle" className='border border-1' size='large' image={user?.profile_image_path || defaultProfileUser}></Avatar>
+                </div>
+                <div className='my-auto'>
                     <i
                         className={`pi ${profileOpen ? 'pi-angle-up' : 'pi-angle-down'
                             } transition-all duration-300`}

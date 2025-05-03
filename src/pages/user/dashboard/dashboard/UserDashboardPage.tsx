@@ -8,36 +8,14 @@ import { Tag } from 'primereact/tag';
 import { Tooltip } from 'primereact/tooltip';
 import { Panel } from 'primereact/panel';
 import UserCreateSchoolModal from '../../../../components/user/UserCreateSchoolModal';
-import schoolService from '../../../../services/schoolService';
 import { useAuth } from '../../../../context/AuthContext';
-import logoImage from '../../../../assets/Logo-SMK-10-Bandung.png';
-import dashboardService from '../../../../services/dashboardService';
 import { formatSchoolName } from '../../../../utils/formatSchoolName';
 import { Skeleton } from 'primereact/skeleton';
 import { useSchool } from '../../../../context/SchoolContext';
-import { Carousel } from 'primereact/carousel';
-
-type SchoolData = {
-    id: number;
-    name: string;
-    plan: string;
-    latest_subscription: string;
-    status: string;
-    address: string;
-    totalActiveStudents: number;
-    totalPresenceToday: number;
-    totalAbsenceToday: number;
-    registeredAt: string;
-    logoImagePath: string,
-};
-
+import defaultLogoSekolah from '../../../../assets/defaultLogoSekolah.png';
 
 const UserDashboardPage = () => {
-    const navigate = useNavigate();
-    const token = localStorage.getItem('token');
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [schoolData, setSchoolData] = useState<SchoolData | null>(null);
-    const [isModalVisible, setModalVisible] = useState(false);
+    const navigate = useNavigate()
     const { user } = useAuth();
     const { school, schoolLoading } = useSchool();
 
@@ -56,17 +34,6 @@ const UserDashboardPage = () => {
     const handleAttendanceIn = () => {
         if (school) navigate(`/school/attendance`);
     };
-
-    const itemTemplate = (item: { key: string; value: any }) => (
-        <div className="card text-center m-2">
-            <span className="block text-500 font-medium">{item.key}</span>
-            <div className="text-900 font-bold text-2xl">{item.value}</div>
-        </div>
-    );
-
-    const dailyDataArray = school?.dailyData
-        ? Object.entries(school.dailyData).map(([key, value]) => ({ key, value }))
-        : [];
 
     return (
         <div className="grid gap-4">
@@ -135,7 +102,8 @@ const UserDashboardPage = () => {
                             <div className="col-12 md:col-6 p-6">
                                 <div className="flex gap-4 items-center">
                                     <img
-                                        src={logoImage}
+                                        loading="lazy"
+                                        src={school?.logoImagePath || defaultLogoSekolah}
                                         alt={`${school?.name ?? "Loading..."} logo`}
                                         className="h-4rem  w-4rem object-cover rounded-full"
                                     />
@@ -153,14 +121,25 @@ const UserDashboardPage = () => {
                                         <i className="pi pi-calendar text-xl mr-2"></i>
                                         <div className='flex sm:flex-row flex-column'>
                                             <strong className='mr-2 white-space-nowrap'>Terdaftar Sejak:</strong>
-                                            <span>{school ? new Date(school.registeredAt).toLocaleDateString() : "Loading..."}</span>
+                                            <span>{school ? new Date(school.registeredAt).toLocaleDateString("id-ID") : "Loading..."}</span>
                                         </div>
                                     </div>
                                     <div className="mb-3 flex">
                                         <i className="pi pi-calendar-times text-xl mr-2"></i>
-                                        <div className='flex sm:flex-row flex-column'>
-                                            <strong className='mr-2 white-space-nowrap'>Terakhir Berlangganan:</strong>
-                                            <span>{school?.latest_subscription ?? "Loading..."}</span>
+                                        <div className="flex sm:flex-row flex-column">
+                                            <strong className="mr-2 whitespace-nowrap">Terakhir Berlangganan:</strong>
+                                            <span>
+                                                {school?.latest_subscription
+                                                    ? new Date(school.latest_subscription).toLocaleDateString("id-ID")
+                                                    : "Loading..."}
+                                                {" "}
+                                                /{" "}
+                                                {school
+                                                    ? school.is_subscription_packet_active
+                                                        ? "✅ Aktif"
+                                                        : "Tidak Aktif"
+                                                    : "Loading..."}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="mb-3">
@@ -180,20 +159,6 @@ const UserDashboardPage = () => {
                                             }
                                         />
                                         <Tooltip target="#package-tooltip" position="right" />
-                                    </div>
-                                    <div className="mb-3 flex">
-                                        <i className="pi pi-info-circle text-xl mr-2"></i>
-                                        <div className="flex">
-                                            <strong className="mr-2">Status Berlangganan:</strong>
-                                            <span>
-                                                {school
-                                                    ? school.is_subscription_packet_active
-                                                        ? "✅ Aktif"
-                                                        : "Tidak Aktif"
-                                                    : "Loading..."}
-                                            </span>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -252,15 +217,18 @@ const UserDashboardPage = () => {
                         </div>
                     </Panel>
                 ) : <Card className='shadow-1' title="Selamat Datang di Presentia">
-                    <p className="text-sm mb-4">
+                    {/* <p className="text-sm mb-4">
                         Anda belum memiliki sekolah yang terdaftar. Buat sekolah untuk memulai pengelolaan presensi.
+                    </p> */}
+                    <p className="text-sm mb-4">
+                        Anda belum memiliki sekolah yang terdaftar. Hubungi admin untuk mendaftarkan sekolah.
                     </p>
-                    <Button
+                    {/* <Button
                         icon="pi pi-plus"
                         label="Buat Sekolah"
                         className="p-button-success"
                         onClick={() => setModalVisible(true)}
-                    />
+                    /> */}
                 </Card>}
             </div>
             {/* <UserCreateSchoolModal

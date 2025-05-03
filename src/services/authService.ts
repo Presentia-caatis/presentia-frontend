@@ -3,7 +3,7 @@ import axiosClient from '../utils/axiosClient';
 class AuthService {
     async login(payload: { email_or_username: string; password: string }) {
         const response = await axiosClient.post('/login', payload);
-        return { responseData: response.data, status: response.status };
+        return { responseData: response.data, status: response.data.status };
     }
 
     async register(payload: { fullname: string, username: string; email: string; google_id: string, password: string, password_confirmation: string }) {

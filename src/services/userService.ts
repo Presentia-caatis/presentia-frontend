@@ -21,12 +21,14 @@ class UserService {
         const response = await axiosClient.post('/user', payload);
         return { responseData: response.data, status: response.status };
     }
-
-    async updateUser(userId: number, payload: { fullname: string; username: string; school_id?: number; email: string; password?: string; password_confirmation?: string }): Promise<any> {
-        const response = await axiosClient.put(`/user/${userId}`, payload);
+    async updateUser(userId: number, payload: FormData): Promise<any> {
+        const response = await axiosClient.post(`/user/${userId}`, payload, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return { responseData: response.data, status: response.status };
     }
-
     async deleteUser(userId: number): Promise<any> {
         const response = await axiosClient.delete(`/user/${userId}`);
         return { responseData: response.data, status: response.status };

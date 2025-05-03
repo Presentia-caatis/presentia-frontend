@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { loginToADMSJS, enrollFingerprint, getFingerprintData, logoutADMSJS } from '../../../../services/admsjsService';
+import { loginToADMSJS, enrollFingerprint, getFingerprintData } from '../../../../services/admsjsService';
 import { useAuth } from '../../../../context/AuthContext';
 import studentService from '../../../../services/studentService';
 import { Password } from 'primereact/password';
@@ -53,7 +53,7 @@ const FingerprintPage = () => {
     ];
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
     const [searchStudentDropdown, setSearchStudentDropdown] = useState("");
@@ -72,7 +72,7 @@ const FingerprintPage = () => {
             id: '1',
             sticky: true,
             severity: 'warn',
-            detail: 'Hubungin admin jika lupa dengan akun untuk mendaftarkan sidik jari.',
+            detail: 'Hubungi Admin jika membutuhkan akun pendaftaran sidik jari.',
             closable: false,
         });
     });
@@ -214,7 +214,7 @@ const FingerprintPage = () => {
         }
     };
 
-    const fetchStudentsTable = async (page = 1, perPage = 10, classGroupId?: number | string, search?: string) => {
+    const fetchStudentsTable = async (page = 1, perPage = 20, classGroupId?: number | string, search?: string) => {
         try {
             if (!user?.school_id) return;
             setLoadingStudentTable(true);
@@ -327,7 +327,7 @@ const FingerprintPage = () => {
         return (
             <div className="flex align-items-center justify-content-between">
                 <span>
-                    {option.student_name} - {option.class_group?.class_name || 'Tanpa Kelas'} - {option.id}
+                    {option.student_name?.toUpperCase()} - {option.class_group?.class_name || 'Tanpa Kelas'} - {option.id}
                 </span>
                 {isRegistered && <i className="ml-2 pi pi-check text-green-500"></i>}
             </div>

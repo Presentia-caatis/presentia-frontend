@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
@@ -23,7 +24,7 @@ interface RegisterFormInputs {
 const RegisterPage = () => {
     const { state }: any = useLocation();
     const navigate = useNavigate();
-    const { control, register, handleSubmit, setError, watch, formState: { errors } } = useForm<RegisterFormInputs>();
+    const { control, register, handleSubmit, setError, watch, formState: { errors, isValid } } = useForm<RegisterFormInputs>();
     const [loading, setLoading] = useState(false);
     const [loadingPage, setLoadingPage] = useState(true);
     const { showToast } = useToastContext();
@@ -69,6 +70,24 @@ const RegisterPage = () => {
     }
 
     const onSubmitRegister: SubmitHandler<RegisterFormInputs> = async (data) => {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+        if (!passwordRegex.test(data.password)) {
+            setError('password', {
+                type: 'manual',
+                message: 'Password must contain at least one lowercase letter, one uppercase letter, and one number',
+            });
+            return;
+        }
+
+        if (data.password !== data.confirmPassword) {
+            setError('confirmPassword', {
+                type: 'manual',
+                message: 'Passwords do not match',
+            });
+            return;
+        }
+
         try {
             setLoading(true);
             await authServices.register({
@@ -98,22 +117,11 @@ const RegisterPage = () => {
                 navigate('/login');
             }
         } catch (error: any) {
-            if (error.response?.data?.errors) {
-                const apiErrors = error.response.data.errors;
-                Object.keys(apiErrors).forEach((field) => {
-                    const messages = apiErrors[field];
-                    setError(field as keyof RegisterFormInputs, {
-                        type: 'server',
-                        message: messages.join(', '),
-                    });
-                });
-                setLoading(false);
-            } else {
-                setLoading(false);
-                callToast(showToast, 'error', 'Registrasi Gagal', 'Terjadi kesalahan pada server.');
-            }
+            setLoading(false);
+            callToast(showToast, 'error', 'Registrasi Gagal', 'Terjadi kesalahan pada server.');
         }
     };
+
 
     const passwordHeader = <div className="font-bold mb-3">Buat Password</div>;
     const passwordFooter = (
@@ -200,7 +208,11 @@ const RegisterPage = () => {
                             <Controller
                                 name="password"
                                 control={control}
-                                rules={{ required: 'Password is required' }}
+                                rules={{
+                                    required: true,
+                                    minLength: 8,
+                                    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+                                }}
                                 render={({ field }) => (
                                     <Password
                                         id="password"
@@ -245,7 +257,7 @@ const RegisterPage = () => {
                             )}
                         </div>
 
-                        <Button loading={loading} type="submit" label="Complete Registration" className="w-full p-3 text-xl mb-3" />
+                        <Button loading={loading} type="submit" label="Complete Registration" disabled={!isValid} className="w-full p-3 text-xl mb-3" />
                     </form>
                 </Card>
             </div>

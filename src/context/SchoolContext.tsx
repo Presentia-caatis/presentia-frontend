@@ -6,6 +6,7 @@ import dashboardService from "../services/dashboardService";
 import attendanceService from "../services/attendanceService";
 import { useAuth } from "./AuthContext";
 import { useToastContext } from "../layout/ToastContext";
+import { setResetSchoolCallback } from "../utils/schoolUtils";
 
 interface SchoolData {
     id: number;
@@ -56,7 +57,13 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
         }, position);
     }
 
+    const resetSchool = () => {
+        setSchool(null);
+    };
 
+    useEffect(() => {
+        setResetSchoolCallback(resetSchool);
+    }, []);
 
     useEffect(() => {
         const fetchSchool = async () => {
@@ -83,8 +90,8 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                     status: schoolRes.data.status ?? "Unknown",
                     address: schoolRes.data.address ?? "Tidak Ada Alamat",
                     totalActiveStudents: staticRes.data.active_students ?? 0,
-                    totalPresenceToday: dailyResSummarize.data.presence ?? 0,
-                    totalAbsenceToday: dailyResSummarize.data.absence ?? 0,
+                    totalPresenceToday: dailyResSummarize.data.present ?? 0,
+                    totalAbsenceToday: dailyResSummarize.data.absent ?? 0,
                     registeredAt: schoolRes.data.created_at ?? new Date().toISOString(),
                     logoImagePath: schoolRes.data.logo_image_path ?? "",
                     activeStudents: staticRes.data.active_students,

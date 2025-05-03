@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 import authServices from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../layout/ToastContext';
+import { resetSchool } from '../utils/schoolUtils';
 
 interface User {
     id: number;
@@ -12,6 +13,7 @@ interface User {
     fullname: string;
     google_id: string | null;
     email_verified_at: string | null;
+    profile_image_path: string;
     created_at: string;
     updated_at: string;
 }
@@ -20,6 +22,7 @@ interface AuthContextProps {
     user: User | null;
     token: string | null;
     setAuth: (user: User, token: string) => void;
+    updateUser: (updatedUser: User) => void;
     checkAuth: () => Promise<boolean>;
     logout: () => void;
 }
@@ -36,7 +39,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return null;
         }
     });
-
     const { showToast } = useToastContext();
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
         showToast({
@@ -49,6 +51,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
     const navigate = useNavigate();
+
+    const updateUser = (updatedUser: User) => {
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    };
 
     const setAuth = (user: User, token: string) => {
         try {
@@ -64,12 +71,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async (): Promise<boolean> => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
-            console.log("Stored token: " + storedToken);
             try {
                 const response = await authServices.getProfile();
                 console.log(response.status);
                 if (response.data && response.status === "success") {
-                    console.log("Stored token: " + storedToken);
                     const user = response.data;
                     setAuth(user, storedToken);
                     return true;
@@ -98,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             localStorage.clear();
             setUser(null);
             setToken(null);
+            resetSchool();
             if (window.location.pathname !== '/' && window.location.pathname !== '/register') {
                 navigate('/login');
             }
@@ -106,7 +112,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     return (
-        <AuthContext.Provider value={{ user, token, setAuth, checkAuth, logout }}>
+        <AuthContext.Provider value={{ user, token, setAuth, updateUser, checkAuth, logout }}>
             {children}
         </AuthContext.Provider>
     );

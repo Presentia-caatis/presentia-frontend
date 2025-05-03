@@ -7,12 +7,15 @@ import { Carousel } from 'primereact/carousel';
 
 const SchoolDashboardPage = () => {
     const { school, schoolLoading } = useSchool();
+    const [chartLoading, setChartLoading] = useState(true);
+    const [dailyChartLoading, setDailyChartLoading] = useState(true);
 
     const today = new Date();
     const todayString = today.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
 
     useEffect(() => {
         if (school) {
+            setChartLoading(true);
             setStudentActiveChart({
                 labels: ["Siswa Aktif", "Siswa Tidak Aktif"],
                 datasets: [
@@ -43,6 +46,7 @@ const SchoolDashboardPage = () => {
                     },
                 ],
             });
+            setChartLoading(false);
         }
     }, [school]);
 
@@ -50,21 +54,37 @@ const SchoolDashboardPage = () => {
         ? Object.entries(school.dailyData).map(([key, value]) => ({ key, value }))
         : [];
 
-
     useEffect(() => {
         if (school?.dailyData && Object.keys(school.dailyData).length > 0) {
+            setDailyChartLoading(true);
             const dailyKeys: string[] = Object.keys(school.dailyData);
             const dailyValues: number[] = Object.values(school.dailyData).map(Number);
 
-            setDailyChart({
-                labels: dailyKeys,
-                datasets: [
-                    {
-                        data: dailyValues,
-                        backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
-                    },
-                ],
-            });
+            const allValuesZero = dailyValues.every((value) => value === 0);
+
+            if (allValuesZero) {
+                setDailyChart({
+                    labels: [],
+                    datasets: [
+                        {
+                            data: [],
+                            backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
+                        },
+                    ],
+                });
+            } else {
+                setDailyChart({
+                    labels: dailyKeys,
+                    datasets: [
+                        {
+                            data: dailyValues,
+                            backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
+                        },
+                    ],
+                });
+            }
+
+            setDailyChartLoading(false);
         }
     }, [school?.dailyData]);
 
@@ -233,7 +253,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
                         <h5>Perbandingan Kehadiran Hari Ini</h5>
-                        {schoolLoading ? (
+                        {chartLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : school?.totalPresenceToday === 0 && school?.totalAbsenceToday === 0 ? (
                             <h3>Tidak Ada Kehadiran Hari Ini</h3>
@@ -245,7 +265,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center h-full">
                         <h5>Statistik Kehadiran Harian</h5>
-                        {schoolLoading ? (
+                        {dailyChartLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : dailyChart.labels.length === 0 ? (
                             <h3>Tidak Ada Data Kehadiran</h3>
@@ -258,7 +278,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
                         <h5>Perbandingan Status Siswa</h5>
-                        {schoolLoading ? (
+                        {chartLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : (
                             <Chart type="pie" data={studentActiveChart} options={chartOptions} />
@@ -268,7 +288,7 @@ const SchoolDashboardPage = () => {
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
                         <h5>Perbandingan Jenis Kelamin Siswa</h5>
-                        {schoolLoading ? (
+                        {chartLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : (
                             <Chart type="doughnut" data={studentGenderChart} options={chartOptions} />

@@ -41,6 +41,13 @@ const SchoolLayout = () => {
         }
     }, [school, schoolName, navigate]);
 
+    useEffect(() => {
+        if (!school && !schoolLoading) {
+            navigate('/404');
+        }
+    }, [school, schoolLoading, navigate]);
+
+
     if (schoolLoading) {
         return (
             <div className="absolute top-0 left-0 w-full h-full flex justify-content-center align-items-center">
