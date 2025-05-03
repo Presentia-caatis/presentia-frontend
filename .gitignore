@@ -20,6 +20,4 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
-
-# Cypress environment file
 cypress.env.json

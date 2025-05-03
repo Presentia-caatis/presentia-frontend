@@ -6,6 +6,7 @@ import dashboardService from "../services/dashboardService";
 import attendanceService from "../services/attendanceService";
 import { useAuth } from "./AuthContext";
 import { useToastContext } from "../layout/ToastContext";
+import { setResetSchoolCallback } from "../utils/schoolUtils";
 
 interface SchoolData {
     id: number;
@@ -56,7 +57,13 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
         }, position);
     }
 
+    const resetSchool = () => {
+        setSchool(null);
+    };
 
+    useEffect(() => {
+        setResetSchoolCallback(resetSchool);
+    }, []);
 
     useEffect(() => {
         const fetchSchool = async () => {

@@ -77,7 +77,9 @@ const SchoolTopbar = () => {
                 to={school ? `/school/${formatSchoolName(school.name)}/dashboard` : "/user/dashboard"}
                 className="layout-topbar-logo text-center"
             >
-                <img loading="lazy" src={school?.logoImagePath || defaultLogoSekolah} alt="logo" />
+                <img loading="lazy" src={school?.logoImagePath || defaultLogoSekolah} alt="logo" onError={(e) => {
+                    (e.target as HTMLImageElement).src = defaultLogoSekolah;
+                }} />
                 <div className='white-space-nowrap overflow-hidden text-overflow-ellipsis hidden sm:block'>
                     {school?.name || 'Loading...'}
                 </div>

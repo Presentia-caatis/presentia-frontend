@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 import authServices from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../layout/ToastContext';
+import { resetSchool } from '../utils/schoolUtils';
 
 interface User {
     id: number;
@@ -38,7 +39,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return null;
         }
     });
-
     const { showToast } = useToastContext();
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
         showToast({
@@ -103,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             localStorage.clear();
             setUser(null);
             setToken(null);
+            resetSchool();
             if (window.location.pathname !== '/' && window.location.pathname !== '/register') {
                 navigate('/login');
             }
