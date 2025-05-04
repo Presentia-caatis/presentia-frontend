@@ -14,6 +14,8 @@ import { Messages } from 'primereact/messages';
 import { useMountEffect } from 'primereact/hooks';
 import { Skeleton } from 'primereact/skeleton';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { useAuth } from '../../../../context/AuthContext';
 
 const SchoolAbsenceStatusPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
@@ -22,6 +24,7 @@ const SchoolAbsenceStatusPage = () => {
     const [loadingButton, setLoadingButton] = useState(false);
     const [permitList, setPermitList] = useState<any[]>([]);
     const toast = useRef<Toast>(null);
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(20);
@@ -127,13 +130,18 @@ const SchoolAbsenceStatusPage = () => {
             <Toast ref={toast} />
             <Messages ref={msgs} />
             <ConfirmPopup />
-            <div className="flex justify-content-between p-4 card">
-                <div className="flex gap-2">
-                    <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowAddDialog(true)} />
-                    <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedPermits?.length} />
-                </div>
-                {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
-            </div>
+            {
+                hasAnyPermission(user, ['manage_schools']) && (
+                    <div className="flex justify-content-between p-4 card">
+                        <div className="flex gap-2">
+                            <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowAddDialog(true)} />
+                            <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedPermits?.length} />
+                        </div>
+                        {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
+                    </div>
+                )
+            }
+
 
             <Tooltip className='p-1' target=".student-count-tooltip" />
             <DataTable
@@ -184,14 +192,17 @@ const SchoolAbsenceStatusPage = () => {
                                 <Skeleton shape="circle" size="2rem" />
                                 <Skeleton shape="circle" size="2rem" />
                             </div>
-                        ) : (
-                            <div className='flex gap-2'>
+                        ) : hasAnyPermission(user, ['manage_schools']) ? (
+                            <div className="flex gap-2">
                                 <Button
                                     icon="pi pi-pencil"
                                     className="p-button-success p-button-rounded"
                                     tooltip="Perbarui"
                                     loading={loadingButton}
-                                    onClick={() => { setPermitTypeData(rowData); setShowAddDialog(true); }}
+                                    onClick={() => {
+                                        setPermitTypeData(rowData);
+                                        setShowAddDialog(true);
+                                    }}
                                 />
                                 <Button
                                     icon="pi pi-trash"
@@ -200,9 +211,10 @@ const SchoolAbsenceStatusPage = () => {
                                     onClick={() => handleDelete(rowData.id)}
                                 />
                             </div>
-                        )
+                        ) : null
                     )}
                 />
+
             </DataTable>
 
             <Dialog

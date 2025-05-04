@@ -54,10 +54,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const navigate = useNavigate();
 
-    const updateUser = (updatedUser: User) => {
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+    const updateUser = (updatedFields: Partial<User>) => {
+        setUser((prevUser) => {
+            if (!prevUser) return null;
+            const updatedUser = { ...prevUser, ...updatedFields };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
     };
+
 
     const setAuth = (user: User, token: string) => {
         try {
