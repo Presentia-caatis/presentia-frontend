@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../layout/ToastContext';
 import { resetSchool } from '../utils/schoolUtils';
 
-interface User {
+export interface User {
     id: number;
     school_id: number | null;
     email: string;
@@ -14,6 +14,8 @@ interface User {
     google_id: string | null;
     email_verified_at: string | null;
     profile_image_path: string;
+    permissions: string[];
+    roles: string[];
     created_at: string;
     updated_at: string;
 }
@@ -52,10 +54,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const navigate = useNavigate();
 
-    const updateUser = (updatedUser: User) => {
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+    const updateUser = (updatedFields: Partial<User>) => {
+        setUser((prevUser) => {
+            if (!prevUser) return null;
+            const updatedUser = { ...prevUser, ...updatedFields };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
     };
+
 
     const setAuth = (user: User, token: string) => {
         try {

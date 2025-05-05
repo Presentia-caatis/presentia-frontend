@@ -29,6 +29,9 @@ import documentService from "../../../../services/documentService";
 interface AttendanceData {
     id: number;
     attendance_window_id: number;
+    attendance_window: {
+        date: string;
+    };
     student: {
         class_group: {
             class_name: string;
@@ -44,8 +47,9 @@ interface AttendanceData {
 
 const SchoolStudentAttendancePage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
+    const [previewMode, setPreviewMode] = useState(false);
     const [showEditDialog, setShowEditDialog] = useState(false);
-
+    const [loadPermit, setLoadPermit] = useState(false);
     const [editAttendanceData, setEditAttendanceData] = useState<AttendanceData | null>(null);
     const [tempEditAttendanceData, setTempEditAttendanceData] = useState<AttendanceData | null>(null);
     const [listKelas, setListKelas] = useState([]);
@@ -55,11 +59,11 @@ const SchoolStudentAttendancePage = () => {
     const [loadingSave, setLoadingSave] = useState(false);
     const [listStatusPresensi, setListStatusPresensi] = useState([]);
     const [loadingStatusAbsensi, setLoadingStatusAbsensi] = useState(true);
-    const [listStatusAbsensi, setListStatusAbsensi] = useState([]);
+    const [listStatusAbsensi, setListStatusAbsensi] = useState<{ label: string; value: number }[]>([]);
     const [selectedKelas, setSelectedKelas] = useState<number[]>([]);
     const [selectedStatusPresensi, setSelectedStatusPresensi] = useState<number[]>([]);
     const [selectedStatusAbsensi, setSelectedStatusAbsensi] = useState(null);
-    const [absenceDescription, setAbsenceDescription] = useState("");
+    const [absenceDescription, setAbsenceDescription] = useState("Siswa tidak masuk");
     const [selectedAttendances, setSelectedAttendances] = useState([]);
     const [listAttendances, setListAttendances] = useState([]);
     const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -83,7 +87,8 @@ const SchoolStudentAttendancePage = () => {
 
     const toast = useRef<Toast>(null);
 
-    const [globalFilter, setGlobalFilter] = useState("");
+    const [globalFilter, setGlobalFilter] = useState('');
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
     const [filters, setFilters] = useState({
         student_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
         nis: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -98,6 +103,22 @@ const SchoolStudentAttendancePage = () => {
     }, [currentPage, rowsPerPage]);
 
     useEffect(() => {
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(() => {
+            fetchAttendances();
+        }, 500);
+
+        return () => {
+            if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+            }
+        };
+    }, [globalFilter]);
+
+    useEffect(() => {
         fetchKelas();
         fetchStatusPresensi();
         fetchStatusAbsensi();
@@ -106,13 +127,21 @@ const SchoolStudentAttendancePage = () => {
     const handleFileSelect = (event: any) => {
         if (event.files && event.files.length > 0) {
             const selectedFile = event.files[0];
-            if (selectedFile.type === 'application/pdf') {
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+
+            if (allowedTypes.includes(selectedFile.type)) {
                 setFile(selectedFile);
             } else {
-                alert('Format file harus PDF');
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Gagal",
+                    detail: "Format file harus PDF, JPG, atau PNG!",
+                    life: 3000,
+                });
             }
         }
     };
+
 
     const handleClearFile = () => {
         setFile(null);
@@ -153,20 +182,30 @@ const SchoolStudentAttendancePage = () => {
             setExportEndDate(localDate);
         }
     };
-    const formatToWIB = (dateInput: string | Date | null) => {
-        if (!dateInput) return null;
 
-        const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+    const mergeDateAndTime = (dateStr: string, timeInput: Date | string | null) => {
+        if (!timeInput) return null;
 
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const time = typeof timeInput === "string" ? new Date(timeInput) : timeInput;
+        const [year, month, day] = dateStr.split("-");
+
+        const hours = String(time.getHours()).padStart(2, '0');
+        const minutes = String(time.getMinutes()).padStart(2, '0');
+        const seconds = String(time.getSeconds()).padStart(2, '0');
 
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     };
+
+
+    useEffect(() => {
+        if (showAddDialog || showEditDialog || showExportDialog) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+
+        return () => document.body.classList.remove('modal-open');
+    }, [showAddDialog, showEditDialog, showExportDialog]);
 
 
     const handleUpdate = async () => {
@@ -177,8 +216,8 @@ const SchoolStudentAttendancePage = () => {
 
             const formattedData: any = {
                 attendance_window_id: editAttendanceData.attendance_window_id,
-                check_in_time: formatToWIB(editAttendanceData.check_in_time),
-                check_out_time: formatToWIB(editAttendanceData.check_out_time),
+                check_in_time: mergeDateAndTime(editAttendanceData.attendance_window.date, editAttendanceData.check_in_time),
+                check_out_time: mergeDateAndTime(editAttendanceData.attendance_window.date, editAttendanceData.check_out_time),
                 check_in_status_id: editAttendanceData.check_in_status_id,
             };
 
@@ -233,8 +272,14 @@ const SchoolStudentAttendancePage = () => {
 
             if (selectedStatusAbsensi && file) {
                 try {
+                    const now = new Date();
+                    const wibTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+                    const formattedTime = wibTime.toLocaleString("id-ID", {
+                        timeZone: "Asia/Jakarta",
+                        hour12: false,
+                    });
                     const uploadResponse = await documentService.createDocument(
-                        `Bukti Absensi - ${editAttendanceData.student.student_name}`,
+                        `Bukti Absensi - ${editAttendanceData.student.student_name} (${formattedTime})`,
                         file
                     );
 
@@ -273,8 +318,10 @@ const SchoolStudentAttendancePage = () => {
             }
 
             if (selectedStatusAbsensi) {
+                const attendanceIds = [editAttendanceData.id];
+
                 await absencePermitService.create({
-                    attendance_id: editAttendanceData.id,
+                    attendance_ids: attendanceIds,
                     absence_permit_type_id: selectedStatusAbsensi,
                     description: absenceDescription ?? "",
                     document_id: documentId ?? null,
@@ -290,6 +337,9 @@ const SchoolStudentAttendancePage = () => {
 
             fetchAttendances(currentPage, rowsPerPage);
             setShowEditDialog(false);
+            setSelectedStatusAbsensi(null);
+            setAbsenceDescription("Siswa tidak masuk")
+            setFile(null);
         } catch (error) {
             console.error("Gagal memperbarui data kehadiran:", error);
             toast.current?.show({
@@ -299,10 +349,20 @@ const SchoolStudentAttendancePage = () => {
                 life: 3000,
             });
         } finally {
+
             setLoadingSave(false);
         }
     };
 
+    const getAbsencePermitById = async (id: number) => {
+        try {
+            const response = await absencePermitService.getById(id);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching absence permit:', error);
+            return null;
+        }
+    }
 
 
     const fetchAttendances = async (page = 1, perPage = 20) => {
@@ -328,7 +388,9 @@ const SchoolStudentAttendancePage = () => {
                 params.checkInStatusId = selectedStatusPresensi.join(',');
             }
 
-
+            if (globalFilter) {
+                params.search = globalFilter;
+            }
             const response = await attendanceService.getAttendances(params);
 
             setListAttendances(response.data.data);
@@ -406,6 +468,19 @@ const SchoolStudentAttendancePage = () => {
         });
     };
 
+    const confirmExport = (event: React.MouseEvent) => {
+        confirmPopup({
+            target: event.currentTarget as HTMLElement,
+            message: 'Apakah Anda yakin ingin export data kehadiran ini?',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-success',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: () => handleExportAttendance({ exportKelas, exportStartDate, exportEndDate }),
+            reject: () => { },
+        });
+    };
+
     useMountEffect(() => {
         msgs.current?.clear();
         msgs.current?.show({
@@ -416,6 +491,50 @@ const SchoolStudentAttendancePage = () => {
             closable: false,
         });
     });
+
+    const handleEditAttendanceClick = async (rowData: any) => {
+        setTempEditAttendanceData(rowData);
+        setEditAttendanceData(rowData);
+
+        if (rowData.absence_permit_id) {
+            setLoadPermit(true);
+            setSelectedStatusAbsensi(rowData.absence_permit_id);
+            try {
+                const permit = await getAbsencePermitById(rowData.absence_permit_id);
+                if (permit.description == "") {
+                    setAbsenceDescription("Siswa tidak masuk");
+                }
+                setAbsenceDescription(permit.description);
+
+                if (permit?.document?.path) {
+                    try {
+                        const response = await fetch(permit.document.path);
+                        const blob = await response.blob();
+
+                        const fileName = permit.document.document_name || 'document';
+                        const fileExtension = permit.document.path.split('.').pop() || '';
+                        const fileType = blob.type || `image/${fileExtension}`;
+
+                        const file = new File([blob], `${fileName}.${fileExtension}`, {
+                            type: fileType
+                        });
+
+                        setFile(file);
+                    } catch (error) {
+                        console.error("Failed to fetch document", error);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch absence permit", error);
+            } finally {
+                setLoadPermit(false);
+            }
+        }
+
+        console.log(rowData);
+        setShowEditDialog(true);
+    };
+
 
     return (
         <>
@@ -484,7 +603,11 @@ const SchoolStudentAttendancePage = () => {
                         {/* <Button icon="pi pi-plus" severity='success' label='Kehadiran' onClick={() => {
                             setShowAddDialog(true);
                         }} /> */}
-                        <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedAttendances?.length} />
+                        {
+                            // user?.permissions?.includes("manage_attendance") && (
+                            //     <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedAttendances?.length} />
+                            // )
+                        }
                     </div>
                     <Button
                         icon="pi pi-upload"
@@ -557,34 +680,58 @@ const SchoolStudentAttendancePage = () => {
                         field="check_in_time"
                         header="Tanggal"
                         body={(rowData) =>
-                            rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleDateString("id-ID") : "-"
+                            rowData.attendance_window.date ? rowData.attendance_window.date : "-"
                         }
                     />
                     <Column field="check_in_time" header="Waktu Masuk" body={(rowData) => rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleTimeString("id-ID") : "-"}></Column>
                     <Column field="check_out_time" header="Waktu Pulang" body={(rowData) => rowData.check_out_time ? new Date(rowData.check_out_time).toLocaleTimeString("id-ID") : "-"}></Column>
-                    <Column field="check_in_status.status_name" header="Status"></Column>
+                    <Column
+                        header="Status"
+                        body={(rowData) => {
+                            const status = rowData.check_in_status?.status_name || "-";
+                            const permit = listStatusAbsensi.find(p => p.value === rowData.absence_permit_id);
+                            const permitLabel = permit ? permit.label : null;
+
+                            return (
+                                <div>
+                                    <div>{status}</div>
+                                    {permitLabel && <div className="text-md text-gray-500">({permitLabel})</div>}
+                                </div>
+                            );
+                        }}
+                    />
+
+
                     <Column
                         body={(rowData) => (
                             <div className="flex gap-2">
                                 <Button
-                                    icon="pi pi-pencil"
-                                    className="p-button-success p-button-rounded"
-                                    tooltip="Edit"
+                                    icon="pi pi-eye"
+                                    className="p-button-info  p-button-rounded"
+                                    tooltip="Lihat"
                                     tooltipOptions={{ position: "top" }}
-                                    onClick={() => {
-                                        setTempEditAttendanceData(rowData);
-                                        setEditAttendanceData(rowData);
-                                        console.log(rowData);
-                                        setShowEditDialog(true);
+                                    onClick={async () => {
+                                        setPreviewMode(true);
+                                        await handleEditAttendanceClick(rowData)
                                     }}
                                 />
-                                <Button
-                                    icon="pi pi-trash"
-                                    className="p-button-danger p-button-rounded"
-                                    tooltip="Hapus"
-                                    tooltipOptions={{ position: "top" }}
-                                    onClick={() => { }}
-                                />
+                                {
+                                    user?.permissions?.includes("manage_attendance") && (
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            className="p-button-success p-button-rounded"
+                                            tooltip="Edit"
+                                            tooltipOptions={{ position: "top" }}
+                                            loading={loadPermit}
+                                            disabled={loadPermit}
+                                            onClick={async () => {
+                                                setPreviewMode(false);
+                                                await handleEditAttendanceClick(rowData)
+                                            }}
+                                        />
+
+                                    )
+                                }
                             </div>
                         )}
                     />
@@ -595,10 +742,11 @@ const SchoolStudentAttendancePage = () => {
                 onHide={() => {
                     setShowEditDialog(false);
                     setSelectedStatusAbsensi(null);
-                    setAbsenceDescription("");
+                    setAbsenceDescription("Siswa tidak masuk");
+                    setPreviewMode(false);
                     setFile(null);
                 }}
-                header="Edit Kehadiran"
+                header={`${previewMode ? "Lihat" : "Edit"} Kehadiran`}
                 modal
                 style={{ width: "90vw", maxWidth: "600px" }}
             >
@@ -634,10 +782,12 @@ const SchoolStudentAttendancePage = () => {
                                         hourFormat="24"
                                         showSeconds
                                         readOnlyInput
-                                        disabled={listStatusPresensi.find(
+                                        disabled={(listStatusPresensi.find(
                                             (status: { value: number; late_duration: number }) =>
                                                 status.value === editAttendanceData.check_in_status_id &&
-                                                status.late_duration === -1)}
+                                                status.late_duration === -1) || previewMode)}
+                                        dateFormat="mm/dd/yy"
+                                        timeOnly
                                     />
                                 </div>
                             </div>
@@ -656,10 +806,12 @@ const SchoolStudentAttendancePage = () => {
                                         hourFormat="24"
                                         showSeconds
                                         readOnlyInput
-                                        disabled={listStatusPresensi.find(
+                                        disabled={(listStatusPresensi.find(
                                             (status: { value: number; late_duration: number }) =>
                                                 status.value === editAttendanceData.check_in_status_id &&
-                                                status.late_duration === -1)}
+                                                status.late_duration === -1)) || previewMode}
+                                        dateFormat="mm/dd/yy"
+                                        timeOnly
                                     />
                                 </div>
                             </div>
@@ -670,6 +822,7 @@ const SchoolStudentAttendancePage = () => {
                             <Dropdown
                                 value={editAttendanceData.check_in_status_id}
                                 options={listStatusPresensi}
+                                disabled={previewMode}
                                 onChange={(e) =>
                                     setEditAttendanceData({
                                         ...editAttendanceData,
@@ -712,6 +865,7 @@ const SchoolStudentAttendancePage = () => {
                                             loading={loadingStatusAbsensi}
                                             value={selectedStatusAbsensi}
                                             options={listStatusAbsensi}
+                                            disabled={previewMode}
                                             onChange={(e) => setSelectedStatusAbsensi(e.value)}
                                             optionLabel="label"
                                             className="w-full"
@@ -719,30 +873,39 @@ const SchoolStudentAttendancePage = () => {
                                     </div>
                                     <div className="field">
                                         <label>Keterangan Absensi</label>
-                                        <InputText value={absenceDescription} placeholder="Keterangan siswa tidak masuk" onChange={(value) => {
+                                        <InputText value={absenceDescription} disabled={previewMode} placeholder="Keterangan siswa tidak masuk" onChange={(value) => {
                                             setAbsenceDescription(value.target.value);
                                         }} />
                                     </div>
                                     <div className="field">
-                                        <label>Bukti Absensi</label>
+                                        <label>Bukti Absensi (Format: PDF, JPG, PNG | Ukuran maksimal 5 MB)</label>
                                         <div className="mt-2 flex flex-column gap-2">
                                             {!file && (
                                                 <FileUpload
                                                     name="demo[]"
-                                                    accept="application/pdf"
+                                                    accept="application/pdf,image/jpeg,image/png"
                                                     mode="basic"
-                                                    maxFileSize={1000000}
+                                                    maxFileSize={5000000}
                                                     chooseLabel="Pilih File"
                                                     customUpload
                                                     onSelect={handleFileSelect}
                                                     auto={false}
+                                                    disabled={previewMode}
                                                     emptyTemplate={<p className="m-0">Upload file disini.</p>}
                                                 />
                                             )}
                                             {file && (
                                                 <div className="flex align-items-center justify-content-between p-2 border-round border-1 surface-border">
                                                     <div className="flex gap-2">
-                                                        <i className="pi pi-file-pdf" style={{ fontSize: '1.5rem', color: '#FF5252' }}></i>
+                                                        {file.type === 'application/pdf' && (
+                                                            <i className="pi pi-file-pdf" style={{ fontSize: '1.5rem', color: '#FF5252' }}></i>
+                                                        )}
+                                                        {file.type === 'image/jpeg' && (
+                                                            <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#2196F3' }}></i>
+                                                        )}
+                                                        {file.type === 'image/png' && (
+                                                            <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#4CAF50' }}></i>
+                                                        )}
                                                         <div className="flex flex-column justify-content-start">
                                                             <div
                                                                 className="overflow-hidden text-left text-overflow-ellipsis white-space-nowrap w-22rem"
@@ -782,15 +945,20 @@ const SchoolStudentAttendancePage = () => {
                                     <Divider />
                                 </>
                             )}
-                        <Button
-                            label="Simpan"
-                            icon="pi pi-check"
-                            loading={loadingSave}
-                            disabled={JSON.stringify(editAttendanceData) === JSON.stringify(tempEditAttendanceData) && !selectedStatusAbsensi}
-                            onClick={(e) => {
-                                confirmUpdate(e);
-                            }}
-                        />
+                        {
+                            !previewMode && (
+                                <Button
+                                    label="Simpan"
+                                    icon="pi pi-check"
+                                    loading={loadingSave}
+                                    disabled={JSON.stringify(editAttendanceData) === JSON.stringify(tempEditAttendanceData) && !selectedStatusAbsensi}
+                                    onClick={(e) => {
+                                        confirmUpdate(e);
+                                    }}
+                                />
+                            )
+                        }
+
                     </div>
                 )}
             </Dialog>
@@ -851,7 +1019,7 @@ const SchoolStudentAttendancePage = () => {
                         label="Export"
                         icon="pi pi-download"
                         className="p-button-success"
-                        onClick={() => handleExportAttendance({ exportKelas, exportStartDate, exportEndDate })}
+                        onClick={(e) => confirmExport(e)}
                         loading={loadingExportAttendance}
                     />
                 </div>

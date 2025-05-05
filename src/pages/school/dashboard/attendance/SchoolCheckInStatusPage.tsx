@@ -14,6 +14,7 @@ import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Skeleton } from 'primereact/skeleton';
+import { hasAnyPermission } from '../../../../utils/hasPermissions';
 
 const defaultCheckInStatus = {
     status_name: '',
@@ -183,12 +184,16 @@ const SchoolCheckInStatusPage = () => {
             <Toast ref={toast} />
             <Messages ref={msgs} />
             <ConfirmPopup />
-            <div className="flex justify-content-between p-4 card">
-                <div className="flex gap-2">
-                    <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowDialog(true)} />
-                    <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedCheckInStatus.length} />
-                </div>
-            </div>
+            {
+                hasAnyPermission(user, ['manage_schools']) && (
+                    <div className="flex justify-content-between p-4 card">
+                        <div className="flex gap-2">
+                            <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowDialog(true)} />
+                            <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedCheckInStatus.length} />
+                        </div>
+                    </div>
+                )
+            }
 
             <DataTable
                 dataKey="id"
@@ -268,7 +273,7 @@ const SchoolCheckInStatusPage = () => {
                                 <Skeleton shape="circle" size="2rem" />
                                 <Skeleton shape="circle" size="2rem" />
                             </div>
-                        ) : (
+                        ) : hasAnyPermission(user, ['manage_schools']) ? (
                             <div className="flex gap-2">
                                 <Button
                                     icon="pi pi-pencil"
@@ -289,9 +294,10 @@ const SchoolCheckInStatusPage = () => {
                                     onClick={(e) => confirmDeleteCheckInStatus(e, rowData.id)}
                                 />
                             </div>
-                        )
+                        ) : null
                     }
                 />
+
             </DataTable>
 
             <Dialog

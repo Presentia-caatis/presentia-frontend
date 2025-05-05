@@ -10,6 +10,8 @@ import { Calendar } from 'primereact/calendar';
 import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { Checkbox } from 'primereact/checkbox';
+import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { useAuth } from '../../../../context/AuthContext';
 
 type EventData = {
     name: string;
@@ -33,6 +35,7 @@ const SchoolCustomEventPage = () => {
         exitEnd: new Date(new Date().setHours(16, 0)),
         status: 1
     });
+    const { user } = useAuth();
     const [selectedEvents, setSelectedEvents] = useState<EventData[]>([]);
     const [errors, setErrors] = useState({
         name: '',
@@ -148,12 +151,17 @@ const SchoolCustomEventPage = () => {
             <div className="card">
                 <h1>Kelola Acara Sekolah</h1>
                 <Messages ref={msgs} />
-                <div className='flex justify-content-between p-4 card mt-4'>
-                    <div className='flex gap-2'>
-                        <Button icon="pi pi-plus" severity='success' label='Acara Baru' onClick={() => setShowAddDialog(true)} />
-                        <Button icon="pi pi-trash" severity='danger' label='Hapus' onClick={handleDelete} disabled={!selectedEvents.length} />
-                    </div>
-                </div>
+                {
+                    hasAnyPermission(user, ['manage_schools']) && (
+                        <div className='flex justify-content-between p-4 card mt-4'>
+                            <div className='flex gap-2'>
+                                <Button icon="pi pi-plus" severity='success' label='Acara Baru' onClick={() => setShowAddDialog(true)} />
+                                <Button icon="pi pi-trash" severity='danger' label='Hapus' onClick={handleDelete} disabled={!selectedEvents.length} />
+                            </div>
+                        </div>
+                    )
+                }
+
 
                 <DataTable
                     value={eventList}
@@ -172,7 +180,7 @@ const SchoolCustomEventPage = () => {
                     }
                     rows={10}
                     rowsPerPageOptions={[10, 20, 50]}
-                    emptyMessage="No events found"
+                    emptyMessage="Tidak ada acara sekolah"
                     tableStyle={{ minWidth: '50rem' }}
                     dataKey="name"
                 >
@@ -184,12 +192,14 @@ const SchoolCustomEventPage = () => {
                     <Column field="exitStart" header="Jam Keluar Mulai" body={(rowData) => formatTime(rowData.exitStart)} sortable />
                     <Column field="exitEnd" header="Jam Keluar Selesai" body={(rowData) => formatTime(rowData.exitEnd)} sortable />
                     <Column field="status" header="Status" sortable />
-                    <Column
-                        body={(rowData) => (
-                            <Button icon="pi pi-pencil" className="p-button-text" onClick={() => handleEdit(rowData)} />
-                        )}
-                        headerStyle={{ width: '4rem' }}
-                    />
+                    {hasAnyPermission(user, ['manage_schools']) && (
+                        <Column
+                            body={(rowData) => (
+                                <Button icon="pi pi-pencil" className="p-button-text" onClick={() => handleEdit(rowData)} />
+                            )}
+                            headerStyle={{ width: '4rem' }}
+                        />
+                    )}
                 </DataTable>
 
                 <Dialog

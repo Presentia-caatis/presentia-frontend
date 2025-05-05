@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Toast } from 'primereact/toast';
-import { loginToADMSJS, enrollFingerprint, getFingerprintData, logoutADMSJS } from '../../../../services/admsjsService';
+import { loginToADMSJS, enrollFingerprint, getFingerprintData } from '../../../../services/admsjsService';
 import { useAuth } from '../../../../context/AuthContext';
 import studentService from '../../../../services/studentService';
 import { Password } from 'primereact/password';

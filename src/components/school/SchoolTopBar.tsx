@@ -101,7 +101,7 @@ const SchoolTopbar = () => {
                             {user?.fullname || 'Loading...'}
                         </div>
                         <div className='text-left md:text-right'>
-                            <Tag>Admin</Tag>
+                            <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] || 'Loading'}</Tag>
                         </div>
                     </div>
                     <div className=''>
