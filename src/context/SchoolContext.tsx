@@ -90,8 +90,8 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                     status: schoolRes.data.status ?? "Unknown",
                     address: schoolRes.data.address ?? "Tidak Ada Alamat",
                     totalActiveStudents: staticRes.data.active_students ?? 0,
-                    totalPresenceToday: dailyResSummarize.data[0].statistic.check_in.present ?? 0,
-                    totalAbsenceToday: dailyResSummarize.data[0].statistic.check_in.absent ?? 0,
+                    totalPresenceToday: dailyResSummarize.data[0]?.statistic?.check_in.present ?? 0,
+                    totalAbsenceToday: dailyResSummarize.data[0]?.statistic?.check_in.absent ?? 0,
                     registeredAt: schoolRes.data.created_at ?? new Date().toISOString(),
                     logoImagePath: schoolRes.data.logo_image_path ?? "",
                     activeStudents: staticRes.data.active_students,
@@ -100,7 +100,7 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                     femaleStudents: staticRes.data.female_students,
                     activePackage: staticRes.data.subscription_packet?.subscription_name ?? "-",
                     packageExpiry: staticRes.data.subscription_packet?.end_duration ?? "-",
-                    dailyData: dailyRes.data[0].statistic.check_in ?? []
+                    dailyData: dailyRes.data[0]?.statistic?.check_in ?? []
                 });
 
             } catch (error) {
