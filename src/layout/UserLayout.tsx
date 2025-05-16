@@ -42,9 +42,9 @@ const UserLayout = () => {
                 <title>{getTitle()}</title>
             </Helmet>
             <UserTopBar />
-            {/* <div className="layout-sidebar">
+            <div className="layout-sidebar">
                 <UserSideBar />
-            </div> */}
+            </div>
             <div className="layout-main-container">
                 <div className="layout-main">
                     <Outlet />
