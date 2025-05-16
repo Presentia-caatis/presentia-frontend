@@ -107,10 +107,10 @@ const UserSupportPage = () => {
                 paginator
                 header={
                     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center ">
-                        <h5 className="m-0">Daftar Support Tiket</h5>
+                        <h5 className="m-0">Daftar Tiket Bantuan</h5>
                         <span className="block mt-2 md:mt-0 p-input-icon-left">
                             <i className="pi pi-search" style={{ paddingLeft: '8px' }} />
-                            <InputText className="py-2 pl-5" placeholder="Search..." />
+                            <InputText className="py-2 pl-5" placeholder="Cari..." />
                         </span>
                     </div>
                 }
@@ -119,11 +119,10 @@ const UserSupportPage = () => {
                 onRowClick={(e) => handleRowClick(e.data.id)}
                 emptyMessage="Belum ada Tiket Support"
             >
-                <Column field="type" header="Type" sortable></Column>
-                <Column field="subject" header="Subject" sortable></Column>
-                <Column field="school" header="School"></Column>
+                <Column field="type" header="Jenis" sortable></Column>
+                <Column field="subject" header="Judul" sortable></Column>
                 <Column field="status" header="Status"></Column>
-                <Column field="lastUpdated" header="Last Updated" sortable></Column>
+                <Column field="lastUpdated" header="Terakhir Diperbaharui" sortable></Column>
             </DataTable>
 
             <Dialog
@@ -142,7 +141,7 @@ const UserSupportPage = () => {
                             onClick={resetNewTicket}
                         />
                         <Button
-                            label="Submit"
+                            label="Buat Tiket"
                             icon="pi pi-check"
                             onClick={handleCreateTicket}
                             disabled={!newTicket.type || !newTicket.subject || !newTicket.priority}
@@ -189,7 +188,7 @@ const UserSupportPage = () => {
                             className="w-full"
                         />
                     </div>
-                    <div className="col-12">
+                    {/* <div className="col-12">
                         <label htmlFor="school" className="block mb-2">
                             Sekolah
                         </label>
@@ -201,7 +200,7 @@ const UserSupportPage = () => {
                             placeholder="Pilih Sekolah"
                             className="w-full"
                         />
-                    </div>
+                    </div> */}
                     <div className="col-12">
                         <label htmlFor="message" className="block mb-2">
                             Pesan

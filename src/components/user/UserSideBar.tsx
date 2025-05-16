@@ -23,7 +23,7 @@ const UserSideBar = () => {
                 //     className: currentPath === '/user/dashboard/billing' ? 'active-route' : 'menu-item'
                 // },
                 {
-                    label: 'Support',
+                    label: 'Bantuan',
                     icon: 'pi pi-fw pi-headphones',
                     command: () => navigate('/user/dashboard/support'),
                     className: currentPath === '/user/dashboard/support' ? 'active-route' : 'menu-item'
