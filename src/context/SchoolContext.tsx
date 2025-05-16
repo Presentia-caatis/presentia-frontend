@@ -6,6 +6,7 @@ import dashboardService from "../services/dashboardService";
 import attendanceService from "../services/attendanceService";
 import { useAuth } from "./AuthContext";
 import { useToastContext } from "../layout/ToastContext";
+import { setResetSchoolCallback } from "../utils/schoolUtils";
 
 interface SchoolData {
     id: number;
@@ -56,7 +57,13 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
         }, position);
     }
 
+    const resetSchool = () => {
+        setSchool(null);
+    };
 
+    useEffect(() => {
+        setResetSchoolCallback(resetSchool);
+    }, []);
 
     useEffect(() => {
         const fetchSchool = async () => {
@@ -83,8 +90,8 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                     status: schoolRes.data.status ?? "Unknown",
                     address: schoolRes.data.address ?? "Tidak Ada Alamat",
                     totalActiveStudents: staticRes.data.active_students ?? 0,
-                    totalPresenceToday: dailyResSummarize.data.presence ?? 0,
-                    totalAbsenceToday: dailyResSummarize.data.absence ?? 0,
+                    totalPresenceToday: dailyResSummarize.data[0]?.statistic?.check_in.present ?? 0,
+                    totalAbsenceToday: dailyResSummarize.data[0]?.statistic?.check_in.absent ?? 0,
                     registeredAt: schoolRes.data.created_at ?? new Date().toISOString(),
                     logoImagePath: schoolRes.data.logo_image_path ?? "",
                     activeStudents: staticRes.data.active_students,
@@ -93,7 +100,7 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                     femaleStudents: staticRes.data.female_students,
                     activePackage: staticRes.data.subscription_packet?.subscription_name ?? "-",
                     packageExpiry: staticRes.data.subscription_packet?.end_duration ?? "-",
-                    dailyData: dailyRes.data ?? []
+                    dailyData: dailyRes.data[0]?.statistic?.check_in ?? []
                 });
 
             } catch (error) {

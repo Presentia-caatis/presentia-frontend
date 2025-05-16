@@ -8,13 +8,14 @@ import { Dialog } from 'primereact/dialog';
 import { RadioButton } from 'primereact/radiobutton';
 import { Tooltip } from 'primereact/tooltip';
 import { absencePermitTypeService } from '../../../../services/absencePermitService';
-import { useAuth } from '../../../../context/AuthContext';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 import { Messages } from 'primereact/messages';
 import { useMountEffect } from 'primereact/hooks';
 import { Skeleton } from 'primereact/skeleton';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { useAuth } from '../../../../context/AuthContext';
 
 const SchoolAbsenceStatusPage = () => {
     const [showAddDialog, setShowAddDialog] = useState(false);
@@ -22,18 +23,18 @@ const SchoolAbsenceStatusPage = () => {
     const [selectedPermits, setSelectedPermits] = useState<any[]>([]);
     const [loadingButton, setLoadingButton] = useState(false);
     const [permitList, setPermitList] = useState<any[]>([]);
-    const { user } = useAuth();
     const toast = useRef<Toast>(null);
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
     useEffect(() => {
         fetchPermitTypes(currentPage, rowsPerPage);
     }, [currentPage, rowsPerPage]);
 
-    const fetchPermitTypes = async (page = 1, perPage = 10) => {
+    const fetchPermitTypes = async (page = 1, perPage = 20) => {
         try {
             setLoading(true);
             const response = await absencePermitTypeService.getAll(page, perPage);
@@ -71,7 +72,6 @@ const SchoolAbsenceStatusPage = () => {
     const handleSave = async () => {
         try {
             setLoadingButton(true);
-
             if (permitTypeData.id) {
                 await absencePermitTypeService.update(permitTypeData.id, permitTypeData);
                 toast.current?.show({
@@ -81,10 +81,9 @@ const SchoolAbsenceStatusPage = () => {
                     life: 3000,
                 });
             } else {
-                await absencePermitTypeService.create({
-                    ...permitTypeData,
-                    school_id: user?.school_id,
-                });
+                await absencePermitTypeService.create(
+                    permitTypeData
+                );
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Berhasil',
@@ -131,13 +130,18 @@ const SchoolAbsenceStatusPage = () => {
             <Toast ref={toast} />
             <Messages ref={msgs} />
             <ConfirmPopup />
-            <div className="flex justify-content-between p-4 card">
-                <div className="flex gap-2">
-                    <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowAddDialog(true)} />
-                    <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedPermits?.length} />
-                </div>
-                {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
-            </div>
+            {
+                hasAnyPermission(user, ['manage_schools']) && (
+                    <div className="flex justify-content-between p-4 card">
+                        <div className="flex gap-2">
+                            <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowAddDialog(true)} />
+                            <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedPermits?.length} />
+                        </div>
+                        {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
+                    </div>
+                )
+            }
+
 
             <Tooltip className='p-1' target=".student-count-tooltip" />
             <DataTable
@@ -158,7 +162,7 @@ const SchoolAbsenceStatusPage = () => {
                 rowsPerPageOptions={[10, 20, 50, 100]}
                 tableStyle={{ minWidth: "50rem" }}
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} status absensi"
                 emptyMessage={
                     loading ? (
                         <div className="flex flex-column align-items-center gap-3 py-4">
@@ -188,14 +192,17 @@ const SchoolAbsenceStatusPage = () => {
                                 <Skeleton shape="circle" size="2rem" />
                                 <Skeleton shape="circle" size="2rem" />
                             </div>
-                        ) : (
-                            <div className='flex gap-2'>
+                        ) : hasAnyPermission(user, ['manage_schools']) ? (
+                            <div className="flex gap-2">
                                 <Button
                                     icon="pi pi-pencil"
                                     className="p-button-success p-button-rounded"
                                     tooltip="Perbarui"
                                     loading={loadingButton}
-                                    onClick={() => { setPermitTypeData(rowData); setShowAddDialog(true); }}
+                                    onClick={() => {
+                                        setPermitTypeData(rowData);
+                                        setShowAddDialog(true);
+                                    }}
                                 />
                                 <Button
                                     icon="pi pi-trash"
@@ -204,9 +211,10 @@ const SchoolAbsenceStatusPage = () => {
                                     onClick={() => handleDelete(rowData.id)}
                                 />
                             </div>
-                        )
+                        ) : null
                     )}
                 />
+
             </DataTable>
 
             <Dialog

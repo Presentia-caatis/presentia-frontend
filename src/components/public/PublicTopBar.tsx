@@ -31,11 +31,9 @@ const PublicTopbar = () => {
 
     const handleLogout = async () => {
         try {
+            callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
             setLoading(true);
-            logout();
-            localStorage.clear();
-
-            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
+            await logout();
             setUserEmail('');
 
             navigate('/');

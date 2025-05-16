@@ -104,7 +104,7 @@ const LoginPage = () => {
             const { responseData, status } = await authServices.login(data);
             if (status !== "failed") {
                 const { token, user } = responseData;
-
+                localStorage.setItem('token', token);
                 setAuth(user, token);
 
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');

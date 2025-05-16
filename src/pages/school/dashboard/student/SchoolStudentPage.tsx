@@ -18,6 +18,7 @@ import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { FilterMatchMode } from 'primereact/api';
 import { FileUpload } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { hasAnyPermission } from '../../../../utils/hasPermissions';
 
 
 type StudentData = {
@@ -70,7 +71,6 @@ const SchoolStudentPage = () => {
             class_name: ''
         }
     });
-    const [globalFilter, setGlobalFilter] = useState("");
     const [filters, setFilters] = useState({
         student_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
         nis: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -79,10 +79,13 @@ const SchoolStudentPage = () => {
         class_group_id: { value: null, matchMode: FilterMatchMode.EQUALS },
         is_active: { value: null, matchMode: FilterMatchMode.EQUALS },
     });
+    const [globalFilter, setGlobalFilter] = useState("");
+    const [debouncedFilter, setDebouncedFilter] = useState("");
+    const [debouncedFilters, setDebouncedFilters] = useState(filters);
     const fileUploadRef = useRef<FileUpload>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
     const handleFileSelect = (event: any) => {
@@ -205,14 +208,13 @@ const SchoolStudentPage = () => {
         }
     };
 
-
-
     const inputFilterTemplate = (field: keyof typeof filters) => (
         <InputText
-            value={filters[field].value || ""}
-            onChange={(e) =>
-                setFilters({ ...filters, [field]: { value: e.target.value, matchMode: FilterMatchMode.CONTAINS } })
-            }
+            value={filters[field]?.value || ""}
+            onChange={(e) => setFilters({
+                ...filters,
+                [field]: { value: e.target.value }
+            })}
             placeholder="Filter..."
             className="p-column-filter"
         />
@@ -222,36 +224,69 @@ const SchoolStudentPage = () => {
         <Dropdown
             value={filters[field].value}
             options={options}
-            onChange={(e) => setFilters({ ...filters, [field]: { value: e.value, matchMode: FilterMatchMode.EQUALS } })}
+            onChange={(e) =>
+                setFilters({ ...filters, [field]: { value: e.value, matchMode: FilterMatchMode.EQUALS } })
+            }
             placeholder="Pilih..."
             showClear
             className="p-column-filter"
         />
     );
 
+
     useEffect(() => {
         fetchKelas();
     }, []);
 
     useEffect(() => {
-        fetchStudents(currentPage, rowsPerPage);
-    }, [currentPage, rowsPerPage]);
+        const handler = setTimeout(() => {
+            setDebouncedFilter(globalFilter);
+        }, 500);
 
-    const fetchStudents = async (page = 1, perPage = 10) => {
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [globalFilter]);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedFilters(filters);
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [filters]);
+
+
+    useEffect(() => {
+        fetchStudents(currentPage, rowsPerPage, debouncedFilter, undefined, debouncedFilters);
+    }, [currentPage, rowsPerPage, debouncedFilter, debouncedFilters]);
+
+
+    const fetchStudents = async (
+        page = 1,
+        perPage = 20,
+        search = "",
+        classGroupId?: string | number,
+        filters?: Record<string, any>
+    ) => {
         try {
             setLoading(true);
-            if (!user?.school_id) return;
+            if (!school?.id) return;
             setStudentData([]);
-            const response = await studentService.getStudent(page, perPage);
+
+            const response = await studentService.getStudent(page, perPage, classGroupId, search, filters);
             setStudentData(response.data.data);
             setTotalRecords(response.data.total);
-
         } catch (error) {
             console.error("Error fetching students:", error);
         } finally {
             setLoading(false);
         }
     };
+
+
 
     const fetchKelas = async () => {
         try {
@@ -466,23 +501,25 @@ const SchoolStudentPage = () => {
             <ConfirmPopup />
             <div className="card">
                 <h1>Daftar Siswa {school?.name ?? 'Loading...'}</h1>
-                <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
-                    <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
-                        <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
-                            setShowAddDialog(true);
-                        }} />
-                        <Button
-                            icon="pi pi-upload"
-                            severity="info"
-                            label="Import"
-                            onClick={() => setShowImportDialog(true)}
-                        />
-                        <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
+                {hasAnyPermission(user, ['manage_students']) && (
+                    <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
+                        <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
+                            <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
+                                setShowAddDialog(true);
+                            }} />
+                            <Button
+                                icon="pi pi-upload"
+                                severity="info"
+                                label="Import"
+                                onClick={() => setShowImportDialog(true)}
+                            />
+                            <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
+                        </div>
+                        <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
+                            handleExport();
+                        }} label='Export' />
                     </div>
-                    <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
-                        handleExport();
-                    }} label='Export' />
-                </div>
+                )}
 
                 <DataTable
                     dataKey="id"
@@ -520,11 +557,9 @@ const SchoolStudentPage = () => {
                     }}
                     rowsPerPageOptions={[10, 20, 50, 100]}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} students"
+                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa"
                     stripedRows
-                    // filterDisplay="row"
-                    // filters={filters}
-                    // globalFilter={globalFilter}
+                    filterDisplay="row"
                     header={
                         <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
                             <h5 className="m-0">Data Siswa {school ? school.name : "Loading"}</h5>
@@ -545,7 +580,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="student_name"
                         header="Nama"
-                        body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name)}
+                        body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name?.toUpperCase())}
                         filter
                         filterElement={inputFilterTemplate("student_name")}
                         showFilterMenu={false}
@@ -607,7 +642,6 @@ const SchoolStudentPage = () => {
                         filterElement={dropdownFilterTemplate("is_active", listStatus)}
                         showFilterMenu={false}
                     />
-
                     <Column
                         body={(rowData) =>
                             loading ? (
@@ -615,7 +649,7 @@ const SchoolStudentPage = () => {
                                     <Skeleton width="2rem" height="2rem" shape="circle" />
                                     <Skeleton width="2rem" height="2rem" shape="circle" />
                                 </div>
-                            ) : (
+                            ) : hasAnyPermission(user, ["manage_students"]) ? (
                                 <div className="flex gap-2">
                                     <Button
                                         icon="pi pi-pencil"
@@ -625,7 +659,6 @@ const SchoolStudentPage = () => {
                                         onClick={() => {
                                             setTempEditStudentData(rowData);
                                             setEditStudentData(rowData);
-                                            console.log(rowData);
                                             setShowEditDialog(true);
                                         }}
                                     />
@@ -637,7 +670,7 @@ const SchoolStudentPage = () => {
                                         onClick={(e) => confirmDeleteStudent(e, rowData.id)}
                                     />
                                 </div>
-                            )
+                            ) : null
                         }
                     />
                 </DataTable>

@@ -2,17 +2,33 @@
 import axiosClient from '../utils/axiosClient';
 
 class StudentService {
-    async getStudent(page: number = 1, perPage: number = 10, classGroupId?: string | number, search?: string) {
+    async getStudent(
+        page: number = 1,
+        perPage: number = 10,
+        classGroupId?: string | number,
+        search?: string,
+        filters?: Record<string, any>
+    ) {
         try {
-            const response = await axiosClient.get(`/student`, {
-                params: { page, perPage, class_group_id: classGroupId, search }
-            });
+            const params: Record<string, any> = { page, perPage, class_group_id: classGroupId, search };
+
+            if (filters) {
+                Object.entries(filters).forEach(([key, filter]) => {
+                    if (filter?.value !== undefined && filter?.value !== null) {
+                        params[`filter[${key}]`] = filter.value;
+                    }
+                });
+            }
+
+            const response = await axiosClient.get(`/student`, { params });
             return response.data;
         } catch (error) {
             console.error("Error fetching students", error);
             throw error;
         }
     }
+
+
 
 
     async addStudent(payload: any) {

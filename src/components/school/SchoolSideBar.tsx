@@ -7,12 +7,14 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { useLayoutConfig } from '../../context/LayoutConfigContext';
 import { Sidebar } from 'primereact/sidebar';
 import { useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const SchoolSideBar = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const currentPath = location.pathname;
     const { school, schoolLoading } = useSchool();
+    const { user } = useAuth();
     const { isSidebarVisible, setIsSidebarVisible } = useLayoutConfig();
     useEffect(() => {
         const handleResize = () => {
@@ -51,6 +53,15 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/dashboard`),
                     className: currentPath === `/school/${schoolName}/dashboard` ? 'active-route' : 'menu-item',
                 },
+                ...(user?.roles.some(role => ['super_admin', 'schools_admin'].includes(role)) ? [
+                    {
+                        label: 'Presensi Manual',
+                        icon: 'pi pi-address-book',
+                        command: () => window.open(`${window.origin}/school/student/attendance/in`, '_blank'),
+                        className: currentPath === `/school/student/attendance/in` ? 'active-route' : 'menu-item',
+                    },
+                ] : [])
+                ,
                 {
                     label: 'Presensi Hari Ini',
                     icon: 'pi pi-calendar',
@@ -74,16 +85,18 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/classroom`),
                     className: currentPath === `/school/${schoolName}/classroom` ? 'active-route' : 'menu-item',
                 },
-                {
-                    label: 'Daftar Sidik Jari',
-                    icon: 'pi pi-key',
-                    command: () => navigate(`/school/${schoolName}/fingerprint`),
-                    className: currentPath === `/school/${schoolName}/fingerprint` ? 'active-route' : 'menu-item',
-                },
+                ...(user?.roles.some(role => ['super_admin', 'schools_admin'].includes(role)) ? [
+                    {
+                        label: 'Daftar Sidik Jari',
+                        icon: 'pi pi-key',
+                        command: () => navigate(`/school/${schoolName}/fingerprint`),
+                        className: currentPath === `/school/${schoolName}/fingerprint` ? 'active-route' : 'menu-item',
+                    }
+                ] : [])
             ],
         },
         {
-            label: 'Presensi',
+            label: 'Konfigurasi Presensi',
             items: [
                 {
                     label: 'Kehadiran Siswa',
@@ -112,8 +125,8 @@ const SchoolSideBar = () => {
                 {
                     label: 'Daftar Status Absensi',
                     icon: 'pi pi-times-circle',
-                    command: () => navigate(`/school/${schoolName}/attendance/status`),
-                    className: currentPath === `/school/${schoolName}/attendance/status` ? 'active-route' : 'menu-item',
+                    command: () => navigate(`/school/${schoolName}/absence-permit/type`),
+                    className: currentPath === `/school/${schoolName}/absence-permit/type` ? 'active-route' : 'menu-item',
                 },
             ],
         },

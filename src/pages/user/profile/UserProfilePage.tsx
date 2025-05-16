@@ -11,15 +11,20 @@ import { useToastContext } from '../../../layout/ToastContext';
 import { Toast } from 'primereact/toast';
 import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import userService from '../../../services/userService';
+import defaultProfileUser from '../../../assets/defaultProfileUser.png';
 
 const UserProfilePage = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const navigate = useNavigate();
-    const { logout, user } = useAuth();
-    const [editData, setEditData] = useState({ username: '', fullname: '', email: '' });
+    const { logout, user, updateUser } = useAuth();
+    const [editData, setEditData] = useState({ username: '', fullname: '', email: '', profile_image_path: '', remove_image: false });
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [profileImage, setProfileImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isModified, setIsModified] = useState(false);
     const toast = useRef<Toast>(null);
 
     const items = [
@@ -32,58 +37,115 @@ const UserProfilePage = () => {
 
     useEffect(() => {
         if (user) {
-            setEditData({ username: user.username, fullname: user.fullname, email: user.email });
+            setEditData({ username: user.username, fullname: user.fullname, email: user.email, profile_image_path: user.profile_image_path, remove_image: false });
+            setImagePreview(user.profile_image_path);
         }
     }, [user]);
 
-    const isDataChanged = editData.username !== user?.username || editData.fullname !== user?.fullname || editData.email !== user?.email;
+    useEffect(() => {
+        if (!user) return;
+
+        const isChanged = (
+            editData.username !== user.username ||
+            editData.fullname !== user.fullname ||
+            (editData.remove_image && imagePreview !== user.profile_image_path) ||
+            profileImage !== null
+        );
+
+        setIsModified(isChanged);
+    }, [editData, user, profileImage, imagePreview]);
 
     const handleUpdate = async () => {
+        if (!isModified) return;
         setLoading(true);
+
         try {
             if (user?.id !== undefined) {
-                const payload: {
-                    fullname: string;
-                    username: string;
-                    email: string;
-                    school_id?: number;
-                    password?: string;
-                    password_confirmation?: string;
-                } = {
-                    fullname: editData.fullname,
-                    username: editData.username,
-                    email: user.email,
-                    school_id: user.school_id ?? undefined
-                };
+                const formData = new FormData();
+
+                if (editData.fullname !== user.fullname) formData.append('fullname', editData.fullname);
+                if (editData.username !== user.username) formData.append('username', editData.username);
+                if (editData.email !== user.email) formData.append('email', editData.email);
 
                 if (password) {
-                    payload.password = password;
-                    payload.password_confirmation = passwordConfirmation;
+                    formData.append('password', password);
+                    formData.append('password_confirmation', passwordConfirmation);
                 }
 
-                await userService.updateUser(user.id, payload);
+                if (profileImage) {
+                    formData.append('profile_image', profileImage);
+                } else if (editData.remove_image) {
+                    formData.append('remove_image', '1');
+                }
 
-                toast.current?.show({
-                    severity: 'success',
-                    summary: 'Sukses',
-                    detail: 'Data berhasil diperbarui.',
-                    life: 3000
-                });
-            } else {
-                console.error("User ID is undefined");
+                if (formData.has('fullname') || formData.has('username') || formData.has('email') ||
+                    formData.has('password') || formData.has('profile_image') || formData.has('remove_image')) {
+
+                    const { responseData } = await userService.updateUser(formData);
+
+                    if (responseData.status === "success") {
+                        updateUser(responseData.data);
+                        setImagePreview(responseData.data.profile_image_path);
+                        setProfileImage(null);
+                        if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                        }
+                        showToast({
+                            severity: 'success',
+                            summary: 'Sukses',
+                            detail: 'Profil berhasil diperbarui.',
+                            life: 3000
+                        });
+                    }
+                }
             }
-
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Sukses',
-                detail: 'Data sekolah berhasil diperbarui.',
+        } catch (error) {
+            console.error("Gagal memperbarui data", error);
+            showToast({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: 'Terjadi kesalahan saat memperbarui data.',
                 life: 3000
             });
-        } catch (error) {
-            console.error("Gagal memperbarui data sekolah", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files[0]) {
+            const file = event.target.files[0];
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
+            if (!allowedTypes.includes(file.type)) {
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Format tidak valid',
+                    detail: 'Logo harus berupa file JPG, JPEG, atau PNG.',
+                    life: 3000
+                });
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+                setProfileImage(file);
+
+                event.target.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveLogo = () => {
+        setImagePreview(null);
+        setProfileImage(null);
+        setEditData({ ...editData, remove_image: true });
     };
 
     const confirmUpdate = (event: React.MouseEvent) => {
@@ -115,12 +177,10 @@ const UserProfilePage = () => {
             setLoading(true);
 
             await logout();
-
-            callToast(showToast, 'success', 'Logout Sukses', 'Kamu berhasil logout');
             navigate('/');
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            callToast(showToast, 'error', 'Logout Gagal', 'Tidak bisa logout');
+            localStorage.clear();
         } finally {
             setLoading(false);
         }
@@ -135,12 +195,47 @@ const UserProfilePage = () => {
                             <h1>Profile Pengguna</h1>
                             <Divider></Divider>
                             <div className="field">
+                                <label>Foto Profile</label>
+                                <div className="flex items-center gap-4">
+                                    <div >
+                                        <img loading="lazy" src={imagePreview || defaultProfileUser} alt="" className='w-5rem h-5rem border-circle' onError={(e) => {
+                                            (e.target as HTMLImageElement).src = defaultProfileUser;
+                                        }} />
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            ref={fileInputRef}
+                                            style={{ display: 'none' }}
+                                            onChange={handleImageChange}
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <div className='my-auto flex gap-2'>
+                                            <Button disabled={loading} label="Ganti Foto" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
+                                            <Button disabled={!imagePreview || loading} label="Hapus Foto" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="field ">
+                                <label>Email</label>
+                                <InputText
+                                    disabled={true}
+                                    value={editData.email}
+                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                    placeholder="Masukkan Email"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="field mt-3">
                                 <label>Username</label>
                                 <InputText
                                     value={editData.username}
                                     onChange={(e) => setEditData({ ...editData, username: e.target.value })}
                                     placeholder="Masukkan Username"
                                     className="w-full"
+                                    disabled={loading}
                                 />
                             </div>
                             <div className="field mt-3">
@@ -150,18 +245,9 @@ const UserProfilePage = () => {
                                     onChange={(e) => setEditData({ ...editData, fullname: e.target.value })}
                                     placeholder="Masukkan Nama Lengkap"
                                     className="w-full"
+                                    disabled={loading}
                                 />
                             </div>
-                            <div className="field mt-3">
-                                <label>Email</label>
-                                <InputText
-                                    value={editData.email}
-                                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                                    placeholder="Masukkan Email"
-                                    className="w-full"
-                                />
-                            </div>
-
                             <Divider />
 
                             <div className="flex gap-2">
@@ -171,13 +257,22 @@ const UserProfilePage = () => {
                                     className="p-button-primary"
                                     onClick={confirmUpdate}
                                     loading={loading}
-                                    disabled={!isDataChanged}
+                                    disabled={loading || !isModified}
                                 />
                                 <Button
                                     label="Batal"
                                     className="p-button-secondary"
-                                    onClick={() => setEditData({ username: user?.username || '', fullname: user?.fullname || '', email: user?.email || '' })}
-                                    disabled={loading || !isDataChanged}
+                                    onClick={() => {
+                                        if (!user) return;
+                                        setImagePreview(user.profile_image_path);
+                                        setProfileImage(null);
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = '';
+                                        }
+                                        setEditData({ username: user.username, fullname: user.fullname, email: user.email, profile_image_path: user.profile_image_path, remove_image: false })
+                                    }
+                                    }
+                                    disabled={loading || !isModified}
                                 />
                             </div>
                         </div>

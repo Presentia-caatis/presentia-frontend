@@ -14,6 +14,7 @@ import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Skeleton } from 'primereact/skeleton';
+import { hasAnyPermission } from '../../../../utils/hasPermissions';
 
 const defaultCheckInStatus = {
     status_name: '',
@@ -35,8 +36,9 @@ const SchoolCheckInStatusPage = () => {
     const [loadingButton, setLoadingButton] = useState(false);
     const [loadingDelete, setLoadingDelete] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
+    const disableDefaultStatusForm = checkInStatusData.late_duration === -1 || checkInStatusData.late_duration === 0;
 
     useEffect(() => {
         fetchCheckInStatus(currentPage, rowsPerPage);
@@ -48,13 +50,13 @@ const SchoolCheckInStatusPage = () => {
             id: '1',
             sticky: true,
             severity: 'info',
-            detail: 'Status kehadiran yang aktif, akan menentukan status siswa yang presensi sesuai dengan durasi keterlambatan (Menit).',
+            detail: 'Status presensi yang aktif, akan menentukan status siswa yang presensi sesuai dengan durasi keterlambatan (Menit).',
             closable: false,
         });
     });
 
 
-    const fetchCheckInStatus = async (page = 1, perPage = 10) => {
+    const fetchCheckInStatus = async (page = 1, perPage = 20) => {
         try {
             setLoading(true);
             setCheckInStatusList([]);
@@ -86,7 +88,7 @@ const SchoolCheckInStatusPage = () => {
     const confirmSaveCheckInStatus = (event: React.MouseEvent) => {
         confirmPopup({
             target: event.currentTarget as HTMLElement,
-            message: 'Apakah Anda yakin ingin menyimpan status kehadiran ini?',
+            message: 'Apakah Anda yakin ingin menyimpan status presensi ini?',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-success',
             acceptLabel: 'Ya',
@@ -98,7 +100,7 @@ const SchoolCheckInStatusPage = () => {
     const confirmDeleteCheckInStatus = (event: React.MouseEvent, id: number) => {
         confirmPopup({
             target: event.currentTarget as HTMLElement,
-            message: 'Apakah Anda yakin ingin menghapus status kehadiran ini?',
+            message: 'Apakah Anda yakin ingin menghapus status presensi ini?',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
             acceptLabel: 'Ya',
@@ -115,7 +117,7 @@ const SchoolCheckInStatusPage = () => {
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Berhasil',
-                    detail: 'Status kehadiran berhasil diperbarui.',
+                    detail: 'Status presensi berhasil diperbarui.',
                     life: 3000,
                 });
             } else {
@@ -126,19 +128,19 @@ const SchoolCheckInStatusPage = () => {
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Berhasil',
-                    detail: 'Status kehadiran berhasil ditambahkan.',
+                    detail: 'Status presensi berhasil ditambahkan.',
                     life: 3000,
                 });
             }
             setShowDialog(false);
             fetchCheckInStatus();
             resetForm();
-        } catch (error) {
-            console.error('Error saving check-in status:', error);
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Terjadi kesalahan, coba lagi nanti.';
             toast.current?.show({
                 severity: 'error',
                 summary: 'Gagal',
-                detail: 'Terjadi kesalahan saat menyimpan status kehadiran.',
+                detail: errorMessage,
                 life: 3000,
             });
         } finally {
@@ -152,23 +154,23 @@ const SchoolCheckInStatusPage = () => {
             toast.current?.show({
                 severity: 'info',
                 summary: 'Loading...',
-                detail: 'Sedang menghapus data status kehadiran.',
+                detail: 'Sedang menghapus data status presensi.',
                 life: 3000,
             });
             await checkInStatusService.delete(id);
             toast.current?.show({
                 severity: 'success',
                 summary: 'Berhasil',
-                detail: 'Status kehadiran berhasil dihapus.',
+                detail: 'Status presensi berhasil dihapus.',
                 life: 3000,
             });
             fetchCheckInStatus();
-        } catch (error) {
-            console.error('Error deleting check-in status:', error);
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Terjadi kesalahan, coba lagi nanti.';
             toast.current?.show({
                 severity: 'error',
                 summary: 'Gagal',
-                detail: 'Terjadi kesalahan saat menghapus status kehadiran.',
+                detail: errorMessage,
                 life: 3000,
             });
         } finally {
@@ -178,22 +180,29 @@ const SchoolCheckInStatusPage = () => {
 
     return (
         <div className="card">
-            <h1>Daftar Status Kehadiran</h1>
+            <h1>Daftar Status Presensi</h1>
             <Toast ref={toast} />
             <Messages ref={msgs} />
             <ConfirmPopup />
-            <div className="flex justify-content-between p-4 card">
-                <div className="flex gap-2">
-                    <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowDialog(true)} />
-                    <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedCheckInStatus.length} />
-                </div>
-            </div>
+            {
+                hasAnyPermission(user, ['manage_schools']) && (
+                    <div className="flex justify-content-between p-4 card">
+                        <div className="flex gap-2">
+                            <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowDialog(true)} />
+                            <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedCheckInStatus.length} />
+                        </div>
+                    </div>
+                )
+            }
 
             <DataTable
                 dataKey="id"
                 selection={selectedCheckInStatus}
                 selectionMode="multiple"
-                onSelectionChange={(e) => setSelectedCheckInStatus(e.value)}
+                onSelectionChange={(e) => {
+                    const filteredSelection = e.value.filter((student) => student.late_duration > 1);
+                    setSelectedCheckInStatus(filteredSelection)
+                }}
                 value={checkInStatusList}
                 paginator
                 first={(currentPage - 1) * rowsPerPage
@@ -207,19 +216,19 @@ const SchoolCheckInStatusPage = () => {
                 rowsPerPageOptions={[10, 20, 50, 100]}
                 tableStyle={{ minWidth: "50rem" }}
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} status presensi"
                 stripedRows
                 emptyMessage={
                     loading ? (
                         <div className="flex flex-column align-items-center gap-3 py-4">
                             <ProgressSpinner style={{ width: "50px", height: "50px" }} />
-                            <span className="text-gray-500 font-semibold">Memuat data status kehadiran...</span>
+                            <span className="text-gray-500 font-semibold">Memuat data status presensi...</span>
                         </div>
                     ) : (
                         <div className="flex flex-column align-items-center gap-3 py-4">
                             <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
-                            <span className="text-gray-500 font-semibold">Belum ada data status kehadiran</span>
-                            <small className="text-gray-400">Silakan tambahkan status kehadiran melalui tombol tambah status.</small>
+                            <span className="text-gray-500 font-semibold">Belum ada data status presensi</span>
+                            <small className="text-gray-400">Silakan tambahkan status presensi melalui tombol tambah status.</small>
                         </div>
                     )
                 }
@@ -264,7 +273,7 @@ const SchoolCheckInStatusPage = () => {
                                 <Skeleton shape="circle" size="2rem" />
                                 <Skeleton shape="circle" size="2rem" />
                             </div>
-                        ) : (
+                        ) : hasAnyPermission(user, ['manage_schools']) ? (
                             <div className="flex gap-2">
                                 <Button
                                     icon="pi pi-pencil"
@@ -281,20 +290,21 @@ const SchoolCheckInStatusPage = () => {
                                     icon="pi pi-trash"
                                     className="p-button-danger p-button-rounded"
                                     tooltip="Hapus"
-                                    disabled={loadingDelete}
+                                    disabled={loadingDelete || rowData.late_duration === 0 || rowData.late_duration === -1}
                                     onClick={(e) => confirmDeleteCheckInStatus(e, rowData.id)}
                                 />
                             </div>
-                        )
+                        ) : null
                     }
                 />
+
             </DataTable>
 
             <Dialog
                 visible={showDialog}
                 style={{ width: '450px' }}
                 onHide={() => { setShowDialog(false); resetForm() }}
-                header="Tambah/Edit Status Kehadiran"
+                header="Tambah/Edit Status presensi"
                 footer={
                     <div>
                         <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => { setShowDialog(false); resetForm() }} />
@@ -330,6 +340,7 @@ const SchoolCheckInStatusPage = () => {
                         id="late_duration"
                         type="number"
                         value={checkInStatusData.late_duration}
+                        disabled={disableDefaultStatusForm}
                         onChange={(e) => setCheckInStatusData({ ...checkInStatusData, late_duration: parseInt(e.target.value) })}
                     />
                 </div>
@@ -343,6 +354,7 @@ const SchoolCheckInStatusPage = () => {
                                 value={1}
                                 onChange={() => setCheckInStatusData({ ...checkInStatusData, is_active: 1 })}
                                 checked={checkInStatusData.is_active === 1}
+                                disabled={disableDefaultStatusForm}
                             />
                             <label htmlFor="status1" className="ml-2">Aktif</label>
                         </div>
@@ -353,6 +365,7 @@ const SchoolCheckInStatusPage = () => {
                                 value={0}
                                 onChange={() => setCheckInStatusData({ ...checkInStatusData, is_active: 0 })}
                                 checked={checkInStatusData.is_active === 0}
+                                disabled={disableDefaultStatusForm}
                             />
                             <label htmlFor="status2" className="ml-2">Tidak Aktif</label>
                         </div>
