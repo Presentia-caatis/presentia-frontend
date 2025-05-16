@@ -83,10 +83,10 @@ const UserSupportDetailPage = () => {
 
             {isReplyFormVisible && (
                 <div className="mb-4 card">
-                    <h4>Balas</h4>
+                    <h4>Jawab</h4>
                     <div className="p-fluid grid">
                         <div className="col-6">
-                            <label htmlFor="name">Name</label>
+                            <label htmlFor="name">Nama</label>
                             <input
                                 type="text"
                                 id="name"
@@ -96,7 +96,7 @@ const UserSupportDetailPage = () => {
                             />
                         </div>
                         <div className="col-6">
-                            <label htmlFor="email">Email Address</label>
+                            <label htmlFor="email">Alamat Email</label>
                             <input
                                 type="text"
                                 id="email"
@@ -107,18 +107,18 @@ const UserSupportDetailPage = () => {
                         </div>
                     </div>
                     <div className="mt-3">
-                        <label htmlFor="message">Message</label>
+                        <label htmlFor="message">Pesan</label>
                         <InputTextarea
                             id="message"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             rows={4}
-                            placeholder="Write your message here..."
+                            placeholder="Tulis pesan disini..."
                             className="w-full"
                         />
                     </div>
                     <div className="mt-3">
-                        <label htmlFor="attachments">Attachments</label>
+                        <label htmlFor="attachments">Dokument Dukungan</label>
                         <FileUpload
                             name="attachments"
                             mode="advanced"
@@ -153,7 +153,7 @@ const UserSupportDetailPage = () => {
             {!isReplyFormVisible && (
                 <div className="flex justify-content-end mb-4 gap-2">
                     <Button
-                        label="Reply"
+                        label="Jawab"
                         icon="pi pi-reply"
                         className="p-button-primary"
                         onClick={() => setReplyFormVisible(true)}
