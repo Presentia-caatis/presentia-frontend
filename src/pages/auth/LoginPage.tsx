@@ -103,9 +103,10 @@ const LoginPage = () => {
         try {
             const { responseData, status } = await authServices.login(data);
             if (status !== "failed") {
-                const { token, user } = responseData;
+                const { token } = responseData;
                 localStorage.setItem('token', token);
-                setAuth(user, token);
+                const userProfile = await authServices.getProfile();
+                setAuth(userProfile.data, token);
 
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
                 navigate('/user/dashboard');

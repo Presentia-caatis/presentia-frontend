@@ -44,6 +44,7 @@ const SchoolCheckInStatusPage = () => {
         fetchCheckInStatus(currentPage, rowsPerPage);
     }, [currentPage, rowsPerPage]);
 
+
     useMountEffect(() => {
         msgs.current?.clear();
         msgs.current?.show({
@@ -314,6 +315,30 @@ const SchoolCheckInStatusPage = () => {
                 modal
                 className="p-fluid"
             >
+                <div className='field'>
+                    {checkInStatusData.late_duration === -1 && (
+                        <div className="p-message p-message-info p-component mb-3">
+                            <div className="p-message-wrapper">
+                                <span className="p-message-icon pi pi-info-circle"></span>
+                                <div className="p-message-text">
+                                    Status ini akan digunakan untuk siswa yang tidak melakukan presensi, nama disesuaikan dengan aturan ini.
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {checkInStatusData.late_duration === 0 && (
+                        <div className="p-message p-message-info p-component mb-3">
+                            <div className="p-message-wrapper">
+                                <span className="p-message-icon pi pi-info-circle"></span>
+                                <div className="p-message-text">
+                                    Status ini akan digunakan untuk siswa yang presensi tepat waktu, nama disesuaikan dengan aturan ini.
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
                 <div className="field">
                     <label htmlFor="status_name">Nama Status <span className='text-red-600'>*</span></label>
                     <InputText

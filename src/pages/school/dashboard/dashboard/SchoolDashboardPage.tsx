@@ -55,14 +55,15 @@ const SchoolDashboardPage = () => {
         : [];
 
     useEffect(() => {
-        if (school?.dailyData && Object.keys(school.dailyData).length > 0) {
+        if (school?.dailyData) {
             setDailyChartLoading(true);
+
             const dailyKeys: string[] = Object.keys(school.dailyData);
             const dailyValues: number[] = Object.values(school.dailyData).map(Number);
 
             const allValuesZero = dailyValues.every((value) => value === 0);
 
-            if (allValuesZero) {
+            if (dailyKeys.length === 0 || allValuesZero) {
                 setDailyChart({
                     labels: [],
                     datasets: [
@@ -87,6 +88,7 @@ const SchoolDashboardPage = () => {
             setDailyChartLoading(false);
         }
     }, [school?.dailyData]);
+
 
 
     const [studentActiveChart, setStudentActiveChart] = useState({
@@ -217,38 +219,42 @@ const SchoolDashboardPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="col-6 w-full h-full">
-                    <div className="card">
-                        <h5>Data Kehadiran Hari Ini</h5>
-                        <div className="grid">
-                            {schoolLoading
-                                ? Array.from({ length: 4 }).map((_, index) => (
-                                    <div className="col-12 md:col-4 lg:col-3" key={index}>
-                                        <div className="card h-full text-center">
-                                            <span className="block text-500 font-medium flex justify-content-center">
-                                                <Skeleton width="80%" height="1rem" />
-                                            </span>
-                                            <div className="text-900 font-bold text-center text-2xl flex justify-content-center">
-                                                <Skeleton width="50%" height="2rem" />
+                {schoolLoading || (school?.dailyData && school.dailyData.length > 0) ? (
+                    <div className="col-6 w-full h-full">
+                        <div className="card">
+                            <h5>Data Kehadiran Hari Ini</h5>
+                            <div className="grid">
+                                {schoolLoading
+                                    ? Array.from({ length: 4 }).map((_, index) => (
+                                        <div className="col-12 md:col-4 lg:col-3" key={index}>
+                                            <div className="card h-full text-center">
+                                                <span className="block text-500 font-medium flex justify-content-center">
+                                                    <Skeleton width="80%" height="1rem" />
+                                                </span>
+                                                <div className="text-900 font-bold text-center text-2xl flex justify-content-center">
+                                                    <Skeleton width="50%" height="2rem" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))
-                                : school?.dailyData &&
-                                <Carousel
-                                    className="col-12"
-                                    value={dailyDataArray}
-                                    numVisible={4}
-                                    numScroll={1}
-                                    itemTemplate={itemTemplate}
-                                    showIndicators={false}
-                                    circular
-                                    autoplayInterval={3000}
-                                />
-                            }
+                                    ))
+                                    : (
+                                        <Carousel
+                                            className="col-12"
+                                            value={dailyDataArray}
+                                            numVisible={4}
+                                            numScroll={1}
+                                            itemTemplate={itemTemplate}
+                                            showIndicators={false}
+                                            circular
+                                            autoplayInterval={3000}
+                                        />
+                                    )
+                                }
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : null}
+
 
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
