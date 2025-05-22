@@ -1,15 +1,15 @@
-describe('Delete Student Data Test', () => {
+describe('Failed Update Student Data Test', () => {
     const school = Cypress.env('schoolName');
     const roles = ['admin', 'superadmin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} menghapus data siswa`, () => {
+            : 'superadmin'} tidak dapat memperbarui data siswa`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 
                 const buttons = [
-                    { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `school/${school}/dashboard` },
+                    { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `/school/${school}/dashboard` },
                 ];
 
                 buttons.forEach(({ selector, icon, text, url }) => {
@@ -69,25 +69,59 @@ describe('Delete Student Data Test', () => {
                             const filterInput = 'Siswa Sekolah'.toUpperCase();
 
                             if (nama.includes(filterInput)) {
-                                cy.wrap($row).find('button.p-button-danger').should('exist').click();
+                                cy.wrap($row).find('button.p-button-success').should('exist').click();
+                                cy.get('.p-dialog').should('be.visible');
+                                cy.get('.p-dialog .p-dialog-title').should('have.text', 'Edit Data Siswa');
+                                const labels = ['Nama', 'NIS', 'NISN', 'Kelas', 'Jenis Kelamin', 'Status Siswa'];
+                                labels.forEach(label => {
+                                    cy.contains('label', label).should('be.visible');
+                                });
+
+                                cy.get('#edit-nama').invoke('val').should('not.be.empty');
+                                cy.get('#edit-nis').invoke('val').should('not.be.empty');
+                                cy.get('#edit-nisn').invoke('val').should('not.be.empty');
+                                cy.get('.p-dialog:visible').contains('label', 'Kelas')
+                                    .parent()
+                                    .find('.p-dropdown .p-dropdown-label')
+                                    .invoke('text')
+                                    .should('not.be.empty');
+                                cy.get('.p-dialog:visible').contains('label', 'Jenis Kelamin')
+                                    .parent()
+                                    .find('.p-dropdown .p-dropdown-label')
+                                    .invoke('text')
+                                    .should('not.be.empty');
+                                cy.get('input#status1').should('be.checked');
+
+                                cy.get('#edit-nama').clear();
+
+                                cy.get('.p-dialog:visible')
+                                    .contains('label', 'Jenis Kelamin')
+                                    .parent()
+                                    .find('.p-dropdown')
+                                    .click();
+                                cy.get('.p-dropdown-panel:visible .p-dropdown-item')
+                                    .then($genderItems => {
+                                        const randomIndex = Math.floor(Math.random() * $genderItems.length);
+                                        cy.wrap($genderItems[randomIndex])
+                                            .scrollIntoView()
+                                            .click();
+                                    });
+
+                                cy.get('button.p-button-text').contains('Update').should('exist').click();
                                 cy.get('.p-confirm-popup')
                                     .should('be.visible')
-                                    .and('contain.text', 'Apakah Anda yakin ingin menghapus siswa ini?')
+                                    .and('contain.text', 'Apakah Anda yakin ingin memperbarui data siswa ini?')
                                     .within(() => {
                                         cy.get('.pi.pi-exclamation-triangle').should('be.visible');
-                                        cy.get('button.p-button-danger')
+                                        cy.get('button.p-button-success')
                                             .should('be.visible')
                                             .and('contain.text', 'Ya')
                                             .click();
                                     });
 
-                                cy.get('.p-toast')
-                                    .should('be.visible')
-                                    .and('contain.text', 'Menghapus siswa')
-                                    .and('contain.text', 'Proses menghapus sedang berlangsung...');
                                 cy.get('.p-toast').should('be.visible');
-                                cy.contains('.p-toast-summary', 'Siswa berhasil dihapus').should('be.visible');
-                                cy.contains('.p-toast-detail', 'Data siswa telah dihapus.').should('be.visible');
+                                cy.contains('.p-toast-summary', 'Gagal memperbarui siswa').should('be.visible');
+                                cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data siswa.').should('be.visible');
                                 cy.wait(1000);
                             }
                         });

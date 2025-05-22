@@ -1,10 +1,10 @@
-describe("Register Student Fingerprint Test", () => {
+describe("Update Student Fingerprint Test", () => {
     const school = Cypress.env('schoolName');
     const roles = ['superadmin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
-            : role} dapat mendaftarkan sidik jari siswa`, () => {
+            : role} tidak dapat memperbarui data sidik jari siswa`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
                 const buttons = [
@@ -89,12 +89,12 @@ describe("Register Student Fingerprint Test", () => {
                     .contains("Nomor Mesin")
                     .parent()
                     .find("input")
-                    .type("123XYZ");
+                    .clear();
 
                 cy.contains("button", "Daftarkan Sidik Jari").should("be.visible").click()
                 cy.get('.p-toast-message')
-                    .should('contain.text', 'Pendaftaran Berhasil')
-                    .and('contain.text', 'Segera daftarkan sidik jari pada mesin.')
+                    .should('contain.text', 'Data Tidak Lengkap')
+                    .and('contain.text', 'Pilih siswa dan masukkan nomor mesin.')
                     .and('be.visible');
             });
     });

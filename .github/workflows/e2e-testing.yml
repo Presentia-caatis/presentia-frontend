@@ -26,17 +26,14 @@ jobs:
           echo "CYPRESS_STAF_USERNAME=${{ secrets.CYPRESS_STAF_USERNAME }}" >> $GITHUB_ENV
           echo "CYPRESS_STAF_PASSWORD=${{ secrets.CYPRESS_STAF_PASSWORD }}" >> $GITHUB_ENV
 
-          echo "CYPRESS_COADMIN_USERNAME=${{ secrets.CYPRESS_COADMIN_USERNAME }}" >> $GITHUB_ENV
-          echo "CYPRESS_COADMIN_PASSWORD=${{ secrets.CYPRESS_COADMIN_PASSWORD }}" >> $GITHUB_ENV
-
           echo "CYPRESS_ADMIN_USERNAME=${{ secrets.CYPRESS_ADMIN_USERNAME }}" >> $GITHUB_ENV
           echo "CYPRESS_ADMIN_PASSWORD=${{ secrets.CYPRESS_ADMIN_PASSWORD }}" >> $GITHUB_ENV
 
           echo "CYPRESS_SUPERADMIN_USERNAME=${{ secrets.CYPRESS_SUPERADMIN_USERNAME }}" >> $GITHUB_ENV
           echo "CYPRESS_SUPERADMIN_PASSWORD=${{ secrets.CYPRESS_SUPERADMIN_PASSWORD }}" >> $GITHUB_ENV
 
-          echo "ADMS_USERNAME=${{ secrets.ADMS_USERNAME }}" >> $GITHUB_ENV
-          echo "ADMS_PASSWORD=${{ secrets.ADMS_PASSWORD }}" >> $GITHUB_ENV
+          echo "CYPRESS_ADMS_USERNAME=${{ secrets.ADMS_USERNAME }}" >> $GITHUB_ENV
+          echo "CYPRESS_ADMS_PASSWORD=${{ secrets.ADMS_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Cypress run
         uses: cypress-io/github-action@v6

@@ -1,7 +1,7 @@
 module.exports = {
   e2e: {
     baseUrl: "https://presentia.matradipti.org/",
-    supportFile: false,
+    // supportFile: false,
     setupNodeEvents(on, config) {
       // Event listener for Cypress
     },

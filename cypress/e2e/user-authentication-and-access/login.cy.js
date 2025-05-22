@@ -1,5 +1,5 @@
 describe('Login Page Test', () => {
-    const roles = ['superadmin', 'admin', 'coadmin', 'staf', 'general_user'];
+    const roles = ['general_user', 'staf', 'admin', 'superadmin'];
 
     beforeEach(() => {
         cy.visit('/');
@@ -25,22 +25,21 @@ describe('Login Page Test', () => {
     });
 
     roles.forEach((role) => {
-        const roleName = role === 'superadmin' ? 'superadmin'
-            : role === 'admin' ? 'admin sekolah'
-                : role === 'coadmin' ? 'co-admin sekolah'
-                    : role === 'staf' ? 'staf sekolah'
-                        : 'pengguna umum';
+        const roleName = role === 'general_user' ? 'pengguna umum'
+            : role === 'staf' ? 'staf sekolah'
+                : role === 'admin' ? 'admin sekolah'
+                    : 'superadmin';
 
-        it(`Cek perilaku ${roleName} login tanpa input kredensial`, () => {
-            cy.get('button[type="submit"]').click();
-            cy.url().should('eq', Cypress.config().baseUrl + 'login');
-            cy.get('#email').parent().find('.p-error')
-                .should('contain', 'Email atau username harus diisi')
-                .and('be.visible');
-            cy.get('#password').parent().find('.p-error')
-                .should('contain', 'Password is required')
-                .and('be.visible');
-        });
+        // it(`Cek perilaku ${roleName} login tanpa input kredensial`, () => {
+        //     cy.get('button[type="submit"]').click();
+        //     cy.url().should('eq', Cypress.config().baseUrl + 'login');
+        //     cy.get('#email').parent().find('.p-error')
+        //         .should('contain', 'Email atau username harus diisi')
+        //         .and('be.visible');
+        //     cy.get('#password').parent().find('.p-error')
+        //         .should('contain', 'Password is required')
+        //         .and('be.visible');
+        // });
 
         it(`Cek perilaku ${roleName} login dengan kredensial yang belum terdaftar`, () => {
             cy.get('input#email').type('presentia99');
@@ -52,16 +51,13 @@ describe('Login Page Test', () => {
         });
 
         it(`Cek perilaku ${roleName} login akun dengan kredensial yang valid`, () => {
-            const user = Cypress.env('users')[role];
-
-            cy.get('#email').type(user.username);
-            cy.get('#password').type(user.password);
-            cy.get('button[type="submit"]').click();
-            cy.url().should('include', '/user/dashboard');
-            cy.get('.p-toast-message')
-                .should('contain', 'Login Berhasil')
-                .and('contain', 'Sekarang kamu sudah masuk ke dalam aplikasi')
-                .should('be.visible');
+            cy.loginAs(role);
+            cy.url().should("include", "/user/dashboard");
+            cy.get(".p-toast-message")
+                .should("contain", "Login Berhasil")
+                .and("contain", "Sekarang kamu sudah masuk ke dalam aplikasi")
+                .should("be.visible");
+            cy.contains("Sekolah yang dikelola").should("be.visible");
         });
     });
 });

@@ -1,54 +1,57 @@
 describe('Attendance Data Statistics Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['superadmin', 'admin', 'coadmin', 'staf'];
+    const roles = ['staf', 'admin', 'superadmin'];
 
     roles.forEach((role) => {
-        it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
+        it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : role === 'coadmin' ? 'co-admin sekolah'
-                    : role === 'staf' ? 'staf sekolah'
-                        : role} melihat statistik data presensi`, () => {
-                            cy.loginAs(role);
-                            cy.contains("Sekolah yang dikelola").should("be.visible");
+                : 'superadmin'} melihat statistik data presensi`, () => {
+                    cy.loginAs(role);
+                    cy.contains("Sekolah yang dikelola").should("be.visible");
 
-                            const buttons = [
-                                { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `/school/${school}/dashboard` },
-                            ];
+                    const buttons = [
+                        { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `/school/${school}/dashboard` },
+                    ];
 
-                            buttons.forEach(({ selector, icon, text, url }) => {
-                                cy.get(selector)
-                                    .should('be.visible')
-                                    .within(() => {
-                                        cy.get(icon).should('be.visible');
-                                        cy.contains(text).should('be.visible');
-                                    })
-                                    .click();
-                                cy.url().should('include', url);
+                    buttons.forEach(({ selector, icon, text, url }) => {
+                        cy.get(selector)
+                            .should('be.visible')
+                            .within(() => {
+                                cy.get(icon).should('be.visible');
+                                cy.contains(text).should('be.visible');
+                            })
+                            .click();
+                        cy.url().should('include', url);
 
-                                cy.get('h1')
-                                    .should('be.visible')
-                                    .invoke('text')
-                                    .should('match', /Selamat Datang di Dashboard .+/);
+                        cy.get('h1')
+                            .should('be.visible')
+                            .invoke('text')
+                            .should('match', /Selamat Datang di Dashboard .+/);
 
-                                const studentAttendanceChart = [
-                                    { title: 'Perbandingan Kehadiran Hari Ini', noDataText: 'Tidak Ada Kehadiran Hari Ini' },
-                                    { title: 'Statistik Kehadiran Harian', noDataText: 'Tidak Ada Data Kehadiran' },
-                                    { title: 'Perbandingan Status Siswa' },
-                                    { title: 'Perbandingan Jenis Kelamin Siswa' }
-                                ];
+                        const studentAttendanceChart = [
+                            { title: 'Perbandingan Kehadiran Hari Ini', noDataText: 'Tidak Ada Kehadiran Hari Ini' },
+                            { title: 'Statistik Kehadiran Harian', noDataText: 'Tidak Ada Data Kehadiran' },
+                            { title: 'Perbandingan Status Siswa' },
+                            { title: 'Perbandingan Jenis Kelamin Siswa' }
+                        ];
 
-                                studentAttendanceChart.forEach(({ title, noDataText }) => {
-                                    cy.contains('h5', title).should('be.visible').parent().within(() => {
-                                        cy.get('canvas').then($canvas => {
-                                            if ($canvas.length > 0) {
-                                                cy.wrap($canvas).should('exist').and('be.visible');
-                                            } else if (noDataText) {
-                                                cy.contains(noDataText).should('be.visible');
-                                            }
-                                        });
-                                    });
+                        studentAttendanceChart.forEach(({ title, noDataText }) => {
+                            cy.contains('h5', title).should('be.visible').then($title => {
+                                const card = $title.closest('.card');
+                                cy.wrap(card).then($card => {
+                                    const canvas = $card.find('canvas');
+                                    if (canvas.length === 0 || !canvas.is(':visible')) {
+                                        if (noDataText) {
+                                            cy.wrap($card).contains(noDataText).should('be.visible');
+                                        }
+                                    } else {
+                                        cy.wrap(canvas).should('be.visible');
+                                    }
                                 });
                             });
                         });
+                        cy.wait(1000);
+                    });
+                });
     });
 });
