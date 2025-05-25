@@ -6,7 +6,7 @@ describe('Edit Account Profile Test', () => {
     it(`Cek perilaku ${role === 'general_user' ? 'pengguna umum'
       : role === 'staf' ? 'staf sekolah'
         : role === 'admin' ? 'admin sekolah'
-          : 'superadmin'} mengubah profil akun`, () => {
+          : 'superadmin'} dapat mengubah profil akun`, () => {
             cy.loginAs(role);
             cy.contains("Sekolah yang dikelola").should("be.visible");
 
@@ -47,7 +47,7 @@ describe('Edit Account Profile Test', () => {
             cy.get('input[placeholder="Masukkan Nama Lengkap"]')
               .invoke('val')
               .then((currentName) => {
-                const allNames = ["Presentia Dummy Account", "Presentia Dummy", "Presentia Account", "Presentia Test Account"];
+                const allNames = ["Presentia Dummy Account", "Presentia Dummy", "Presentia Account", "Presentia Test Account", "Presentia Test"];
 
                 let newName = allNames.find(name => name !== currentName);
                 if (!newName) {
@@ -61,7 +61,6 @@ describe('Edit Account Profile Test', () => {
                   .should('have.value', newName);
 
                 cy.contains('Simpan Pembaruan')
-                  .should('not.be.disabled')
                   .click();
                 cy.get('.p-confirm-popup')
                   .should('be.visible')

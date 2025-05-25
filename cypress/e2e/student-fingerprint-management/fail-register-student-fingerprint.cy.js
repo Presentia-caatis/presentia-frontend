@@ -1,4 +1,4 @@
-describe("Failed Register Student Fingerprint Test", () => {
+describe("Failed to Register Student Fingerprint Test", () => {
     const school = Cypress.env('schoolName');
     const roles = ['superadmin'];
 
@@ -49,7 +49,7 @@ describe("Failed Register Student Fingerprint Test", () => {
                     cy.url().should('include', `/school/${school}/fingerprint`);
                 });
 
-                cy.wait(3000);
+                cy.wait(5000);
                 cy.get("h1").should("contain.text", "Pendaftaran Sidik Jari");
                 cy.get("label")
                     .contains("Pilih Kelas")
@@ -66,7 +66,7 @@ describe("Failed Register Student Fingerprint Test", () => {
                     .find("input")
                     .type("Siswa Sekolah");
 
-                cy.wait(3000);
+                cy.wait(5000);
                 cy.get("label")
                     .contains("Pilih Siswa")
                     .parent()

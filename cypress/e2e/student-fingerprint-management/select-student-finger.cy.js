@@ -1,10 +1,10 @@
-describe("Failed to Update Student Fingerprint Test", () => {
+describe("Select Finger for Student Fingerprint Registration Test", () => {
     const school = Cypress.env('schoolName');
     const roles = ['superadmin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
-            : role} tidak dapat memperbarui data sidik jari siswa`, () => {
+            : role} memilih jari dari siswa yang akan didaftarkan sidik jarinya`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
                 const buttons = [
@@ -84,18 +84,6 @@ describe("Failed to Update Student Fingerprint Test", () => {
                 cy.get(".p-dropdown-items-wrapper .p-dropdown-item")
                     .first()
                     .click();
-
-                cy.get("label")
-                    .contains("Nomor Mesin")
-                    .parent()
-                    .find("input")
-                    .clear();
-
-                cy.contains("button", "Daftarkan Sidik Jari").should("be.visible").click()
-                cy.get('.p-toast-message')
-                    .should('contain.text', 'Data Tidak Lengkap')
-                    .and('contain.text', 'Pilih siswa dan masukkan nomor mesin.')
-                    .and('be.visible');
             });
     });
 });

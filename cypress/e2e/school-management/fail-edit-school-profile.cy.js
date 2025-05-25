@@ -4,7 +4,7 @@ describe('Edit School Profile Test', () => {
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} dapat memperbarui data sekolah`, () => {
+            : 'superadmin'} tidak dapat memperbarui data sekolah`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

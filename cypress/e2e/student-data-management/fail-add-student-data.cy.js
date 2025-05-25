@@ -1,4 +1,4 @@
-describe('Failed Add Student Data Test', () => {
+describe('Failed to Add Student Data Test', () => {
     const school = Cypress.env('schoolName');
     const roles = ['admin', 'superadmin'];
 

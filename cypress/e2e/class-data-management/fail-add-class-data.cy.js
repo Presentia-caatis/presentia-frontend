@@ -1,10 +1,10 @@
-describe('Add Class Data Test', () => {
+describe('Failed to Add Class Data Test', () => {
     const school = Cypress.env('schoolName');
     const roles = ['admin', 'superadmin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} dapat menambahkan data kelas`, () => {
+            : 'superadmin'} tidak dapat menambahkan data kelas`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 
@@ -77,63 +77,30 @@ describe('Add Class Data Test', () => {
                     //     });
                     // });
 
-                    const existingClassNames = [];
+                    const classNames = [];
                     cy.get('table tbody tr').each(($row) => {
                         cy.wrap($row).find('td').eq(1).invoke('text').then((text) => {
-                            const namaKelas = text.trim().toUpperCase();
-                            existingClassNames.push(namaKelas);
+                            classNames.push(text.trim());
                         });
                     }).then(() => {
-                        const allClassNames = Array.from({ length: 20 }, (_, i) =>
-                            `X TJKT ${String(i + 1).padStart(2, '0')}`
-                        );
+                        const randomClassName = classNames[Math.floor(Math.random() * classNames.length)];
 
-                        const missingClass = allClassNames.find(kelas => !existingClassNames.includes(kelas));
+                        cy.contains('button', 'Kelas Baru').click();
+                        cy.get('.p-dialog').should('be.visible');
+                        cy.get('.p-dialog .p-dialog-title').should('have.text', 'Tambah Kelas Baru');
+                        cy.get('input#className').clear().type(randomClassName);
 
-                        if (missingClass) {
-                            cy.contains('Kelas Baru').click();
-                            cy.get('.p-dialog').should('be.visible');
-                            cy.get('.p-dialog .p-dialog-title').should('have.text', 'Tambah Kelas Baru');
+                        cy.get('button.p-button-text').contains('Simpan').click();
+                        cy.get('.p-confirm-popup')
+                            .should('be.visible')
+                            .and('contain.text', 'Apakah Anda yakin ingin menambahkan kelas ini?')
+                            .within(() => {
+                                cy.get('button.p-button-success').contains('Ya').click();
+                            });
 
-                            cy.get('input#className').clear().type(missingClass);
-
-                            cy.get('button.p-button-text').contains('Simpan').should('exist').click();
-                            cy.get('.p-confirm-popup')
-                                .should('be.visible')
-                                .and('contain.text', 'Apakah Anda yakin ingin menambahkan kelas ini?')
-                                .within(() => {
-                                    cy.get('.pi.pi-exclamation-triangle').should('be.visible');
-                                    cy.get('button.p-button-success')
-                                        .should('be.visible')
-                                        .and('contain.text', 'Ya')
-                                        .click();
-                                });
-
-                            cy.get('.p-toast').should('be.visible');
-                            cy.get('.p-toast-summary')
-                                .should('be.visible')
-                                .invoke('text')
-                                .then((summaryText) => {
-                                    if (summaryText.includes('Sukses')) {
-                                        cy.get('.p-toast-detail')
-                                            .should('be.visible')
-                                            .invoke('text')
-                                            .then((detailText) => {
-                                                expect(detailText).to.match(/Berhasil membuat kelas baru .+!/);
-                                            });
-                                    } else if (summaryText.includes('Gagal menambahkan kelas')) {
-                                        cy.get('.p-toast-detail')
-                                            .should('be.visible')
-                                            .invoke('text')
-                                            .then((detailText) => {
-                                                expect(detailText).to.include('Nama kelas tidak boleh sama dengan yang sudah terdaftar');
-                                            });
-                                    } else {
-                                        throw new Error('Tidak ada toast');
-                                    }
-                                });
-                            cy.wait(1000);
-                        }
+                        cy.get('.p-toast').should('be.visible');
+                        cy.get('.p-toast-summary').should('contain.text', 'Gagal menambahkan kelas');
+                        cy.get('.p-toast-detail').should('contain.text', 'Nama kelas tidak boleh sama dengan yang sudah terdaftar');
                     });
                 });
             });

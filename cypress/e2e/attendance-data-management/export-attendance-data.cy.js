@@ -113,14 +113,14 @@ describe('Export Attendance Data Test', () => {
                                     .click();
                             });
 
-                        cy.contains('Sedang melakukan export data kehadiran!').should('be.visible');
-                        cy.wait(1000);
+                        cy.contains('Sedang melakukan export data kehadiran!', { timeout: 10000 }).should('be.visible');
+
                         cy.get('body').then(($body) => {
                             const text = $body.text();
                             if (text.includes('Export data kehadiran berhasil!!')) {
                                 cy.contains('Export data kehadiran berhasil!').should('be.visible');
-                            } else if (text.includes('Terjadi kesalahan saat export data kehadiran.')) {
-                                cy.contains('Terjadi kesalahan saat export data kehadiran.').should('be.visible');
+                            } else if (text.includes('Terjadi kesalahan saat mengekspor!')) {
+                                cy.contains('Terjadi kesalahan saat mengekspor!').should('be.visible');
                             } else {
                                 cy.log('Toast export tidak muncul');
                             }

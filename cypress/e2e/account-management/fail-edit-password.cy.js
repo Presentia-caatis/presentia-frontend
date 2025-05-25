@@ -1,11 +1,11 @@
-describe('Edit Account Password Test', () => {
+describe('Failed to Edit Account Password Test', () => {
     const roles = ['general_user', 'staf', 'admin', 'superadmin',];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'general_user' ? 'pengguna umum'
             : role === 'staf' ? 'staf sekolah'
                 : role === 'admin' ? 'admin sekolah'
-                    : 'superadmin'} dapat mengubah password akun`, () => {
+                    : 'superadmin'} tidak dapat mengubah password akun`, () => {
                         cy.loginAs(role);
                         cy.contains("Sekolah yang dikelola").should("be.visible");
 

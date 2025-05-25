@@ -1,4 +1,4 @@
-describe('Failed Update Student Data Test', () => {
+describe('Failed to Update Student Data Test', () => {
     const school = Cypress.env('schoolName');
     const roles = ['admin', 'superadmin'];
 
@@ -120,9 +120,8 @@ describe('Failed Update Student Data Test', () => {
                                     });
 
                                 cy.get('.p-toast').should('be.visible');
-                                cy.contains('.p-toast-summary', 'Gagal memperbarui siswa').should('be.visible');
-                                cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data siswa.').should('be.visible');
-                                cy.wait(1000);
+                                cy.get('.p-toast-summary').should('contain.text', 'Gagal memperbarui siswa').should('be.visible');
+                                cy.get('.p-toast-detail').should('contain.text', 'Terjadi kesalahan saat memperbarui data siswa.').should('be.visible');
                             }
                         });
                     });

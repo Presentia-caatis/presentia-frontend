@@ -1,11 +1,11 @@
-describe('Total Presence and Absence Test', () => {
+describe('Total Absence Test', () => {
     const school = Cypress.env('schoolName');
     const roles = ['staf', 'admin', 'superadmin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : 'superadmin'} melihat jumlah presensi dan absensi siswa`, () => {
+                : 'superadmin'} melihat jumlah absensi siswa`, () => {
 
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");

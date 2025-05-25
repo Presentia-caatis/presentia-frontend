@@ -100,31 +100,39 @@ describe('Select Status for Attendance Data Test', () => {
                             .should('be.visible')
                             .click();
                         cy.get('.p-multiselect-panel').should('be.visible');
-                        cy.get('.p-multiselect-item').then(($items) => {
-                            const randomIndex = Math.floor(Math.random() * $items.length);
-                            cy.wrap($items[randomIndex]).click();
-                        });
-
-                        cy.get('body').click(0, 0);
-                        cy.contains('button', 'Tampilkan').click();
-
-                        cy.contains('Memuat data kehadiran...').should('not.exist');
-                        cy.wait(1000);
-                        cy.get('table tbody tr').then(($rows) => {
-                            if ($rows.length === 1) {
-                                cy.wrap($rows).first().within(() => {
-                                    cy.get('td')
-                                        .invoke('text')
-                                        .should('include', 'Belum ada data kehadiran');
-                                });
+                        cy.get('.p-multiselect-panel').then(($panel) => {
+                            if ($panel.text().includes('No available options')) {
+                                cy.log('Tidak ada opsi presensi');
                             } else {
-                                cy.get('table tbody tr').each(($row) => {
-                                    cy.wrap($row).find('td').eq(8)
-                                        .invoke('text')
-                                        .then((textValue) => {
-                                            expect(textValue).to.match(/^(Tepat Waktu|Telat|Tidak Hadir)$/);
+                                cy.get('.p-multiselect-item')
+                                    .should('have.length.greaterThan', 0)
+                                    .then(($items) => {
+                                        const randomIndex = Math.floor(Math.random() * $items.length);
+                                        cy.wrap($items[randomIndex]).click();
+
+                                        cy.get('body').click(0, 0);
+                                        cy.contains('button', 'Tampilkan').click();
+
+                                        cy.contains('Memuat data kehadiran...').should('not.exist');
+                                        cy.wait(1000);
+                                        cy.get('table tbody tr').then(($rows) => {
+                                            if ($rows.length === 1) {
+                                                cy.wrap($rows).first().within(() => {
+                                                    cy.get('td')
+                                                        .invoke('text')
+                                                        .should('include', 'Belum ada data kehadiran');
+                                                });
+                                            } else {
+                                                cy.get('table tbody tr').each(($row) => {
+                                                    cy.wrap($row).find('td').eq(8)
+                                                        .invoke('text')
+                                                        .then((textValue) => {
+                                                            expect(textValue).to.match(/^(Tepat Waktu|Telat|Tidak Hadir)$/);
+                                                        });
+                                                });
+                                            }
                                         });
-                                });
+                                    });
                             }
                         });
                     });

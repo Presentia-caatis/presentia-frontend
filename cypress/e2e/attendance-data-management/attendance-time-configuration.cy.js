@@ -80,9 +80,9 @@ describe("Attendance Time Configuration Test", () => {
                     cy.get('.p-dialog').should('be.visible').within(() => {
                         cy.contains('button', 'Ya').click();
                     });
-                    cy.get('.p-toast-message-success')
-                        .should('be.visible')
-                        .and('contain.text', 'Jam default absensi berhasil diperbarui!');
+                    cy.get('.p-toast').should('be.visible');
+                    cy.get('.p-toast-summary').should('contain.text', 'Sukses').should('be.visible')
+                    cy.get('.p-toast-detail').should('contain.text', 'Jam default absensi berhasil diperbarui!').should('be.visible')
                 });
             });
     });
