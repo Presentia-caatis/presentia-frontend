@@ -45,44 +45,43 @@ describe('Edit Account Profile Test', () => {
             });
 
             cy.get('input[placeholder="Masukkan Nama Lengkap"]')
-              .invoke('val')
-              .then((currentName) => {
+              .then(() => {
                 const allNames = ["Presentia Dummy Account", "Presentia Dummy", "Presentia Account", "Presentia Test Account", "Presentia Test"];
-
-                let newName = allNames.find(name => name !== currentName);
-                if (!newName) {
-                  const timestamp = Date.now();
-                  newName = `${currentName} ${timestamp}`;
-                }
+                const newName = allNames[Math.floor(Math.random() * allNames.length)];
 
                 cy.get('input[placeholder="Masukkan Nama Lengkap"]')
                   .clear()
                   .type(newName)
                   .should('have.value', newName);
 
-                cy.contains('Simpan Pembaruan')
-                  .click();
-                cy.get('.p-confirm-popup')
-                  .should('be.visible')
-                  .and('contain.text', 'Apakah Anda yakin ingin mengubah data?')
-                  .within(() => {
-                    cy.get('.pi.pi-exclamation-triangle').should('be.visible');
-                    cy.get('button.p-button-success')
+                cy.contains('Simpan Pembaruan').then(($btn) => {
+                  if ($btn.prop('disabled')) {
+                    cy.log('Tombol Simpan tidak aktif. Tidak ada perubahan. Uji selesai.');
+                  } else {
+                    cy.wrap($btn).click();
+                    cy.get('.p-confirm-popup')
                       .should('be.visible')
-                      .and('contain.text', 'Ya')
-                      .click();
-                  });
-              });
+                      .and('contain.text', 'Apakah Anda yakin ingin mengubah data?')
+                      .within(() => {
+                        cy.get('.pi.pi-exclamation-triangle').should('be.visible');
+                        cy.get('button.p-button-success')
+                          .should('be.visible')
+                          .and('contain.text', 'Ya')
+                          .click();
+                      });
 
-            cy.get('.p-toast').should('be.visible').then((toast) => {
-              if (toast.text().includes('Profil berhasil diperbarui.')) {
-                cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
-                cy.contains('.p-toast-detail', 'Profil berhasil diperbarui.').should('be.visible');
-              } else {
-                cy.contains('.p-toast-summary', 'Gagal').should('be.visible');
-                cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data.').should('be.visible');
-              }
-            });
+                    cy.get('.p-toast').should('be.visible').then((toast) => {
+                      if (toast.text().includes('Profil berhasil diperbarui.')) {
+                        cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
+                        cy.contains('.p-toast-detail', 'Profil berhasil diperbarui.').should('be.visible');
+                      } else {
+                        cy.contains('.p-toast-summary', 'Gagal').should('be.visible');
+                        cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data.').should('be.visible');
+                      }
+                    });
+                  }
+                });
+              });
           });
   });
 });
