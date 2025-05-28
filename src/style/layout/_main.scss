@@ -1,0 +1,63 @@
+@use "variables";
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+    font-size: variables.$scale;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-color);
+    background-color: var(--surface-ground);
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    text-decoration: none;
+}
+
+.layout-wrapper {
+    min-height: 100vh;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.hover\:surface-200:hover {
+    background-color: var(--surface-200);
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-secondary {
+    color: var(--text-secondary-color, #6c757d);
+}
+
+#password .p-icon-field {
+    width: 100%;
+}
+
+#confirmPassword .p-icon-field {
+    width: 100%;
+}
+
+.p-input-icon:focus {
+    outline: none;
+    box-shadow: none;
+    border: none;
+}
+
+.p-input-icon:active {
+    transform: none;
+}
