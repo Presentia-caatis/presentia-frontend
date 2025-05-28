@@ -39,8 +39,12 @@ const LoginPage = () => {
     useEffect(() => {
         const authenticate = async () => {
             const isAuth = await checkAuth();
-            if (isAuth) {
-                navigate('/user/dashboard');
+            if (isAuth.success) {
+                if (isAuth.user!.roles.includes("super_admin")) {
+                    navigate('/admin/mainpage');
+                } else {
+                    navigate('/user/dashboard');
+                }
             }
             setIsLoggedIn(false);
         };
@@ -74,7 +78,7 @@ const LoginPage = () => {
                         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
 
                         if (response.data.roles && response.data.roles.includes("super_admin")) {
-                            navigate('/admin');
+                            navigate('/admin/mainpage');
                         } else {
                             navigate('/user/dashboard');
                         }

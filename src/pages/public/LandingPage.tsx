@@ -12,6 +12,14 @@ const LandingPage = () => {
         checkAuth();
     }, []);
 
+    const handlePresentiaClick = () => {
+        if (user?.roles.includes('super_admin')) {
+            navigate('/admin/mainpage');
+        } else {
+            navigate('/user/dashboard');
+        }
+    };
+
     return (
         <div>
             <div className="grid grid-nogutter surface-0 text-800">
@@ -26,7 +34,7 @@ const LandingPage = () => {
                                     label="Dashboard"
                                     type="button"
                                     className="mr-3"
-                                    onClick={() => navigate('/user/dashboard')}
+                                    onClick={handlePresentiaClick}
                                     raised
                                 />
                             </div>

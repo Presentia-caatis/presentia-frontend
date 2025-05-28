@@ -24,8 +24,8 @@ interface AuthContextProps {
     user: User | null;
     token: string | null;
     setAuth: (user: User, token: string) => void;
-    updateUser: (updatedUser: User) => void;
-    checkAuth: () => Promise<boolean>;
+    updateUser: (updatedUser: Partial<User>) => void;
+    checkAuth: () => Promise<{ success: boolean; user?: User }>;
     logout: () => void;
 }
 
@@ -66,6 +66,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const setAuth = (user: User, token: string) => {
         try {
+            const previousUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (user.roles.includes('super_admin') && previousUser.school_id) {
+                user.school_id = previousUser.school_id;
+            }
+
             localStorage.setItem('user', JSON.stringify(user));
             localStorage.setItem('token', token);
             setUser(user);
@@ -75,7 +81,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const checkAuth = async (): Promise<boolean> => {
+
+    const checkAuth = async (): Promise<{ success: boolean; user?: User }> => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             try {
@@ -84,19 +91,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 if (response.data && response.status === "success") {
                     const user = response.data;
                     setAuth(user, storedToken);
-                    return true;
+                    return { success: true, user };
                 }
             } catch (error) {
                 console.error("Authentication failed:", error);
                 logout();
-                return false;
+                return { success: false };
             }
         } else {
             localStorage.clear();
-            return false;
+            return { success: false };
         }
-        return false;
+
+        return { success: false };
     };
+
 
     const logout = async () => {
         try {

@@ -33,7 +33,7 @@ const RegisterPage = () => {
     useEffect(() => {
         const authenticate = async () => {
             const isAuth = await checkAuth();
-            if (isAuth) {
+            if (isAuth.success) {
                 console.log("tes")
                 navigate('/user/dashboard');
             }

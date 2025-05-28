@@ -13,10 +13,16 @@ export interface School {
 }
 
 class SchoolService {
-  async getAll() {
-    const response = await axiosClient.get('/school');
+  async getAll(perPage = 10, page = 1) {
+    const response = await axiosClient.get(`/school?perPage=${perPage}&page=${page}`);
     return response.data;
   }
+
+  async getSchoolByName(schoolName: string) {
+    const response = await axiosClient.get(`/school/by-name/${schoolName}`)
+    return response.data;
+  }
+
 
   async getById(id: number) {
     const response = await axiosClient.get(`/school/${id}`);

@@ -12,11 +12,12 @@ import { useSchool } from '../context/SchoolContext';
 import logoImage from '../assets/Logo-SMK-10-Bandung.png';
 import { formatSchoolName } from '../utils/formatSchoolName';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import SchoolService from '../services/schoolService';
 
 const SchoolLayout = () => {
     const { darkMode } = useLayoutConfig();
     const [containerClass, setContainerClass] = useState('');
-    const { checkAuth } = useAuth();
+    const { checkAuth, user } = useAuth();
     const { school, schoolLoading } = useSchool();
     const { schoolName } = useParams();
     const navigate = useNavigate();
@@ -36,16 +37,27 @@ const SchoolLayout = () => {
     }, [darkMode]);
 
     useEffect(() => {
-        if (school && schoolName && formatSchoolName(school.name) !== schoolName) {
-            navigate('/404');
+        if (user?.roles.includes('super_admin') && !user?.school_id) {
+            navigate('/admin/schools');
         }
-    }, [school, schoolName, navigate]);
+    }, [user]);
 
     useEffect(() => {
-        if (!school && !schoolLoading) {
-            navigate('/404');
+        if (!user?.roles.includes('super_admin')) {
+            if (school && schoolName && formatSchoolName(school.name) !== schoolName) {
+                navigate('/404');
+            }
         }
-    }, [school, schoolLoading, navigate]);
+    }, [user, school, schoolName, navigate]);
+
+    useEffect(() => {
+        if (!user?.roles.includes('super_admin')) {
+            if (!school && !schoolLoading) {
+                navigate('/404');
+            }
+        }
+    }, [user, school, schoolLoading, navigate]);
+
 
 
     if (schoolLoading) {

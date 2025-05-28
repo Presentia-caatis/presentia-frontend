@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useLayoutConfig } from '../context/LayoutConfigContext';
 import LayoutConfigSidebar from '../components/LayoutConfigSidebar';
 import UserSideBar from '../components/user/UserSideBar';
 import UserFooter from '../components/user/UserFooter';
 import UserTopBar from '../components/user/UserTopBar';
 import { Helmet } from 'react-helmet';
+import { useAuth } from '../context/AuthContext';
 
 const UserLayout = () => {
     const { darkMode } = useLayoutConfig();
@@ -18,6 +19,16 @@ const UserLayout = () => {
             darkMode ? 'layout-theme-dark' : 'layout-theme-light'
         );
     }, [darkMode]);
+
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user?.roles.includes('super_admin')) {
+            navigate('*', { replace: true });
+        }
+    }, [user, navigate]);
+
 
     const getTitle = () => {
         switch (location.pathname) {

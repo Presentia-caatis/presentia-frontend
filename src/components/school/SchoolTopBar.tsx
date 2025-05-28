@@ -48,7 +48,11 @@ const SchoolTopbar = () => {
 
     const handleLogoutSchool = async () => {
         localStorage.removeItem('admsjs_token');
-        navigate('/user/dashboard');
+        if (user?.roles.includes('super_admin')) {
+            navigate('/admin/mainpage');
+        } else {
+            navigate('/user/dashboard');
+        }
     }
 
     const handleToggleMenu = () => {

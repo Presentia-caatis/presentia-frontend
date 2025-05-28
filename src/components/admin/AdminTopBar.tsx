@@ -1,19 +1,45 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
+import { useToastContext } from '../../layout/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminTopbar = () => {
     const [topbarMenuActive, setTopbarMenuActive] = useState(false);
     const outsideClickListener = useRef<((event: MouseEvent) => void) | null>(null);
     const topbarMenuRef = useRef<HTMLDivElement>(null);
     const topbarMenuButtonRef = useRef<HTMLButtonElement>(null);
-
+    const [loading, setLoading] = useState(false);
+    const { user, logout } = useAuth();
     const containerRef = useRef<HTMLDivElement>(null);
     const toast = useRef(null);
     const navigate = useNavigate();
     const [profileOpen, setProfileOpen] = useState(false);
+    const { showToast } = useToastContext();
+    function callToast(showToast: any, severity: string, summary: string, detail: string) {
+        showToast({
+            severity: severity,
+            summary: summary,
+            detail: detail
+        });
+    }
+    const handleLogout = async () => {
+        try {
+            callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
+            setLoading(true);
 
+            await logout();
+            navigate('/');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            localStorage.clear();
+        } finally {
+            setLoading(false);
+        }
+    };
     const profileItems = [
         {
             label: 'Profile',
@@ -26,7 +52,7 @@ const AdminTopbar = () => {
             label: 'Logout',
             icon: 'pi pi-sign-out',
             action: () => {
-                navigate('/');
+                handleLogout();
             },
         },
     ];
@@ -56,10 +82,6 @@ const AdminTopbar = () => {
 
     const onTopBarMenuButton = () => {
         setTopbarMenuActive(prevState => !prevState);
-    };
-
-    const handleLogout = () => {
-        console.log('Logged out');
     };
 
     const bindOutsideClickListener = () => {
