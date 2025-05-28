@@ -118,7 +118,11 @@ const LoginPage = () => {
                 setAuth(userProfile.data, token);
 
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
-                navigate('/user/dashboard');
+                if (userProfile.data.roles && userProfile.data.roles.includes("super_admin")) {
+                    navigate('/admin/mainpage');
+                } else {
+                    navigate('/user/dashboard');
+                }
             } else {
                 callToast(showToast, 'error', 'Login Gagal', 'Akun tidak ditemukan atau password salah');
             }

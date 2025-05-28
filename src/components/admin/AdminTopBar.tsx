@@ -6,6 +6,8 @@ import { Button } from 'primereact/button';
 import { Tooltip } from 'primereact/tooltip';
 import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { Tag } from 'primereact/tag';
+import defaultProfileUser from '../../assets/defaultProfileUser.png';
 
 const AdminTopbar = () => {
     const [topbarMenuActive, setTopbarMenuActive] = useState(false);
@@ -119,15 +121,31 @@ const AdminTopbar = () => {
 
             <div
                 ref={containerRef}
-                className="flex gap-2 cursor-pointer relative"
+                className="flex gap-2 cursor-pointer justify-content-end relative w-12rem"
                 onClick={handleToggleMenu}
                 aria-controls="popup_profile_menu"
                 aria-haspopup
             >
-                <div>
-                    MUHAMMAD ZAKY FATHURAHIM
+                <div className='my-auto flex flex-column'>
+                    <div className='school-profile'>
+                        {user?.fullname || 'Loading...'}
+                    </div>
+                    <div className='text-left md:text-right'>
+                        <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] || 'Loading'}</Tag>
+                    </div>
                 </div>
-                <div>
+                <div className=''>
+                    <img
+                        loading="lazy"
+                        src={user?.profile_image_path || defaultProfileUser}
+                        alt=""
+                        className='w-4rem h-4rem border-circle border-3'
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = defaultProfileUser;
+                        }}
+                    />
+                </div>
+                <div className='my-auto'>
                     <i
                         className={`pi ${profileOpen ? 'pi-angle-up' : 'pi-angle-down'
                             } transition-all duration-300`}
