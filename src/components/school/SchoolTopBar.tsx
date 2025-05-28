@@ -109,7 +109,15 @@ const SchoolTopbar = () => {
                         </div>
                     </div>
                     <div className=''>
-                        <Avatar shape="circle" className='border border-1' size='large' image={user?.profile_image_path || defaultProfileUser}></Avatar>
+                        <img
+                            loading="lazy"
+                            src={user?.profile_image_path || defaultProfileUser}
+                            alt=""
+                            className='w-4rem h-4rem border-circle border-3'
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = defaultProfileUser;
+                            }}
+                        />
                     </div>
                     <div className='my-auto'>
                         <i

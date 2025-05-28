@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import authServices from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../layout/ToastContext';
 import { resetSchool } from '../utils/schoolUtils';
+import { setAuthUserGetter } from '../utils/authHelper';
 
 export interface User {
     id: number;
@@ -62,6 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return updatedUser;
         });
     };
+
 
 
     const setAuth = (user: User, token: string) => {
@@ -125,6 +127,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         }
     };
+
+    useEffect(() => {
+        setAuthUserGetter(() => {
+            if (!user) return null;
+            return {
+                school_id: user.school_id,
+                roles: user.roles,
+            };
+        });
+    }, [user]);
+
 
 
     return (
