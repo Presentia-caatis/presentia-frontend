@@ -10,7 +10,7 @@ import { Calendar } from 'primereact/calendar';
 import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { Checkbox } from 'primereact/checkbox';
-import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 import { useAuth } from '../../../../context/AuthContext';
 
 type EventData = {

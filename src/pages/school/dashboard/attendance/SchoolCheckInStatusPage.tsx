@@ -14,7 +14,7 @@ import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Skeleton } from 'primereact/skeleton';
-import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 const defaultCheckInStatus = {
     status_name: '',

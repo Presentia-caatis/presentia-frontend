@@ -18,7 +18,7 @@ import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { FilterMatchMode } from 'primereact/api';
 import { FileUpload } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 
 type StudentData = {

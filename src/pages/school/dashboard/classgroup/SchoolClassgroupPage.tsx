@@ -15,7 +15,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import studentService from '../../../../services/studentService';
 import { Dropdown } from 'primereact/dropdown';
 import { Skeleton } from 'primereact/skeleton';
-import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 import { useAuth } from '../../../../context/AuthContext';
 
 type ClassgroupData = {

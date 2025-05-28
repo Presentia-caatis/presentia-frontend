@@ -28,9 +28,6 @@ class StudentService {
         }
     }
 
-
-
-
     async addStudent(payload: any) {
         try {
             const response = await axiosClient.post(`/student`, payload);
@@ -78,8 +75,6 @@ class StudentService {
             throw error;
         }
     }
-
-
 
     async updateStudent(schoolId: string | number, studentId: string | number, payload: any) {
         try {

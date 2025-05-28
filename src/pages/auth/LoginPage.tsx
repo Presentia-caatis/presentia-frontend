@@ -72,7 +72,12 @@ const LoginPage = () => {
                         const response = await authServices.getProfile();
                         setAuth(response.data, token);
                         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
-                        navigate('/user/dashboard');
+
+                        if (response.data.roles && response.data.roles.includes("super_admin")) {
+                            navigate('/admin');
+                        } else {
+                            navigate('/user/dashboard');
+                        }
                     } catch (error) {
                         callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
                     }

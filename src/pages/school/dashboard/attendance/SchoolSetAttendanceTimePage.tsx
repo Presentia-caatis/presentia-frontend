@@ -11,7 +11,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { parseToDate } from '../../../../utils/formatTime';
 import { Dialog } from 'primereact/dialog';
 import { Skeleton } from 'primereact/skeleton';
-import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 const SchoolSetAttendanceTimePage = () => {
     const [entryStartTime, setEntryStartTime] = useState<Date | null>(null);

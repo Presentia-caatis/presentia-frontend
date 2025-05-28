@@ -14,7 +14,7 @@ import { Messages } from 'primereact/messages';
 import { useMountEffect } from 'primereact/hooks';
 import { Skeleton } from 'primereact/skeleton';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { hasAnyPermission } from '../../../../utils/hasPermissions';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 import { useAuth } from '../../../../context/AuthContext';
 
 const SchoolAbsenceStatusPage = () => {
