@@ -72,7 +72,7 @@ const AppRoutes = () => {
                 <Route path="absence-permit/type" element={<AbsenceStatusListPage />} />
                 <Route path="classroom" element={<ClassroomListPage />} />
                 <Route path="fingerprint" element={
-                    <RoleGuard roles={['schools_admin', 'super_admin']}>
+                    <RoleGuard roles={['school_admin', 'super_admin']}>
                         <FingerprintPage />
                     </RoleGuard>
                 } />
@@ -80,7 +80,7 @@ const AppRoutes = () => {
 
             <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
             <Route path="/school/student/attendance/in" element={
-                <RoleGuard roles={['schools_admin', 'super_admin']}>
+                <RoleGuard roles={['school_admin', 'super_admin']}>
                     <StudentAttendanceInPage />
                 </RoleGuard>
             } />

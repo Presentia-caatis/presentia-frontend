@@ -53,7 +53,7 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/dashboard`),
                     className: currentPath === `/school/${schoolName}/dashboard` ? 'active-route' : 'menu-item',
                 },
-                ...(user?.roles.some(role => ['super_admin', 'schools_admin'].includes(role)) ? [
+                ...(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)) ? [
                     {
                         label: 'Presensi Manual',
                         icon: 'pi pi-address-book',
@@ -85,7 +85,7 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/classroom`),
                     className: currentPath === `/school/${schoolName}/classroom` ? 'active-route' : 'menu-item',
                 },
-                ...(user?.roles.some(role => ['super_admin', 'schools_admin'].includes(role)) ? [
+                ...(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)) ? [
                     {
                         label: 'Daftar Sidik Jari',
                         icon: 'pi pi-key',

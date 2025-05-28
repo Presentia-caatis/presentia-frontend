@@ -91,13 +91,13 @@ const AppRoutes = () => {
                 <Route path="check-in/status" element={withSuspense(SchoolCheckInStatusPage)} />
                 <Route path="absence-permit/type" element={withSuspense(AbsenceStatusListPage)} />
                 <Route path="classroom" element={withSuspense(ClassroomListPage)} />
-                <Route path="fingerprint" element={<RoleGuard roles={['schools_admin', 'super_admin']}>
+                <Route path="fingerprint" element={<RoleGuard roles={['school_admin', 'super_admin']}>
                     {withSuspense(FingerprintPage)}
                 </RoleGuard>} />
             </Route>
 
             <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
-            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['schools_admin', 'super_admin']}>{
+            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin']}>{
                 withSuspense(StudentAttendanceInPage)}</RoleGuard>} />
             <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
 
