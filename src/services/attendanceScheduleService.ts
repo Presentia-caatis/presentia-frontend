@@ -12,9 +12,15 @@ interface AttendanceScheduleData {
 
 class AttendanceScheduleService {
 
-    async showScheduleByType(data: any): Promise<any> {
-        return axiosClient.post(`attendance-schedule/get-by-type`, data);
+    async getSchedule(type: 'default' | 'event' | 'holiday'): Promise<any> {
+        return axiosClient.get(`attendance-schedule`, {
+            params: {
+                'filter[type]': type
+            }
+        });
     }
+
+
 
     async updateSchedule(id: number, data: AttendanceScheduleData): Promise<any> {
         return axiosClient.put(`attendance-schedule/${id}`, data);

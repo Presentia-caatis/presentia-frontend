@@ -14,6 +14,7 @@ import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Skeleton } from 'primereact/skeleton';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 const defaultCheckInStatus = {
     status_name: '',
@@ -42,6 +43,7 @@ const SchoolCheckInStatusPage = () => {
     useEffect(() => {
         fetchCheckInStatus(currentPage, rowsPerPage);
     }, [currentPage, rowsPerPage]);
+
 
     useMountEffect(() => {
         msgs.current?.clear();
@@ -183,12 +185,16 @@ const SchoolCheckInStatusPage = () => {
             <Toast ref={toast} />
             <Messages ref={msgs} />
             <ConfirmPopup />
-            <div className="flex justify-content-between p-4 card">
-                <div className="flex gap-2">
-                    <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowDialog(true)} />
-                    <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedCheckInStatus.length} />
-                </div>
-            </div>
+            {
+                hasAnyPermission(user, ['manage_schools']) && (
+                    <div className="flex justify-content-between p-4 card">
+                        <div className="flex gap-2">
+                            <Button icon="pi pi-plus" severity="success" label="Tambah Status" onClick={() => setShowDialog(true)} />
+                            <Button icon="pi pi-trash" severity="danger" label="Hapus" disabled={!selectedCheckInStatus.length} />
+                        </div>
+                    </div>
+                )
+            }
 
             <DataTable
                 dataKey="id"
@@ -268,7 +274,7 @@ const SchoolCheckInStatusPage = () => {
                                 <Skeleton shape="circle" size="2rem" />
                                 <Skeleton shape="circle" size="2rem" />
                             </div>
-                        ) : (
+                        ) : hasAnyPermission(user, ['manage_schools']) ? (
                             <div className="flex gap-2">
                                 <Button
                                     icon="pi pi-pencil"
@@ -289,9 +295,10 @@ const SchoolCheckInStatusPage = () => {
                                     onClick={(e) => confirmDeleteCheckInStatus(e, rowData.id)}
                                 />
                             </div>
-                        )
+                        ) : null
                     }
                 />
+
             </DataTable>
 
             <Dialog
@@ -308,6 +315,30 @@ const SchoolCheckInStatusPage = () => {
                 modal
                 className="p-fluid"
             >
+                <div className='field'>
+                    {checkInStatusData.late_duration === -1 && (
+                        <div className="p-message p-message-info p-component mb-3">
+                            <div className="p-message-wrapper">
+                                <span className="p-message-icon pi pi-info-circle"></span>
+                                <div className="p-message-text">
+                                    Status ini akan digunakan untuk siswa yang tidak melakukan presensi, nama disesuaikan dengan aturan ini.
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {checkInStatusData.late_duration === 0 && (
+                        <div className="p-message p-message-info p-component mb-3">
+                            <div className="p-message-wrapper">
+                                <span className="p-message-icon pi pi-info-circle"></span>
+                                <div className="p-message-text">
+                                    Status ini akan digunakan untuk siswa yang presensi tepat waktu, nama disesuaikan dengan aturan ini.
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
                 <div className="field">
                     <label htmlFor="status_name">Nama Status <span className='text-red-600'>*</span></label>
                     <InputText

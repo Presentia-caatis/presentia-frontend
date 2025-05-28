@@ -17,12 +17,12 @@ const UserSupportDetailPage = () => {
     const [messages, setMessages] = useState<TicketMessage[]>([
         {
             sender: 'Operator',
-            content: 'Halo MUHAMMAD ZAKY,\n\nBaik, apabila sudah lakukan verifikasi, harap Anda tunggu dan cek secara berkala sehingga domain akan aktif kembali nantinya.',
+            content: 'Halo,\n\nBaik, apabila sudah lakukan verifikasi, harap Anda tunggu dan cek secara berkala sehingga sekolah akan aktif kembali nantinya.',
             attachments: [],
         },
         {
             sender: 'Owner',
-            content: 'Halo MUHAMMAD ZAKY,\n\nBaik, apabila sudah lakukan verifikasi, harap Anda tunggu dan cek secara berkala sehingga domain akan aktif kembali nantinya.',
+            content: 'Halo,\n\nBaik, Terimakasih banyak',
             attachments: [],
         },
     ]);
@@ -72,10 +72,10 @@ const UserSupportDetailPage = () => {
             <div className="mb-4">
                 <h5>Detail Tiket</h5>
                 <p>
-                    <strong>Status:</strong> <Tag value="Open" severity="success" />{' '}
+                    <strong>Status:</strong> <Tag value="Dibuka" severity="success" />{' '}
                 </p>
                 <p>
-                    <strong>Prioritas:</strong> <Tag value="High" severity="danger" />
+                    <strong>Prioritas:</strong> <Tag value="Tinggi" severity="danger" />
                 </p>
             </div>
 
@@ -83,42 +83,42 @@ const UserSupportDetailPage = () => {
 
             {isReplyFormVisible && (
                 <div className="mb-4 card">
-                    <h4>Reply</h4>
+                    <h4>Jawab</h4>
                     <div className="p-fluid grid">
                         <div className="col-6">
-                            <label htmlFor="name">Name</label>
+                            <label htmlFor="name">Nama</label>
                             <input
                                 type="text"
                                 id="name"
-                                value="MUHAMMAD ZAKY FATHURAHIM"
+                                value="nama"
                                 readOnly
                                 className="p-inputtext w-full"
                             />
                         </div>
                         <div className="col-6">
-                            <label htmlFor="email">Email Address</label>
+                            <label htmlFor="email">Alamat Email</label>
                             <input
                                 type="text"
                                 id="email"
-                                value="mzaky5503@gmail.com"
+                                value="emailsekolah@gmail.com"
                                 readOnly
                                 className="p-inputtext w-full"
                             />
                         </div>
                     </div>
                     <div className="mt-3">
-                        <label htmlFor="message">Message</label>
+                        <label htmlFor="message">Pesan</label>
                         <InputTextarea
                             id="message"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             rows={4}
-                            placeholder="Write your message here..."
+                            placeholder="Tulis pesan disini..."
                             className="w-full"
                         />
                     </div>
                     <div className="mt-3">
-                        <label htmlFor="attachments">Attachments</label>
+                        <label htmlFor="attachments">Dokument Dukungan</label>
                         <FileUpload
                             name="attachments"
                             mode="advanced"
@@ -153,12 +153,12 @@ const UserSupportDetailPage = () => {
             {!isReplyFormVisible && (
                 <div className="flex justify-content-end mb-4 gap-2">
                     <Button
-                        label="Reply"
+                        label="Jawab"
                         icon="pi pi-reply"
                         className="p-button-primary"
                         onClick={() => setReplyFormVisible(true)}
                     />
-                    <Button label="Close" icon="pi pi-times" className="p-button-danger" />
+                    <Button label="Tutup" icon="pi pi-times" className="p-button-danger" />
                 </div>
             )}
 

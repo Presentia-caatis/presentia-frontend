@@ -48,7 +48,11 @@ const SchoolTopbar = () => {
 
     const handleLogoutSchool = async () => {
         localStorage.removeItem('admsjs_token');
-        navigate('/user/dashboard');
+        if (user?.roles.includes('super_admin')) {
+            navigate('/admin/mainpage');
+        } else {
+            navigate('/user/dashboard');
+        }
     }
 
     const handleToggleMenu = () => {
@@ -101,11 +105,19 @@ const SchoolTopbar = () => {
                             {user?.fullname || 'Loading...'}
                         </div>
                         <div className='text-left md:text-right'>
-                            <Tag>Admin</Tag>
+                            <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] || 'Loading'}</Tag>
                         </div>
                     </div>
                     <div className=''>
-                        <Avatar shape="circle" className='border border-1' size='large' image={user?.profile_image_path || defaultProfileUser}></Avatar>
+                        <img
+                            loading="lazy"
+                            src={user?.profile_image_path || defaultProfileUser}
+                            alt=""
+                            className='w-4rem h-4rem border-circle border-3'
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = defaultProfileUser;
+                            }}
+                        />
                     </div>
                     <div className='my-auto'>
                         <i

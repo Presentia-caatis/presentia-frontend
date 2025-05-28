@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useLayoutConfig } from '../context/LayoutConfigContext';
 import LayoutConfigSidebar from '../components/LayoutConfigSidebar';
 import UserSideBar from '../components/user/UserSideBar';
 import UserFooter from '../components/user/UserFooter';
 import UserTopBar from '../components/user/UserTopBar';
 import { Helmet } from 'react-helmet';
+import { useAuth } from '../context/AuthContext';
+import AdminSideBar from '../components/admin/AdminSideBar';
 
 const UserLayout = () => {
     const { darkMode } = useLayoutConfig();
@@ -18,6 +20,19 @@ const UserLayout = () => {
             darkMode ? 'layout-theme-dark' : 'layout-theme-light'
         );
     }, [darkMode]);
+
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user?.roles.includes('super_admin')) {
+            const currentPath = location.pathname;
+            if (!currentPath.includes('/user/profile')) {
+                navigate('*', { replace: true });
+            }
+        }
+    }, [user, navigate, location]);
+
 
     const getTitle = () => {
         switch (location.pathname) {
@@ -42,9 +57,14 @@ const UserLayout = () => {
                 <title>{getTitle()}</title>
             </Helmet>
             <UserTopBar />
-            <div className="layout-sidebar">
-                <UserSideBar />
-            </div>
+            {user?.roles.includes('super_admin') ? <div className="layout-sidebar">
+                <AdminSideBar />
+            </div> : (
+                <div className="layout-sidebar">
+                    <UserSideBar />
+                </div>
+            )}
+
             <div className="layout-main-container">
                 <div className="layout-main">
                     <Outlet />

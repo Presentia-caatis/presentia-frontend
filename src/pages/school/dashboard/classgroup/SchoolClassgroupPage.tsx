@@ -15,6 +15,8 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import studentService from '../../../../services/studentService';
 import { Dropdown } from 'primereact/dropdown';
 import { Skeleton } from 'primereact/skeleton';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
+import { useAuth } from '../../../../context/AuthContext';
 
 type ClassgroupData = {
     id?: number;
@@ -40,6 +42,7 @@ const SchoolClassgroupPage = () => {
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [studentLoading, setStudentLoading] = useState(false);
     const { school } = useSchool();
+    const { user } = useAuth();
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
@@ -372,16 +375,19 @@ const SchoolClassgroupPage = () => {
             <ConfirmPopup />
             <div className="card">
                 <h1>Daftar Kelas {school ? school.name : "Loading"}</h1>
-                <div className="flex justify-content-between p-4 card">
-                    <div className="flex gap-2">
-                        <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
-                        <Button icon="pi pi-trash" loading={deleteLoading} severity="danger" label="Hapus" disabled={!selectedClassgroups?.length} onClick={(e) => {
-                            confirmDeleteClassgroup(e)
-                        }} />
-                    </div>
-                    {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
-                </div>
-
+                {
+                    hasAnyPermission(user, ['basic_school']) && (
+                        <div className="flex justify-content-between p-4 card">
+                            <div className="flex gap-2">
+                                <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
+                                <Button icon="pi pi-trash" loading={deleteLoading} severity="danger" label="Hapus" disabled={!selectedClassgroups?.length} onClick={(e) => {
+                                    confirmDeleteClassgroup(e)
+                                }} />
+                            </div>
+                            {/* <Button icon="pi pi-upload" severity="help" label="Export" /> */}
+                        </div>
+                    )
+                }
                 <DataTable
                     dataKey="id"
                     selection={selectedClassgroups!}
@@ -449,22 +455,30 @@ const SchoolClassgroupPage = () => {
                                     disabled={deleteLoading}
                                     onClick={() => openStudentDialog(rowData)}
                                 />
-                                <Button
-                                    icon="pi pi-pencil"
-                                    className="p-button-success p-button-rounded"
-                                    tooltip="Perbarui"
-                                    disabled={deleteLoading}
-                                    tooltipOptions={{ position: 'top' }}
-                                    onClick={() => { setShowEditDialog(true); setTempClassgroupData(rowData); setClassgroupData(rowData); }}
-                                />
-                                <Button
-                                    icon="pi pi-trash"
-                                    className="p-button-danger p-button-rounded"
-                                    tooltip="Hapus"
-                                    tooltipOptions={{ position: 'top' }}
-                                    loading={deleteLoading}
-                                    onClick={(e) => confirmDeleteClassgroup(e, rowData)}
-                                />
+                                {
+                                    hasAnyPermission(user, ['basic_school']) && (
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            className="p-button-success p-button-rounded"
+                                            tooltip="Perbarui"
+                                            disabled={deleteLoading}
+                                            tooltipOptions={{ position: 'top' }}
+                                            onClick={() => { setShowEditDialog(true); setTempClassgroupData(rowData); setClassgroupData(rowData); }}
+                                        />
+                                    )
+                                }
+                                {
+                                    hasAnyPermission(user, ['basic_school']) && (
+                                        <Button
+                                            icon="pi pi-trash"
+                                            className="p-button-danger p-button-rounded"
+                                            tooltip="Hapus"
+                                            tooltipOptions={{ position: 'top' }}
+                                            loading={deleteLoading}
+                                            onClick={(e) => confirmDeleteClassgroup(e, rowData)}
+                                        />
+                                    )
+                                }
                             </div>
                         )}
                     />

@@ -4,7 +4,7 @@ export interface ManualAttendancePayload {
     attendance_window_id: number;
     student_id: number;
     absence_permit_id?: number | null;
-    check_in_time?: string | null; // format: 'YYYY-MM-DD HH:mm:ss'
+    check_in_time?: string | null;
     check_out_time?: string | null;
     check_out_status_id?: number | null;
     check_in_status_id?: number | null;
@@ -39,7 +39,6 @@ class AttendanceService {
             throw error?.response?.data || error;
         }
     }
-
 
     async exportAttendance(params = {}) {
         try {

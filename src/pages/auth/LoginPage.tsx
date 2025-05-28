@@ -39,8 +39,12 @@ const LoginPage = () => {
     useEffect(() => {
         const authenticate = async () => {
             const isAuth = await checkAuth();
-            if (isAuth) {
-                navigate('/user/dashboard');
+            if (isAuth.success) {
+                if (isAuth.user!.roles.includes("super_admin")) {
+                    navigate('/admin/mainpage');
+                } else {
+                    navigate('/user/dashboard');
+                }
             }
             setIsLoggedIn(false);
         };
@@ -72,7 +76,12 @@ const LoginPage = () => {
                         const response = await authServices.getProfile();
                         setAuth(response.data, token);
                         callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
-                        navigate('/user/dashboard');
+
+                        if (response.data.roles && response.data.roles.includes("super_admin")) {
+                            navigate('/admin/mainpage');
+                        } else {
+                            navigate('/user/dashboard');
+                        }
                     } catch (error) {
                         callToast(showToast, 'error', 'Error', 'Failed to fetch user profile');
                     }
@@ -103,12 +112,17 @@ const LoginPage = () => {
         try {
             const { responseData, status } = await authServices.login(data);
             if (status !== "failed") {
-                const { token, user } = responseData;
+                const { token } = responseData;
                 localStorage.setItem('token', token);
-                setAuth(user, token);
+                const userProfile = await authServices.getProfile();
+                setAuth(userProfile.data, token);
 
                 callToast(showToast, 'success', 'Login Berhasil', 'Sekarang kamu sudah masuk ke dalam aplikasi');
-                navigate('/user/dashboard');
+                if (userProfile.data.roles && userProfile.data.roles.includes("super_admin")) {
+                    navigate('/admin/mainpage');
+                } else {
+                    navigate('/user/dashboard');
+                }
             } else {
                 callToast(showToast, 'error', 'Login Gagal', 'Akun tidak ditemukan atau password salah');
             }

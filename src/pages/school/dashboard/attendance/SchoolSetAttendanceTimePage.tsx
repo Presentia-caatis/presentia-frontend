@@ -11,6 +11,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { parseToDate } from '../../../../utils/formatTime';
 import { Dialog } from 'primereact/dialog';
 import { Skeleton } from 'primereact/skeleton';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 const SchoolSetAttendanceTimePage = () => {
     const [entryStartTime, setEntryStartTime] = useState<Date | null>(null);
@@ -61,18 +62,13 @@ const SchoolSetAttendanceTimePage = () => {
 
         return valid;
     };
-
     const getDefaultAttendance = async () => {
         if (!user?.school_id) return;
 
-        const dataType = {
-            type: 'default' as const,
-        };
-
         try {
             setLoading(true);
-            const response = await attendanceScheduleService.showScheduleByType(dataType);
-            const schedule = response?.data.data?.[0];
+            const response = await attendanceScheduleService.getSchedule('default');
+            const schedule = response?.data.data?.data?.[0];
 
             if (schedule) {
                 setEntryStartTime(parseToDate(schedule.check_in_start_time));
@@ -95,6 +91,7 @@ const SchoolSetAttendanceTimePage = () => {
             setLoading(false);
         }
     };
+
 
 
     useEffect(() => {
@@ -251,29 +248,37 @@ const SchoolSetAttendanceTimePage = () => {
                         <h5>Terakhir diperbarui</h5>
                         {loading ? <Skeleton width="15rem" height="2rem" /> : <Calendar value={lastUpdated} disabled showTime />}
                     </div>
-                    <Divider />
+                    {
+                        hasAnyPermission(user, ['manage_schools']) && (
+                            <Divider />
+                        )
+                    }
                 </div>
-                <div className="p-d-flex p-ai-center">
-                    <Button label="Reset" icon="pi pi-refresh" disabled={
-                        !initialData ||
-                        (entryStartTime?.getTime() === initialData.entryStartTime?.getTime() &&
-                            entryEndTime?.getTime() === initialData.entryEndTime?.getTime() &&
-                            exitStartTime?.getTime() === initialData.exitStartTime?.getTime() &&
-                            exitEndTime?.getTime() === initialData.exitEndTime?.getTime())
-                    } onClick={resetForm} className="mr-2" />
-                    <Button
-                        label="Save"
-                        icon="pi pi-save"
-                        disabled={
-                            !initialData ||
-                            (entryStartTime?.getTime() === initialData.entryStartTime?.getTime() &&
-                                entryEndTime?.getTime() === initialData.entryEndTime?.getTime() &&
-                                exitStartTime?.getTime() === initialData.exitStartTime?.getTime() &&
-                                exitEndTime?.getTime() === initialData.exitEndTime?.getTime())
-                        }
-                        onClick={confirmSave}
-                    />
-                </div>
+                {
+                    hasAnyPermission(user, ['manage_schools']) && (
+                        <div className="p-d-flex p-ai-center">
+                            <Button label="Reset" icon="pi pi-refresh" disabled={
+                                !initialData ||
+                                (entryStartTime?.getTime() === initialData.entryStartTime?.getTime() &&
+                                    entryEndTime?.getTime() === initialData.entryEndTime?.getTime() &&
+                                    exitStartTime?.getTime() === initialData.exitStartTime?.getTime() &&
+                                    exitEndTime?.getTime() === initialData.exitEndTime?.getTime())
+                            } onClick={resetForm} className="mr-2" />
+                            <Button
+                                label="Save"
+                                icon="pi pi-save"
+                                disabled={
+                                    !initialData ||
+                                    (entryStartTime?.getTime() === initialData.entryStartTime?.getTime() &&
+                                        entryEndTime?.getTime() === initialData.entryEndTime?.getTime() &&
+                                        exitStartTime?.getTime() === initialData.exitStartTime?.getTime() &&
+                                        exitEndTime?.getTime() === initialData.exitEndTime?.getTime())
+                                }
+                                onClick={confirmSave}
+                            />
+                        </div>
+                    )
+                }
                 <Dialog
                     visible={confirmDialogVisible}
                     style={{ width: '450px' }}

@@ -29,6 +29,14 @@ const PublicTopbar = () => {
         });
     }
 
+    const handlePresentiaClick = () => {
+        if (user?.roles.includes('super_admin')) {
+            navigate('/admin/mainpage');
+        } else {
+            navigate('/user/dashboard');
+        }
+    };
+
     const handleLogout = async () => {
         try {
             callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
@@ -73,12 +81,14 @@ const PublicTopbar = () => {
                 <div
                     className="relative flex align-items-center"
                     onMouseEnter={() => setHovered(true)}
+                    onMouseLeave={() => setHovered(false)}
                 >
-                    <Link
-                        to="/user/dashboard"
-                        className="border-primary border-1 py-2 px-4 border-round-lg text-primary w-11rem flex justify-content-center align-items-center"
+                    <Button
+                        link
+                        onClick={handlePresentiaClick}
+                        className=" border-primary border-1 py-2 px-4 border-round-lg text-primary w-11rem flex justify-content-center align-items-center"
                     >
-                        My Presentia{' '}
+                        My Presentia
                         {hovered && (
                             <div>
                                 <i
@@ -87,7 +97,7 @@ const PublicTopbar = () => {
                                 ></i>
                             </div>
                         )}
-                    </Link>
+                    </Button>
 
                     {hovered && (
                         <div
@@ -98,23 +108,23 @@ const PublicTopbar = () => {
                                 top: '100%',
                                 zIndex: 10,
                             }}
-                            onMouseLeave={() => setHovered(false)}
                         >
                             <div className="flex flex-column">
                                 <div className="white-space-nowrap">
                                     Anda login sebagai:
                                 </div>
                                 <b>{userEmail}</b>
-                                <Button
+                                {/* <Button
                                     label="Logout"
                                     className="p-button-danger p-button-sm mt-2 w-full"
                                     onClick={handleLogout}
                                     loading={loading}
-                                />
+                                /> */}
                             </div>
                         </div>
                     )}
                 </div>
+
             )}
         </div>
     );

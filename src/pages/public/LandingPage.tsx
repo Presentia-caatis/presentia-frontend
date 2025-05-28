@@ -2,6 +2,7 @@ import { Button } from "primereact/button"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../context/AuthContext";
 import { useEffect } from "react";
+import landingPageBackground from "../../../src/assets/landingPageBg.png";
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -10,6 +11,14 @@ const LandingPage = () => {
     useEffect(() => {
         checkAuth();
     }, []);
+
+    const handlePresentiaClick = () => {
+        if (user?.roles.includes('super_admin')) {
+            navigate('/admin/mainpage');
+        } else {
+            navigate('/user/dashboard');
+        }
+    };
 
     return (
         <div>
@@ -25,7 +34,7 @@ const LandingPage = () => {
                                     label="Dashboard"
                                     type="button"
                                     className="mr-3"
-                                    onClick={() => navigate('/user/dashboard')}
+                                    onClick={handlePresentiaClick}
                                     raised
                                 />
                             </div>
@@ -51,7 +60,7 @@ const LandingPage = () => {
                     </section>
                 </div>
                 <div className="col-12 md:col-6 overflow-hidden">
-                    <img src="https://www.menit.co.id/wp-content/uploads/2022/06/Telkom-University-Bandung.jpg" alt="hero-1" className="md:ml-auto block md:h-full" style={{ clipPath: 'polygon(8% 0, 100% 0%, 100% 100%, 0 100%)' }} />
+                    <img src={landingPageBackground} alt="hero-1" className="h-30rem w-full" style={{ clipPath: 'polygon(8% 0, 100% 0%, 100% 100%, 0 100%)' }} />
                 </div>
             </div>
 
@@ -96,7 +105,7 @@ const LandingPage = () => {
             <br />
 
             <div className="surface-0 px-4 py-8 md:px-6 lg:px-8">
-                <div className="text-900 font-bold text-6xl mb-4 text-center">Pricing Plans</div>
+                <div className="text-900 font-bold text-6xl mb-4 text-center">Paket Langganan</div>
                 <div className="text-700 text-xl mb-6 text-center line-height-3">
                     Pilih paket yang sesuai dengan kebutuhan sekolah Anda. Setiap paket menawarkan fitur berbeda untuk kemudahan dalam manajemen presensi.
                 </div>
@@ -124,7 +133,7 @@ const LandingPage = () => {
                                     </li>
                                 </ul>
                                 <hr className="mb-3 mx-0 border-top-1 border-bottom-none border-300 mt-auto" />
-                                <Button label="Buy Now" className="p-3 w-full mt-auto" />
+                                {/* <Button label="Buy Now" className="p-3 w-full mt-auto" /> */}
                             </div>
                         </div>
                     </div>
@@ -143,7 +152,7 @@ const LandingPage = () => {
                                 <ul className="list-none p-0 m-0 flex-grow-1">
                                     <li className="flex align-items-center mb-3">
                                         <i className="pi pi-check-circle text-green-500 mr-2"></i>
-                                        <span className="text-900">Presensi dengan Face Recognition</span>
+                                        <span className="text-900">Presensi dengan RFID tap</span>
                                     </li>
                                     <li className="flex align-items-center mb-3">
                                         <i className="pi pi-check-circle text-green-500 mr-2"></i>
@@ -151,11 +160,15 @@ const LandingPage = () => {
                                     </li>
                                     <li className="flex align-items-center mb-3">
                                         <i className="pi pi-check-circle text-green-500 mr-2"></i>
-                                        <span className="text-900">Akses API untuk integrasi</span>
+                                        <span className="text-900">Dukungan pelanggan 24/7</span>
+                                    </li>
+                                    <li className="flex align-items-center mb-3">
+                                        <i className="pi pi-check-circle text-green-500 mr-2"></i>
+                                        <span className="text-900">Fitur paket basic</span>
                                     </li>
                                 </ul>
                                 <hr className="mb-3 mx-0 border-top-1 border-bottom-none border-300" />
-                                <Button label="Buy Now" className="p-3 w-full" />
+                                {/* <Button label="Buy Now" className="p-3 w-full" /> */}
                             </div>
                         </div>
                     </div>
@@ -174,7 +187,7 @@ const LandingPage = () => {
                                 <ul className="list-none p-0 m-0 flex-grow-1">
                                     <li className="flex align-items-center mb-3">
                                         <i className="pi pi-check-circle text-green-500 mr-2"></i>
-                                        <span className="text-900">Presensi dengan NFC/RFID tap</span>
+                                        <span className="text-900">Presensi dengan Face Recognition</span>
                                     </li>
                                     <li className="flex align-items-center mb-3">
                                         <i className="pi pi-check-circle text-green-500 mr-2"></i>
@@ -186,11 +199,11 @@ const LandingPage = () => {
                                     </li>
                                     <li className="flex align-items-center mb-3">
                                         <i className="pi pi-check-circle text-green-500 mr-2"></i>
-                                        <span className="text-900">Dukungan pelanggan 24/7</span>
+                                        <span className="text-900">Fitur paket premium</span>
                                     </li>
                                 </ul>
                                 <hr className="mb-3 mx-0 border-top-1 border-bottom-none border-300" />
-                                <Button label="Buy Now" className="p-3 w-full" outlined />
+                                {/* <Button label="Buy Now" className="p-3 w-full" outlined /> */}
                             </div>
                         </div>
                     </div>

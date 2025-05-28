@@ -115,7 +115,7 @@ const FingerprintPage = () => {
     useEffect(() => {
         const validateAuth = async () => {
             const isAuthenticated = await checkAuth();
-            if (!isAuthenticated) {
+            if (!isAuthenticated.success) {
                 handleLogout();
             }
         };

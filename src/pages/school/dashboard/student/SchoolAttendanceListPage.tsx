@@ -59,11 +59,10 @@ const SchoolStudentAttendanceListPage = () => {
     const fetchDefaultAttendanceSchedule = async () => {
         if (!user?.school_id) return;
 
-        const dataType = { type: 'default' as const };
         setLoadingSchedule(true);
         try {
-            const response = await attendanceScheduleService.showScheduleByType(dataType);
-            const schedule = response?.data?.data?.[0];
+            const response = await attendanceScheduleService.getSchedule('default')
+            const schedule = response?.data?.data?.data?.[0];
 
             if (schedule) {
                 setEntryStartTime(parseToDate(schedule.check_in_start_time));

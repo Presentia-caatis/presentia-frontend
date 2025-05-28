@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import authServices from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../layout/ToastContext';
 import { resetSchool } from '../utils/schoolUtils';
+import { setAuthUserGetter } from '../utils/authHelper';
 
-interface User {
+export interface User {
     id: number;
     school_id: number | null;
     email: string;
@@ -14,6 +15,8 @@ interface User {
     google_id: string | null;
     email_verified_at: string | null;
     profile_image_path: string;
+    permissions: string[];
+    roles: string[];
     created_at: string;
     updated_at: string;
 }
@@ -22,8 +25,8 @@ interface AuthContextProps {
     user: User | null;
     token: string | null;
     setAuth: (user: User, token: string) => void;
-    updateUser: (updatedUser: User) => void;
-    checkAuth: () => Promise<boolean>;
+    updateUser: (updatedUser: Partial<User>) => void;
+    checkAuth: () => Promise<{ success: boolean; user?: User }>;
     logout: () => void;
 }
 
@@ -52,13 +55,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const navigate = useNavigate();
 
-    const updateUser = (updatedUser: User) => {
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+    const updateUser = (updatedFields: Partial<User>) => {
+        setUser((prevUser) => {
+            if (!prevUser) return null;
+            const updatedUser = { ...prevUser, ...updatedFields };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
     };
+
+
 
     const setAuth = (user: User, token: string) => {
         try {
+            const previousUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (user.roles.includes('super_admin') && previousUser.school_id) {
+                user.school_id = previousUser.school_id;
+            }
+
             localStorage.setItem('user', JSON.stringify(user));
             localStorage.setItem('token', token);
             setUser(user);
@@ -68,7 +83,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const checkAuth = async (): Promise<boolean> => {
+
+    const checkAuth = async (): Promise<{ success: boolean; user?: User }> => {
         const storedToken = localStorage.getItem("token");
         if (storedToken) {
             try {
@@ -77,19 +93,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 if (response.data && response.status === "success") {
                     const user = response.data;
                     setAuth(user, storedToken);
-                    return true;
+                    return { success: true, user };
                 }
             } catch (error) {
                 console.error("Authentication failed:", error);
                 logout();
-                return false;
+                return { success: false };
             }
         } else {
             localStorage.clear();
-            return false;
+            return { success: false };
         }
-        return false;
+
+        return { success: false };
     };
+
 
     const logout = async () => {
         try {
@@ -109,6 +127,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         }
     };
+
+    useEffect(() => {
+        setAuthUserGetter(() => {
+            if (!user) return null;
+            return {
+                school_id: user.school_id,
+                roles: user.roles,
+            };
+        });
+    }, [user]);
+
 
 
     return (

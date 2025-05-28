@@ -22,12 +22,12 @@ const UserSideBar = () => {
                 //     command: () => navigate('/user/dashboard/billing'),
                 //     className: currentPath === '/user/dashboard/billing' ? 'active-route' : 'menu-item'
                 // },
-                // {
-                //     label: 'Support',
-                //     icon: 'pi pi-fw pi-headphones',
-                //     command: () => navigate('/user/dashboard/support'),
-                //     className: currentPath === '/user/dashboard/support' ? 'active-route' : 'menu-item'
-                // }
+                {
+                    label: 'Bantuan',
+                    icon: 'pi pi-fw pi-headphones',
+                    command: () => navigate('/user/dashboard/support'),
+                    className: currentPath === '/user/dashboard/support' ? 'active-route' : 'menu-item'
+                }
             ]
         },
     ];

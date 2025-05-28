@@ -50,15 +50,13 @@ const UserTopBar = () => {
             icon: 'pi pi-user',
             action: () => navigate('/user/profile'),
         },
-        ...(school
+        ...(school && !user?.roles.includes('super_admin')
             ? [
                 {
                     label: 'Profile Sekolah',
                     icon: 'pi pi-graduation-cap',
                     action: () => {
-                        if (school) {
-                            navigate(`/school/${formatSchoolName(school.name)}/profile`);
-                        }
+                        navigate(`/school/${formatSchoolName(school.name)}/profile`);
                     },
                 },
             ]
@@ -69,6 +67,9 @@ const UserTopBar = () => {
             action: handleLogout,
         },
     ];
+
+
+
 
     const handleToggleMenu = () => {
         setProfileOpen((prev) => !prev);
@@ -107,7 +108,16 @@ const UserTopBar = () => {
                     {user?.fullname || 'Loading...'}
                 </div>
                 <div className=''>
-                    <Avatar shape="circle" className='border border-1' size='large' image={user?.profile_image_path || defaultProfileUser}></Avatar>
+                    <img
+                        loading="lazy"
+                        src={user?.profile_image_path || defaultProfileUser}
+                        alt=""
+                        className='w-4rem h-4rem border-circle border-3'
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = defaultProfileUser;
+                        }}
+                    />
+
                 </div>
                 <div className='my-auto'>
                     <i

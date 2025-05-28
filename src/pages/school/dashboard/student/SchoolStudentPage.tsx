@@ -18,6 +18,7 @@ import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { FilterMatchMode } from 'primereact/api';
 import { FileUpload } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 
 type StudentData = {
@@ -500,23 +501,25 @@ const SchoolStudentPage = () => {
             <ConfirmPopup />
             <div className="card">
                 <h1>Daftar Siswa {school?.name ?? 'Loading...'}</h1>
-                <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
-                    <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
-                        <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
-                            setShowAddDialog(true);
-                        }} />
-                        <Button
-                            icon="pi pi-upload"
-                            severity="info"
-                            label="Import"
-                            onClick={() => setShowImportDialog(true)}
-                        />
-                        <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
+                {hasAnyPermission(user, ['manage_students']) && (
+                    <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
+                        <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
+                            <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
+                                setShowAddDialog(true);
+                            }} />
+                            <Button
+                                icon="pi pi-upload"
+                                severity="info"
+                                label="Import"
+                                onClick={() => setShowImportDialog(true)}
+                            />
+                            <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
+                        </div>
+                        <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
+                            handleExport();
+                        }} label='Export' />
                     </div>
-                    <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
-                        handleExport();
-                    }} label='Export' />
-                </div>
+                )}
 
                 <DataTable
                     dataKey="id"
@@ -639,7 +642,6 @@ const SchoolStudentPage = () => {
                         filterElement={dropdownFilterTemplate("is_active", listStatus)}
                         showFilterMenu={false}
                     />
-
                     <Column
                         body={(rowData) =>
                             loading ? (
@@ -647,7 +649,7 @@ const SchoolStudentPage = () => {
                                     <Skeleton width="2rem" height="2rem" shape="circle" />
                                     <Skeleton width="2rem" height="2rem" shape="circle" />
                                 </div>
-                            ) : (
+                            ) : hasAnyPermission(user, ["manage_students"]) ? (
                                 <div className="flex gap-2">
                                     <Button
                                         icon="pi pi-pencil"
@@ -657,7 +659,6 @@ const SchoolStudentPage = () => {
                                         onClick={() => {
                                             setTempEditStudentData(rowData);
                                             setEditStudentData(rowData);
-                                            console.log(rowData);
                                             setShowEditDialog(true);
                                         }}
                                     />
@@ -669,7 +670,7 @@ const SchoolStudentPage = () => {
                                         onClick={(e) => confirmDeleteStudent(e, rowData.id)}
                                     />
                                 </div>
-                            )
+                            ) : null
                         }
                     />
                 </DataTable>

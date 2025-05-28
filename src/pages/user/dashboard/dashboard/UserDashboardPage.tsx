@@ -202,18 +202,7 @@ const UserDashboardPage = () => {
                                 className="p-button p-button-success"
                                 onClick={handleAttendanceIn}
                             />
-                            {/* <Button
-                                    label="Absen Masuk"
-                                    icon="pi pi-sign-in"
-                                    className="p-button p-button-success"
-                                    onClick={handleAttendanceIn}
-                                />
-                                <Button
-                                    label="Absen Keluar"
-                                    icon="pi pi-sign-out"
-                                    className="p-button p-button-warning"
-                                    onClick={handleAttendanceOut}
-                                /> */}
+
                         </div>
                     </Panel>
                 ) : <Card className='shadow-1' title="Selamat Datang di Presentia">

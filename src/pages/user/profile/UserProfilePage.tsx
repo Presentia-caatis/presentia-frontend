@@ -81,7 +81,7 @@ const UserProfilePage = () => {
                 if (formData.has('fullname') || formData.has('username') || formData.has('email') ||
                     formData.has('password') || formData.has('profile_image') || formData.has('remove_image')) {
 
-                    const { responseData } = await userService.updateUser(user.id, formData);
+                    const { responseData } = await userService.updateUser(formData);
 
                     if (responseData.status === "success") {
                         updateUser(responseData.data);
