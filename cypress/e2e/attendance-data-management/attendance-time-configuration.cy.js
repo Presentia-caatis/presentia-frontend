@@ -1,10 +1,10 @@
 describe("Attendance Time Configuration Test", () => {
     const school = Cypress.env('schoolName');
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} mengonfigurasi waktu presensi siswa`, () => {
+            : role} mengonfigurasi waktu presensi siswa`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

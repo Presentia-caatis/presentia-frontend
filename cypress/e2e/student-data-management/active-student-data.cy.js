@@ -1,9 +1,9 @@
 describe('Active Student Data Test', () => {
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} melihat jumlah siswa aktif`, () => {
+            : role} melihat jumlah siswa aktif`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

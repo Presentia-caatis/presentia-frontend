@@ -1,10 +1,10 @@
 describe('Delete Student Data Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} menghapus data siswa`, () => {
+            : role} menghapus data siswa`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

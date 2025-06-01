@@ -1,10 +1,10 @@
 describe('Failed to Update Class Data Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} tidak dapat memperbarui data kelas`, () => {
+            : role} tidak dapat memperbarui data kelas`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

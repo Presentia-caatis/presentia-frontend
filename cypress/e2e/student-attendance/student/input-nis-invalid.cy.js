@@ -1,9 +1,9 @@
 describe('Input NIS Valid Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
-        it(`Cek perilaku ${role === 'superadmin' ? 'siswa'
+        it(`Cek perilaku ${role === 'admin' ? 'siswa'
             : role} melakukan presensi dengan input NIS yang valid`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");

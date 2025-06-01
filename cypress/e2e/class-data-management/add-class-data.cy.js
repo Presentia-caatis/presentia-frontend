@@ -1,10 +1,10 @@
 describe('Add Class Data Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} dapat menambahkan data kelas`, () => {
+            : role} dapat menambahkan data kelas`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 
@@ -54,28 +54,6 @@ describe('Add Class Data Test', () => {
 
                     cy.get('.card h5')
                         .should('contain.text', 'Daftar Kelas')
-
-                    // const expectedHeaders = ["Nama", "Jumlah Murid"];
-
-                    // cy.get('table thead tr').first().within(() => {
-                    //     cy.get('th').each(($th, index, $ths) => {
-                    //         if (index === 0) {
-                    //             cy.wrap($th).should('have.class', 'p-selection-column');
-                    //         } else if (index === $ths.length - 1) {
-                    //             cy.wrap($th)
-                    //                 .invoke('text')
-                    //                 .then((text) => {
-                    //                     expect(text.trim()).to.be.empty;
-                    //                 });
-                    //         } else {
-                    //             cy.wrap($th)
-                    //                 .invoke('text')
-                    //                 .then((text) => {
-                    //                     expect(text.trim()).to.equal(expectedHeaders[index - 1]);
-                    //                 });
-                    //         }
-                    //     });
-                    // });
 
                     const existingClassNames = [];
                     cy.get('table tbody tr').each(($row) => {

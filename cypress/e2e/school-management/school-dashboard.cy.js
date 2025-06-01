@@ -70,25 +70,7 @@ describe('School Dashboard Page Test', () => {
                                 });
                         }
                     });
-
-                    // cy.contains('h5', 'Data Kehadiran Hari Ini').should('be.visible');
-                    // cy.get('.p-carousel-item:visible')
-                    //     .should('have.length.greaterThan', 0)
-                    //     .each(($item) => {
-                    //         cy.wrap($item).within(() => {
-                    //             cy.contains(/Total Hadir|Tidak Hadir|Tepat Waktu|Telat|On Time|Late|Absent/)
-                    //                 .scrollIntoView({ block: 'center', inline: 'center' })
-                    //                 .should('exist');
-
-                    //             cy.get('div.text-900.font-bold')
-                    //                 .scrollIntoView({ block: 'center', inline: 'center' })
-                    //                 .invoke('text')
-                    //                 .then((text) => {
-                    //                     expect(text.trim()).to.match(/^\d+$/);
-                    //                 });
-                    //         });
-                    //     });
-
+                    
                     const studentAttendanceChart = [
                         { title: 'Perbandingan Kehadiran Hari Ini', noDataText: 'Tidak Ada Kehadiran Hari Ini' },
                         { title: 'Statistik Kehadiran Harian', noDataText: 'Tidak Ada Data Kehadiran' },

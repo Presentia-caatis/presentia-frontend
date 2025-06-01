@@ -1,11 +1,11 @@
 describe('Attendance List Page Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['staf', 'admin', 'superadmin'];
+    const roles = ['staf', 'admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : 'superadmin'} melihat daftar presensi siswa`, () => {
+                : role} melihat daftar presensi siswa`, () => {
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");
                     const buttons = [

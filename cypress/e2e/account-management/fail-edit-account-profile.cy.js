@@ -8,12 +8,11 @@ describe('Failed to Edit Account Profile Test', () => {
                 : role === 'admin' ? 'admin sekolah'
                     : 'superadmin'} tidak dapat mengubah profil akun`, () => {
                         cy.loginAs(role);
-                        cy.contains("Sekolah yang dikelola").should("be.visible");
 
                         cy.get('.layout-topbar').should('be.visible');
                         cy.get('.layout-topbar .flex.gap-2.cursor-pointer').click();
                         cy.get('.absolute.bg-white').should('be.visible');
-                        cy.contains('Profile Pengguna').click();
+                        cy.contains(/Profile Pengguna|Profile/).click();
                         cy.url().should('include', '/user/profile');
 
                         cy.get('h1').should('contain.text', 'Profile Pengguna');

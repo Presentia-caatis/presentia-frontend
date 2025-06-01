@@ -1,18 +1,35 @@
-describe('Failed to Edit Account Password Test', () => {
+describe('Edit Account Password Test', () => {
     const roles = ['general_user', 'staf', 'admin', 'superadmin',];
+
+    const getCredentialForRole = (role, type) => {
+        const roleUpper = role.toUpperCase();
+        const flatEnvKey = `${roleUpper}_${type.toUpperCase()}`;
+
+        const users = Cypress.env('users');
+        if (users && users[role] && users[role][type]) {
+            return users[role][type];
+        }
+
+        const fromFlat = Cypress.env(flatEnvKey);
+        if (fromFlat) {
+            return fromFlat;
+        }
+        throw new Error(`Data ${type} untuk role '${role}' tidak ditemukan di cypress.env.json maupun GitHub Actions`);
+    };
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'general_user' ? 'pengguna umum'
             : role === 'staf' ? 'staf sekolah'
                 : role === 'admin' ? 'admin sekolah'
-                    : 'superadmin'} tidak dapat mengubah password akun`, () => {
-                        cy.loginAs(role);
-                        cy.contains("Sekolah yang dikelola").should("be.visible");
+                    : 'superadmin'} tidak dapat mengubah password akun`, function () {
+                        const oldPassword = getCredentialForRole(role, 'password');
+                        const newPassword = 'PasswordBaru';
 
+                        cy.loginAs(role);
                         cy.get('.layout-topbar').should('be.visible');
                         cy.get('.layout-topbar .flex.gap-2.cursor-pointer').click();
                         cy.get('.absolute.bg-white').should('be.visible');
-                        cy.contains('Profile Pengguna').click();
+                        cy.contains(/Profile Pengguna|Profile/).click();
                         cy.url().should('include', '/user/profile');
 
                         const menuItems = [
@@ -48,6 +65,15 @@ describe('Failed to Edit Account Password Test', () => {
                             cy.contains('h5', label).should('be.visible');
                             cy.get(inputId).should('exist');
                         });
+                        const changePassword = (oldPassword, newPassword, confirmPass) => {
+                            cy.get('#currentPassword').type(oldPassword);
+                            cy.get('#newPassword').type(newPassword);
+                            cy.get('body').click(0, 0);
+                            cy.get('#confirmPassword').type(confirmPass);
+                            cy.contains('Ganti Password').click();
+                        };
+
+                        changePassword(oldPassword, newPassword, newPassword);
 
                         //   cy.contains('Ganti Password').click();
                         //   cy.get('.p-confirm-popup')

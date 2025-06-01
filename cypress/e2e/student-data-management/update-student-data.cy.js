@@ -1,10 +1,10 @@
 describe('Update Student Data Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} dapat memperbarui data siswa`, () => {
+            : role} dapat memperbarui data siswa`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

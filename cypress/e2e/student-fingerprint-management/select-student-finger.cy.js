@@ -1,9 +1,9 @@
 describe("Select Finger for Student Fingerprint Registration Test", () => {
     const school = Cypress.env('schoolName');
-    const roles = ['superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
-        it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
+        it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
             : role} memilih jari dari siswa yang akan didaftarkan sidik jarinya`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");

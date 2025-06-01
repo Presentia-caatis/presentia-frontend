@@ -1,9 +1,9 @@
 describe("Failed to Update Student Fingerprint Test", () => {
     const school = Cypress.env('schoolName');
-    const roles = ['superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
-        it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
+        it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
             : role} tidak dapat memperbarui data sidik jari siswa`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");

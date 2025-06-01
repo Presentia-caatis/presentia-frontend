@@ -1,8 +1,8 @@
 describe('Student Attendance Page Test', () => {
-    const roles = ['superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
-        it(`Cek perilaku ${role === 'superadmin' ? 'siswa'
+        it(`Cek perilaku ${role === 'admin' ? 'siswa'
             : role} melihat update data presensi`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");

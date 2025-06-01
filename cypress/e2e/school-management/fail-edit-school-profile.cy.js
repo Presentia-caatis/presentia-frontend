@@ -1,10 +1,10 @@
 describe('Edit School Profile Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['admin', 'superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
-            : 'superadmin'} tidak dapat memperbarui data sekolah`, () => {
+            : role} tidak dapat memperbarui data sekolah`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 

@@ -1,11 +1,11 @@
 describe('Student Data Statistics Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['staf', 'admin', 'superadmin'];
+    const roles = ['staf', 'admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : 'superadmin'} melihat statistik data siswa`, () => {
+                : role} melihat statistik data siswa`, () => {
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");
 

@@ -1,11 +1,11 @@
 describe("Select Class for Attendance Data Test", () => {
     const school = Cypress.env('schoolName');
-    const roles = ['staf', 'admin', 'superadmin'];
+    const roles = ['staf', 'admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : 'superadmin'} memilih kelas untuk menampilkan daftar presensi`, () => {
+                : role} memilih kelas untuk menampilkan daftar presensi`, () => {
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");
 

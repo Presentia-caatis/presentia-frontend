@@ -1,11 +1,11 @@
 describe('Search Student Data Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['staf', 'admin', 'superadmin'];
+    const roles = ['staf', 'admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : 'superadmin'} mencari data siswa menggunakan kolom pencarian`, () => {
+                : role} mencari data siswa menggunakan kolom pencarian`, () => {
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");
 

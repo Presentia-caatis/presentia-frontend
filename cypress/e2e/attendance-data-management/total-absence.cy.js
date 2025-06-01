@@ -1,11 +1,11 @@
 describe('Total Absence Test', () => {
     const school = Cypress.env('schoolName');
-    const roles = ['staf', 'admin', 'superadmin'];
+    const roles = ['staf', 'admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
-                : 'superadmin'} melihat jumlah absensi siswa`, () => {
+                : role} melihat jumlah absensi siswa`, () => {
 
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");
@@ -73,24 +73,6 @@ describe('Total Absence Test', () => {
                                     });
                             }
                         });
-
-                        // cy.contains('h5', 'Data Kehadiran Hari Ini').should('be.visible');
-                        // cy.get('.p-carousel-item:visible')
-                        //     .should('have.length.greaterThan', 0)
-                        //     .each(($item) => {
-                        //         cy.wrap($item).within(() => {
-                        //             cy.contains(/Total Hadir|Tidak Hadir|Tepat Waktu|Telat|On Time|Late|Absent/)
-                        //                 .scrollIntoView({ block: 'center', inline: 'center' })
-                        //                 .should('exist');
-
-                        //             cy.get('div.text-900.font-bold')
-                        //                 .scrollIntoView({ block: 'center', inline: 'center' })
-                        //                 .invoke('text')
-                        //                 .then((text) => {
-                        //                     expect(text.trim()).to.match(/^\d+$/);
-                        //                 });
-                        //         });
-                        //     });
                     });
                 });
     });

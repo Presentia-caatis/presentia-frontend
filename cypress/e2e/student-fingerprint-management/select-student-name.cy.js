@@ -1,9 +1,9 @@
 describe("Select Name for Student Fingerprint Registration Test", () => {
     const school = Cypress.env('schoolName');
-    const roles = ['superadmin'];
+    const roles = ['admin'];
 
     roles.forEach((role) => {
-        it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
+        it(`Cek perilaku ${role === 'admin' ? 'admin sekolah'
             : role} mencari data siswa yang akan didaftarkan sidik jarinya`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
@@ -47,34 +47,34 @@ describe("Select Name for Student Fingerprint Registration Test", () => {
                         .and('not.be.disabled')
                         .click();
                     cy.url().should('include', `/school/${school}/fingerprint`);
+
+                    cy.wait(5000);
+                    cy.get("h1").should("contain.text", "Pendaftaran Sidik Jari");
+                    cy.get("label")
+                        .contains("Pilih Kelas")
+                        .parent()
+                        .find(".p-dropdown")
+                        .click();
+                    cy.get(".p-dropdown-items-wrapper .p-dropdown-item")
+                        .first()
+                        .click();
+
+                    cy.get("label")
+                        .contains("Cari Siswa")
+                        .parent()
+                        .find("input")
+                        .type("Siswa Sekolah");
+
+                    cy.wait(5000);
+                    cy.get("label")
+                        .contains("Pilih Siswa")
+                        .parent()
+                        .find(".p-dropdown")
+                        .click();
+                    cy.get(".p-dropdown-items-wrapper .p-dropdown-item")
+                        .first()
+                        .click();
                 });
-
-                cy.wait(5000);
-                cy.get("h1").should("contain.text", "Pendaftaran Sidik Jari");
-                cy.get("label")
-                    .contains("Pilih Kelas")
-                    .parent()
-                    .find(".p-dropdown")
-                    .click();
-                cy.get(".p-dropdown-items-wrapper .p-dropdown-item")
-                    .first()
-                    .click();
-
-                cy.get("label")
-                    .contains("Cari Siswa")
-                    .parent()
-                    .find("input")
-                    .type("Siswa Sekolah");
-
-                cy.wait(5000);
-                cy.get("label")
-                    .contains("Pilih Siswa")
-                    .parent()
-                    .find(".p-dropdown")
-                    .click();
-                cy.get(".p-dropdown-items-wrapper .p-dropdown-item")
-                    .first()
-                    .click();
             });
     });
 });
