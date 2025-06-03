@@ -3,7 +3,6 @@ import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
 import subscriptionService from "../../services/subscriptionService";
 
 type UserCreateSchoolModalProps = {

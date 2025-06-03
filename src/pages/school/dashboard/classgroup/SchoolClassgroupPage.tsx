@@ -376,7 +376,7 @@ const SchoolClassgroupPage = () => {
             <div className="card">
                 <h1>Daftar Kelas {school ? school.name : "Loading"}</h1>
                 {
-                    hasAnyPermission(user, ['basic_school']) && (
+                    hasAnyPermission(user, ['manage_schools']) && (
                         <div className="flex justify-content-between p-4 card">
                             <div className="flex gap-2">
                                 <Button icon="pi pi-plus" severity="success" label="Kelas Baru" onClick={() => setShowCreateDialog(true)} />
@@ -456,7 +456,7 @@ const SchoolClassgroupPage = () => {
                                     onClick={() => openStudentDialog(rowData)}
                                 />
                                 {
-                                    hasAnyPermission(user, ['basic_school']) && (
+                                    hasAnyPermission(user, ['manage_schools']) && (
                                         <Button
                                             icon="pi pi-pencil"
                                             className="p-button-success p-button-rounded"
@@ -468,7 +468,7 @@ const SchoolClassgroupPage = () => {
                                     )
                                 }
                                 {
-                                    hasAnyPermission(user, ['basic_school']) && (
+                                    hasAnyPermission(user, ['manage_schools']) && (
                                         <Button
                                             icon="pi pi-trash"
                                             className="p-button-danger p-button-rounded"

@@ -36,7 +36,10 @@ class SchoolService {
 
   async update(id: number, school: FormData) {
     const response = await axiosClient.post(`/school/${id}`, school, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: {
+        _method: 'PUT'
+      }
     });
     return response.data;
   }

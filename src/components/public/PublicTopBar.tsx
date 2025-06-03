@@ -1,18 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
-import { Toast } from 'primereact/toast';
-import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 const PublicTopbar = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
     const [hovered, setHovered] = useState(false);
     const [userEmail, setUserEmail] = useState('');
-    const toast = React.useRef<Toast>(null);
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
 
     useEffect(() => {
         if (user) {
@@ -20,14 +16,7 @@ const PublicTopbar = () => {
         }
     }, []);
 
-    const { showToast } = useToastContext();
-    function callToast(showToast: any, severity: string, summary: string, detail: string) {
-        showToast({
-            severity: severity,
-            summary: summary,
-            detail: detail
-        });
-    }
+
 
     const handlePresentiaClick = () => {
         if (user?.roles.includes('super_admin')) {
@@ -37,30 +26,7 @@ const PublicTopbar = () => {
         }
     };
 
-    const handleLogout = async () => {
-        try {
-            callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
-            setLoading(true);
-            await logout();
-            setUserEmail('');
 
-            navigate('/');
-            toast.current?.show({
-                severity: 'success',
-                summary: 'Logout Success',
-                detail: 'Kamu sudah logout dari aplikasi',
-            });
-        } catch (error) {
-            console.error('Logout failed:', error);
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Logout Gagal',
-                detail: 'Something went wrong.',
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <div className="layout-topbar flex justify-content-between align-items-center">

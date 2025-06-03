@@ -26,6 +26,7 @@ const SchoolSetAttendanceTimePage = () => {
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
     const [initialData, setInitialData] = useState<any>(null);
     const { user } = useAuth();
+    const [hasAccess, setHasAccess] = useState(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)))
 
     const toast = useRef<Toast>(null);
     const msgs = useRef<Messages>(null);
@@ -210,14 +211,14 @@ const SchoolSetAttendanceTimePage = () => {
                             <div className="flex flex-column gap-2">
                                 <label htmlFor="entry-start-time">Mulai jam masuk</label>
                                 {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
-                                    <Calendar value={entryStartTime} onChange={(e) => setEntryStartTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                    <Calendar disabled={!hasAccess} value={entryStartTime} onChange={(e) => setEntryStartTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
                                 )}
                             </div>
                             <div className="align-self-center mt-4">-</div>
                             <div className="flex flex-column gap-2">
                                 <label htmlFor="entry-end-time">Selesai jam masuk</label>
                                 {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
-                                    <Calendar value={entryEndTime} onChange={(e) => setEntryEndTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                    <Calendar disabled={!hasAccess} value={entryEndTime} onChange={(e) => setEntryEndTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
                                 )}
                             </div>
                         </div>
@@ -230,14 +231,14 @@ const SchoolSetAttendanceTimePage = () => {
                             <div className="flex flex-column gap-2">
                                 <label htmlFor="exit-start-time">Mulai jam pulang</label>
                                 {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
-                                    <Calendar value={exitStartTime} onChange={(e) => setExitStartTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                    <Calendar disabled={!hasAccess} value={exitStartTime} onChange={(e) => setExitStartTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
                                 )}
                             </div>
                             <div className="align-self-center mt-4">-</div>
                             <div className="flex flex-column gap-2">
                                 <label htmlFor="exit-end-time">Selesai jam pulang</label>
                                 {loading ? <Skeleton width="17rem" height="2.5rem" /> : (
-                                    <Calendar value={exitEndTime} onChange={(e) => setExitEndTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
+                                    <Calendar disabled={!hasAccess} value={exitEndTime} onChange={(e) => setExitEndTime(e.value as Date)} timeOnly hourFormat="24" showIcon />
                                 )}
                             </div>
                         </div>

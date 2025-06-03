@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosClient from '../utils/axiosClient';
 
 class AuthService {
@@ -29,6 +30,31 @@ class AuthService {
         const response = await axiosClient.post('/auth-google-callback');
         return response.data;
     }
+
+    async changePassword(payload: any) {
+        const response = await axiosClient.put('/user/change-password',
+            payload
+        );
+        return response.data;
+    }
+
+    async forgotPassword(email: string) {
+        const response = await axiosClient.post('/forgot-password', {
+            email
+        });
+        return response.data;
+    }
+
+    async resetPassword(payload: {
+        email: string;
+        token: string;
+        password: string;
+        password_confirmation: string;
+    }) {
+        const response = await axiosClient.post('/reset-password', payload);
+        return response.data;
+    }
+
 }
 
 export default new AuthService();

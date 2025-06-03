@@ -230,6 +230,14 @@ const LoginPage = () => {
                                 className="w-full p-3 text-xl p-button-outlined"
                                 onClick={handleGoogleLogin}
                             />
+                            <div className='w-full flex justify-content-center pt-3'>
+                                <Button
+                                    label="Reset Password via Email"
+                                    icon="pi pi-envelope"
+                                    className="p-button-text"
+                                    onClick={() => navigate('/forgot-password')}
+                                />
+                            </div>
                         </Card>
                     </div>
                 </div>

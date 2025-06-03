@@ -2,6 +2,8 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RoleGuard from './components/RoleGuard';
+import { ForgotPasswordPage, ResetPasswordPage } from './components/public/ForgotPassword';
+import PublicAttendancePage from './pages/public/PublicAttendancePage';
 
 const Login = lazy(() => import('./pages/auth/LoginPage'));
 const AdminLayout = lazy(() => import('./layout/AdminLayout'));
@@ -100,6 +102,9 @@ const AppRoutes = () => {
             <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin']}>{
                 withSuspense(StudentAttendanceInPage)}</RoleGuard>} />
             <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
+            <Route path="/forgot-password" element={withSuspense(ForgotPasswordPage)} />
+            <Route path="/reset-password" element={withSuspense(ResetPasswordPage)} />
+            {/* <Route path="/kehadiran/:schoolId" element={<PublicAttendancePage />} /> */}
 
             <Route path="*" element={withSuspense(NotFoundPage)} />
         </Routes>

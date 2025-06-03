@@ -10,6 +10,8 @@ import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import defaultLogoSekolah from '../../../assets/defaultLogoSekolah.png';
 import { formatSchoolName } from '../../../utils/formatSchoolName';
 import { useNavigate } from 'react-router-dom';
+import { hasAnyPermission } from '../../../utils/hasAnyPermissions';
+import { useAuth } from '../../../context/AuthContext';
 
 const SchoolProfilePage = () => {
     const { school, setSchool } = useSchool();
@@ -20,6 +22,8 @@ const SchoolProfilePage = () => {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isModified, setIsModified] = useState(false);
+    const { user } = useAuth();
+    const [hasAccess, setHasAccess] = useState(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)))
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -165,12 +169,14 @@ const SchoolProfilePage = () => {
                                 disabled={loading}
                             />
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <div className='my-auto flex gap-2'>
-                                <Button disabled={loading} label="Ganti Logo" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
-                                <Button disabled={!imagePreview || loading} label="Hapus Logo" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
+                        {hasAccess &&
+                            <div className="flex flex-col gap-2">
+                                <div className='my-auto flex gap-2'>
+                                    <Button disabled={loading} label="Ganti Logo" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
+                                    <Button disabled={!imagePreview || loading} label="Hapus Logo" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
+                                </div>
                             </div>
-                        </div>
+                        }
                     </div>
                 </div>
                 <div className="field">
@@ -180,7 +186,7 @@ const SchoolProfilePage = () => {
                         onChange={(e) => setEditData({ ...editData, name: e.target.value })}
                         placeholder="Masukkan Nama Sekolah"
                         className="w-full"
-                        disabled={loading}
+                        disabled={!hasAccess || loading}
                     />
                 </div>
                 <div className="field mt-3">
@@ -190,35 +196,38 @@ const SchoolProfilePage = () => {
                         onChange={(e) => setEditData({ ...editData, address: e.target.value })}
                         placeholder="Masukkan Alamat"
                         className="w-full"
-                        disabled={loading}
+                        disabled={!hasAccess || loading}
                     />
                 </div>
                 <Divider />
-                <div className="flex gap-2">
-                    <Button
-                        label="Simpan Pembaruan"
-                        icon="pi pi-save"
-                        className="p-button-primary"
-                        onClick={confirmUpdate}
-                        loading={loading}
-                        disabled={loading || !isModified}
-                    />
-                    <Button
-                        label="Batal"
-                        className="p-button-secondary"
-                        onClick={() => {
-                            if (!school) return;
-                            setImagePreview(school.logoImagePath);
-                            setLogoImage(null);
-                            if (fileInputRef.current) {
-                                fileInputRef.current.value = '';
-                            }
-                            setEditData({ name: school.name, address: school.address, logo_image: school.logoImagePath, remove_image: false });
+                {
+                    hasAccess &&
+                    <div className="flex gap-2">
+                        <Button
+                            label="Simpan Pembaruan"
+                            icon="pi pi-save"
+                            className="p-button-primary"
+                            onClick={confirmUpdate}
+                            loading={loading}
+                            disabled={loading || !isModified}
+                        />
+                        <Button
+                            label="Batal"
+                            className="p-button-secondary"
+                            onClick={() => {
+                                if (!school) return;
+                                setImagePreview(school.logoImagePath);
+                                setLogoImage(null);
+                                if (fileInputRef.current) {
+                                    fileInputRef.current.value = '';
+                                }
+                                setEditData({ name: school.name, address: school.address, logo_image: school.logoImagePath, remove_image: false });
 
-                        }}
-                        disabled={loading || !isModified}
-                    />
-                </div>
+                            }}
+                            disabled={loading || !isModified}
+                        />
+                    </div>
+                }
             </div>
         </div>
     );

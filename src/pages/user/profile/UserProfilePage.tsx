@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useState } from 'react';
 import { TabMenu } from 'primereact/tabmenu';
@@ -6,12 +7,13 @@ import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
 import { Divider } from 'primereact/divider';
 import { useAuth } from '../../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useToastContext } from '../../../layout/ToastContext';
 import { Toast } from 'primereact/toast';
 import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import userService from '../../../services/userService';
 import defaultProfileUser from '../../../assets/defaultProfileUser.png';
+import authService from '../../../services/authService';
 
 const UserProfilePage = () => {
     const [activeIndex, setActiveIndex] = useState(0);
@@ -19,8 +21,9 @@ const UserProfilePage = () => {
     const { logout, user, updateUser } = useAuth();
     const [editData, setEditData] = useState({ username: '', fullname: '', email: '', profile_image_path: '', remove_image: false });
     const [loading, setLoading] = useState(false);
-    const [password, setPassword] = useState('');
-    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newPasswordConfirmation, setNewPasswordConfirmation] = useState('');
     const [profileImage, setProfileImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,6 +57,127 @@ const UserProfilePage = () => {
 
         setIsModified(isChanged);
     }, [editData, user, profileImage, imagePreview]);
+    const handleSendResetLinkFromProfile = async () => {
+        try {
+            setLoading(true);
+
+            if (!user?.email) {
+                showToast({
+                    severity: 'error',
+                    summary: 'Gagal',
+                    detail: 'Email pengguna tidak ditemukan.',
+                });
+                return;
+            }
+
+            const response = await authService.forgotPassword(user.email);
+
+            showToast({
+                severity: 'success',
+                summary: 'Tautan Dikirim',
+                detail: response.message,
+            });
+        } catch (error: any) {
+            const response = error.response?.data;
+            let errorMessage = 'Terjadi kesalahan';
+
+            // Tampilkan hanya isi dari errors jika ada
+            if (response?.errors) {
+                errorMessage = Object.values(response.errors)
+                    .flat()
+                    .join(' | ');
+            } else if (response?.message) {
+                errorMessage = response.message;
+            }
+
+            showToast({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: errorMessage,
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
+
+    const handleChangePassword = async () => {
+        if (newPassword !== newPasswordConfirmation) {
+            showToast({
+                severity: 'warn',
+                summary: 'Password baru tidak cocok',
+                detail: 'Konfirmasi password baru harus sama.',
+            });
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const payload = {
+                current_password: currentPassword,
+                new_password: newPassword,
+                new_password_confirmation: newPasswordConfirmation,
+            };
+
+
+            const res = await authService.changePassword(payload);
+            showToast({
+                severity: 'success',
+                summary: 'Sukses',
+                detail: res?.message,
+            });
+            navigate('/login');
+        } catch (error: any) {
+            showToast({
+                severity: 'error',
+                summary: 'Gagal Ganti Password',
+                detail: error?.response?.message || 'Terjadi kesalahan',
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    // const handleResetPassword = async () => {
+    //     if (password !== passwordConfirmation) {
+    //         showToast({
+    //             severity: 'warn',
+    //             summary: 'Password tidak cocok',
+    //             detail: 'Konfirmasi password harus sama.',
+    //         });
+    //         return;
+    //     }
+
+    //     try {
+    //         setLoading(true);
+    //         const payload = {
+    //             email: user?.email,
+    //             password,
+    //             password_confirmation: passwordConfirmation,
+    //             token: token,
+    //         };
+
+    //         const res = await axiosClient.post('/reset-password', payload);
+    //         showToast({
+    //             severity: 'success',
+    //             summary: 'Sukses',
+    //             detail: res.data.message,
+    //         });
+    //         navigate('/login');
+    //     } catch (error: any) {
+    //         showToast({
+    //             severity: 'error',
+    //             summary: 'Gagal Ganti Password',
+    //             detail: error?.response?.data?.message || 'Terjadi kesalahan',
+    //         });
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
 
     const handleUpdate = async () => {
         if (!isModified) return;
@@ -66,11 +190,6 @@ const UserProfilePage = () => {
                 if (editData.fullname !== user.fullname) formData.append('fullname', editData.fullname);
                 if (editData.username !== user.username) formData.append('username', editData.username);
                 if (editData.email !== user.email) formData.append('email', editData.email);
-
-                if (password) {
-                    formData.append('password', password);
-                    formData.append('password_confirmation', passwordConfirmation);
-                }
 
                 if (profileImage) {
                     formData.append('profile_image', profileImage);
@@ -285,24 +404,42 @@ const UserProfilePage = () => {
                         <h2>Ganti Password</h2>
 
                         <div className="mt-3">
-                            <h5>Password Lama</h5>
-                            <Password id="currentPassword" toggleMask feedback={false} />
+                            <h5>Password Sekarang</h5>
+                            <Password id="currentPassword" toggleMask feedback={false} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
                         </div>
 
                         <div className="mt-3">
                             <h5>Password Baru</h5>
-                            <Password id="newPassword" toggleMask />
+                            <Password id="newPassword" toggleMask feedback={false} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                         </div>
 
                         <div className="mt-3">
-                            <h5>Konfirmasi Password</h5>
-                            <Password id="confirmPassword" toggleMask />
+                            <h5>Konfirmasi Password Baru</h5>
+                            <Password id="confirmPassword" toggleMask feedback={false} value={newPasswordConfirmation} onChange={(e) => setNewPasswordConfirmation(e.target.value)} />
                         </div>
 
                         <Divider />
-                        <div className='flex gap-2'>
-                            <Button label="Ganti Password" icon="pi pi-save" className="p-mt-3" />
-                            <Button label="Batal" className="p-mt-3 p-button-secondary " />
+
+                        <div className="flex gap-2">
+                            <Button
+                                label="Ganti Password"
+                                icon="pi pi-save"
+                                className="p-mt-3"
+                                onClick={handleChangePassword}
+                                loading={loading}
+                            />
+                            <Button
+                                label="Batal"
+                                className="p-mt-3 p-button-secondary"
+                                onClick={() => navigate('/login')}
+                            />
+                            <Button
+                                label="Reset Password via Email"
+                                icon="pi pi-envelope"
+                                className="ml-1 p-button-text"
+                                onClick={handleSendResetLinkFromProfile}
+                            />
+
                         </div>
                     </div>
                 );
