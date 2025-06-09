@@ -34,7 +34,7 @@ const PublicAttendancePage = () => {
     const [autoSwitch] = useState<boolean>(() => {
         return JSON.parse(localStorage.getItem("autoSwitch") || "true");
     });
-    const [pauseCountdown, setPauseCountdown] = useState<boolean>(false);
+    const [pauseCountdown, setPauseCountdown] = useState<boolean>(true);
     const [activeIndex, setActiveIndex] = useState(0);
     const [attendanceData, setAttendanceData] = useState<any>([]);
     const [loading, setLoading] = useState(true);
@@ -62,6 +62,8 @@ const PublicAttendancePage = () => {
     const [debouncedSelectedKelas, setDebouncedSelectedKelas] = useState<number[]>([]);
     const [loadingStatusAbsensi, setLoadingStatusAbsensi] = useState(true);
     const [listStatusAbsensi, setListStatusAbsensi] = useState<{ label: string; value: number }[]>([]);
+    const isFirstLoad = useRef(true);
+    const isFilterChanging = useRef(false);
 
 
 
@@ -107,7 +109,7 @@ const PublicAttendancePage = () => {
     };
 
     const fetchAttendance = async (page = 1, perPage = 20) => {
-        if (!schoolId) return;
+        if (!schoolId || !startDate || !endDate) return;
 
         try {
             setLoading(true);
@@ -171,7 +173,7 @@ const PublicAttendancePage = () => {
     useEffect(() => {
         const timeout = setTimeout(() => {
             setDebouncedSelectedKelas(selectedKelas);
-        }, 400);
+        }, 500);
 
         return () => clearTimeout(timeout);
     }, [selectedKelas]);
@@ -188,8 +190,34 @@ const PublicAttendancePage = () => {
     }, [schoolId]);
 
     useEffect(() => {
-        fetchAttendance(1, rowsPerPage);
+        isFilterChanging.current = true;
+        setCurrentPage(1);
     }, [debouncedSearchName, debouncedSelectedKelas, selectedStatusPresensi, startDate, endDate]);
+
+
+    useEffect(() => {
+        if (isFirstLoad.current) {
+            isFirstLoad.current = false;
+            return;
+        }
+
+        if (isFilterChanging.current && currentPage !== 1) {
+            return;
+        }
+
+        fetchAttendance(currentPage, rowsPerPage);
+
+        isFilterChanging.current = false;
+    }, [
+        debouncedSearchName,
+        debouncedSelectedKelas,
+        selectedStatusPresensi,
+        startDate,
+        endDate,
+        currentPage,
+        rowsPerPage
+    ]);
+
 
 
     useEffect(() => {
@@ -226,9 +254,6 @@ const PublicAttendancePage = () => {
         };
     }, [loading, pauseCountdown]);
 
-    useEffect(() => {
-        fetchAttendance(currentPage, rowsPerPage);
-    }, [currentPage, rowsPerPage]);
 
     const fetchKelas = async () => {
         try {
