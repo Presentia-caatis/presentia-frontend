@@ -218,15 +218,6 @@ const PublicAttendancePage = () => {
         rowsPerPage
     ]);
 
-
-
-    useEffect(() => {
-        if (!school && !schoolLoading) {
-            navigate('/404');
-        }
-    }, [school, schoolLoading, navigate]);
-    const toast = useRef<Toast>(null);
-
     useEffect(() => {
         localStorage.setItem("autoSwitch", JSON.stringify(autoSwitch));
     }, [autoSwitch]);
