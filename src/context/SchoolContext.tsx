@@ -104,7 +104,9 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                 });
 
             } catch (error) {
-                logout();
+                if (user.roles && !user.roles.includes("super_admin")) {
+                    logout();
+                }
                 console.error("Error fetching school:", error);
             } finally {
                 setSchoolLoading(false);

@@ -18,15 +18,11 @@ import { FilterMatchMode } from 'primereact/api';
 import { Tag } from 'primereact/tag';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import classGroupService from '../../../../services/classGroupService';
+import attendanceSourceConnectionService, { EnrollConnectionPayload } from '../../../../services/attendanceSourceConnectionService';
 
 const FingerprintPage = () => {
     const { user, checkAuth } = useAuth();
     const toast = useRef<Toast>(null);
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(!!localStorage.getItem('admsjs_token'));
-
-    const [fingerprintData, setFingerprintData] = useState<{
-        fid: number; pin: string
-    }[]>([]);
 
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -103,29 +99,28 @@ const FingerprintPage = () => {
         // { label: 'Kelingking Kanan', value: 10 }
     ];
 
-    useEffect(() => {
-        const token = localStorage.getItem('admsjs_token');
-        if (!token || token === 'undefined') {
-            setIsLoggedIn(false);
-        } else {
-            setIsLoggedIn(true);
-        }
-    }, []);
+    // useEffect(() => {
+    //     const token = localStorage.getItem('admsjs_token');
+    //     if (!token || token === 'undefined') {
+    //         setIsLoggedIn(false);
+    //     } else {
+    //         setIsLoggedIn(true);
+    //     }
+    // }, []);
 
     useEffect(() => {
-        const validateAuth = async () => {
-            const isAuthenticated = await checkAuth();
-            if (!isAuthenticated.success) {
-                handleLogout();
-            }
-        };
+        // const validateAuth = async () => {
+        //     const isAuthenticated = await checkAuth();
+        //     if (!isAuthenticated.success) {
+        //         handleLogout();
+        //     }
+        // };
 
-        validateAuth();
+        // validateAuth();
 
-        if (isLoggedIn && user) {
+        if (user) {
             fetchKelas();
-            fetchFingerprintData();
-            fetchStudentsTable();
+            fetchStudentsWithFingerprintData(1, 20, undefined, undefined, 'table');
         }
     }, []);
 
@@ -151,50 +146,80 @@ const FingerprintPage = () => {
     // }, []);
 
 
-    const fetchFingerprintData = async () => {
-        try {
-            const response = await getFingerprintData();
-            setFingerprintData(response.data);
-        } catch (error) {
-            if ((error as any).response?.data?.message === "Failed to authenticate token") {
-                toast.current?.show({
-                    severity: 'error',
-                    summary: 'Unauthenticated',
-                    detail: 'Sesi login Anda telah berakhir. Memuat ulang...',
-                    life: 3000
+    const fetchStudentsWithFingerprintData = async (
+        page = 1,
+        perPage = 20,
+        classGroupId?: number | string,
+        search?: string,
+        type: 'dropdown' | 'table' = 'table'
+    ) => {
+        if (!user?.school_id) return;
+
+        const filter: Record<string, any> = {
+            school_id: user.school_id,
+        };
+
+        if (classGroupId) {
+            filter.class_group_id = classGroupId;
+        }
+
+        if (search) {
+            filter.name = search;
+        }
+
+        if (type === 'table') {
+            try {
+                setLoadingStudentTable(true);
+                setStudentsTableData([]);
+
+                const response = await attendanceSourceConnectionService.getAllData({
+                    page,
+                    perPage,
+                    filter,
                 });
 
-                localStorage.removeItem('admsjs_token');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            } else {
+                const result = response?.data?.data ?? [];
+                setStudentsTableData(result);
+                setTotalRecords(response?.data?.total ?? 0);
+            } catch (error) {
                 toast.current?.show({
                     severity: 'error',
-                    summary: 'Data fingerprint gagal dimuat',
-                    detail: 'Gagal mendapatkan data fingerprint.',
-                    life: 3000
+                    summary: 'Gagal Memuat Data',
+                    detail: 'Tidak dapat memuat data siswa & fingerprint.',
+                    life: 3000,
                 });
+            } finally {
+                setLoadingStudentTable(false);
+            }
+
+        } else if (type === 'dropdown') {
+            setStudentsDropdown([]);
+
+            if (!classGroupId && (!search || search.trim().length < 2)) return;
+
+            try {
+                setLoadingStudentDropdown(true);
+
+                const response = await attendanceSourceConnectionService.getAllData({
+                    page: 1,
+                    perPage: 1000,
+                    filter,
+                });
+
+                const result = response?.data?.data ?? [];
+                setStudentsDropdown(result);
+            } catch (error) {
+                console.error("Error fetching studentsDropdown:", error);
+            } finally {
+                setLoadingStudentDropdown(false);
             }
         }
     };
 
-    const getFingerprintStatus = (studentId: any) => {
-        return fingerprintData.some(fp => fp.pin === studentId.toString()) ? 'registered' : 'notRegistered';
-    };
 
-    const fetchStudentsDropdown = async (classGroupId?: number | string, search?: string) => {
-        setStudentsDropdown([]);
-        if (!classGroupId && (!search || search.trim().length < 2)) return;
-        try {
-            setLoadingStudentDropdown(true);
-            const response = await studentService.getStudent(1, 1000, classGroupId, search);
-            setStudentsDropdown(response.data.data);
-        } catch (error) {
-            console.error("Error fetching studentsDropdown:", error);
-        } finally {
-            setLoadingStudentDropdown(false);
-        }
+
+    const getFingerprintStatus = (student: any) => {
+        return student.has_credential ? 'registered' : 'notRegistered';
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,64 +232,50 @@ const FingerprintPage = () => {
 
         if (query.length >= 2 || selectedClass) {
             typingTimeoutRef.current = setTimeout(() => {
-                fetchStudentsDropdown(selectedClass ?? undefined, query);
+                fetchStudentsWithFingerprintData(1, 1000, selectedClass ?? undefined, query, 'dropdown');
             }, 500);
         } else {
             setStudentsDropdown([]);
         }
     };
 
-    const fetchStudentsTable = async (page = 1, perPage = 20, classGroupId?: number | string, search?: string) => {
-        try {
-            if (!user?.school_id) return;
-            setLoadingStudentTable(true);
-            setStudentsTableData([]);
-            const response = await studentService.getStudent(page, perPage, classGroupId, search);
-            setStudentsTableData(response.data.data);
-            setTotalRecords(response.data.total);
-        } catch (error) {
-            console.error('Error fetching studentsDropdown:', error);
-        } finally {
-            setLoadingStudentTable(false);
-        }
-    };
 
-    const handleLogin = async () => {
-        setLoading(true);
-        try {
-            const token = await loginToADMSJS(username, password);
-            setIsLoggedIn(true);
-            localStorage.setItem('admsjs_token', token);
-            fetchKelas();
-            fetchFingerprintData();
-            fetchStudentsTable();
-            toast.current?.show({ severity: 'success', summary: 'Login Berhasil', detail: 'Anda berhasil login.', life: 3000 });
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Login Gagal', detail: 'Periksa kembali kredensial Anda.', life: 3000 });
-        } finally {
-            setLoading(false);
-        }
-    };
+    // const handleLogin = async () => {
+    //     setLoading(true);
+    //     try {
+    //         const token = await loginToADMSJS(username, password);
+    //         setIsLoggedIn(true);
+    //         localStorage.setItem('admsjs_token', token);
+    //         fetchKelas();
+    //         fetchFingerprintData();
+    //         fetchStudentsTable();
+    //         toast.current?.show({ severity: 'success', summary: 'Login Berhasil', detail: 'Anda berhasil login.', life: 3000 });
+    //     } catch (error) {
+    //         toast.current?.show({ severity: 'error', summary: 'Login Gagal', detail: 'Periksa kembali kredensial Anda.', life: 3000 });
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
-    const handleLogout = async () => {
-        setLoading(true);
-        try {
-            setIsLoggedIn(false);
-            localStorage.removeItem('admsjs_token');
-            toast.current?.show({ severity: 'success', summary: 'Logout Berhasil', detail: 'Anda berhasil logout.', life: 3000 });
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Logout Gagal', detail: 'Periksa kembali kredensial Anda.', life: 3000 });
-        } finally {
-            setLoading(false);
-        }
-    };
+    // const handleLogout = async () => {
+    //     setLoading(true);
+    //     try {
+    //         setIsLoggedIn(false);
+    //         localStorage.removeItem('admsjs_token');
+    //         toast.current?.show({ severity: 'success', summary: 'Logout Berhasil', detail: 'Anda berhasil logout.', life: 3000 });
+    //     } catch (error) {
+    //         toast.current?.show({ severity: 'error', summary: 'Logout Gagal', detail: 'Periksa kembali kredensial Anda.', life: 3000 });
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const handleRegister = async () => {
-        if (!selectedStudent || !machineNumber) {
+        if (!selectedStudent || !machineNumber || !selectedFinger) {
             toast.current?.show({
                 severity: 'warn',
                 summary: 'Data Tidak Lengkap',
-                detail: 'Pilih siswa dan masukkan nomor mesin.',
+                detail: 'Pilih siswa, sidik jari, dan masukkan nomor mesin.',
                 life: 3000
             });
             return;
@@ -272,8 +283,17 @@ const FingerprintPage = () => {
 
         setRegisterLoading(true);
         try {
-            const studentId = selectedStudent.id;
-            await enrollFingerprint(studentId, selectedFinger, retryCount, machineNumber);
+            const payload: EnrollConnectionPayload = {
+                student_id: String(selectedStudent.id),
+                finger_id: String(selectedFinger),
+                retry: retryCount,
+                machine_number: machineNumber,
+                overwrite: true,
+            };
+
+
+            await attendanceSourceConnectionService.enroll(payload);
+
             toast.current?.show({
                 severity: 'success',
                 summary: 'Pendaftaran Berhasil',
@@ -288,8 +308,6 @@ const FingerprintPage = () => {
                     detail: 'Sesi login Anda telah berakhir. Memuat ulang...',
                     life: 3000
                 });
-
-                localStorage.removeItem('admsjs_token');
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
@@ -305,6 +323,7 @@ const FingerprintPage = () => {
             setRegisterLoading(false);
         }
     };
+
 
 
     const actionBodyTemplate = (rowData: any) => {
@@ -323,7 +342,7 @@ const FingerprintPage = () => {
 
 
     const studentItemTemplate = (option: any) => {
-        const isRegistered = fingerprintData.some(fp => fp.pin === option.id.toString());
+        const isRegistered = option.has_credential;
         return (
             <div className="flex align-items-center justify-content-between">
                 <span>
@@ -338,7 +357,7 @@ const FingerprintPage = () => {
         try {
             if (!user?.school_id) return;
             setLoadingKelas(true);
-            const response = await classGroupService.getClassGroups(1, 100);
+            const response = await classGroupService.getClassGroups(1, 100, {}, user?.school_id);
             setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
                 value: kelas.id
@@ -370,7 +389,8 @@ const FingerprintPage = () => {
                 onChange={(e: DropdownChangeEvent) => {
                     options.filterApplyCallback(e.value);
                     setCurrentPage(1);
-                    fetchStudentsTable(currentPage, rowsPerPage, e.value, searchStudentTable)
+                    setSelectedClassTable(e.value);
+                    fetchStudentsWithFingerprintData(currentPage, rowsPerPage, e.value, searchStudentTable)
                 }}
                 optionLabel="label"
                 placeholder="Pilih Kelas"
@@ -400,7 +420,7 @@ const FingerprintPage = () => {
     };
 
     const fingerprintBodyTemplate = (rowData: any) => {
-        const status = getFingerprintStatus(rowData.id);
+        const status = getFingerprintStatus(rowData);
         return (
             <Tag severity={status === 'registered' ? 'success' : 'danger'}>
                 {status === 'registered' ? 'Terdaftar' : 'Belum Terdaftar'}
@@ -422,7 +442,7 @@ const FingerprintPage = () => {
 
                     typingTimeoutRef.current = setTimeout(() => {
                         setCurrentPage(1);
-                        fetchStudentsTable(1, rowsPerPage, selectedClass ?? undefined, query);
+                        fetchStudentsWithFingerprintData(1, rowsPerPage, selectedClassTable ?? undefined, query);
                     }, 500);
 
                     setSearchStudentTable(query);
@@ -438,100 +458,76 @@ const FingerprintPage = () => {
         <>
             <div title="" className="card p-4">
                 <Toast ref={toast} />
-                <div className='flex flex-column md:flex-row justify-content-between w-full my-2'>
-                    <div>
-                        <h1>{!isLoggedIn ? "Login untuk mendaftaran Sidik Jari" : "Pendaftaran Sidik Jari"}</h1>
-                    </div>
-                    {isLoggedIn ?
-                        <div>
-                            <Button label="Logout" onClick={handleLogout} loading={loading} className="p-button-danger" />
-                        </div>
-                        : null
-                    }
-                </div>
-                {!isLoggedIn ? <div> <Messages ref={msgs} /> </div> : ""}
-                {!isLoggedIn ? (
-                    <div className='w-full'>
-                        <div className="flex flex-column gap-2 mb-4 w-17rem">
-                            <label>Username</label>
-                            <InputText value={username} onChange={(e) => setUsername(e.target.value)} />
-                        </div>
-                        <div className="flex flex-column gap-2 mb-4">
-                            <label>Password</label>
-                            <Password className='' toggleMask feedback={false} value={password} onChange={(e) => setPassword(e.target.value)} />
-                        </div>
-                        <Button label="Login" onClick={handleLogin} loading={loading} className="p-button-primary w-full" />
-                    </div>
-                ) : (
-                    <div className="p-fluid grid">
-                        <div className="field col-12 ">
-                            <label>Pilih Kelas</label>
-                            <Dropdown
-                                loading={loadingKelas}
-                                value={selectedClass}
-                                options={listKelas}
-                                onChange={(e) => {
-                                    setSelectedClass(e.value);
-                                    fetchStudentsDropdown(e.value, searchStudentDropdown);
-                                }}
-                                placeholder={loadingKelas ? "Sedang memuat data kelas..." : "Pilih Kelas"}
-                                optionLabel="label"
-                                showClear
-                                filter
-                            />
-                        </div>
-                        <div className="field col-12">
-                            <label>Cari Siswa <span className="text-red-600">*</span></label>
-                            <InputText
-                                value={searchStudentDropdown}
-                                onChange={handleSearchChange}
-                                placeholder="Ketik minimal 2 huruf nama siswa untuk mencari siswa..."
-                            />
-                        </div>
-                        <div className="field col-12 ">
-                            <label>Pilih Siswa <span className="text-red-600">*</span></label>
-                            <Dropdown
-                                value={selectedStudent}
-                                options={studentsDropdown}
-                                onChange={(e) => setSelectedStudent(e.value)}
-                                optionLabel="student_name"
-                                placeholder={loadingStudentDropdown ? "Sedang mencari siswa..." : "Pilih siswa"}
-                                loading={loadingStudentDropdown}
-                                itemTemplate={studentItemTemplate}
-                                emptyMessage={searchStudentDropdown ? `Tidak ada siswa dengan nama ${searchStudentDropdown}` : "Ketik nama siswa di kolom cari siswa"}
-                            />
-                        </div>
 
-                        <div className="field col-12 md:col-6">
-                            <label>Pilih Jari <span className='text-red-600'>*</span></label>
-                            <Dropdown
-                                value={selectedFinger}
-                                options={fingerOptions}
-                                onChange={(e) => setSelectedFinger(e.value)}
-                                optionLabel="label"
-                                placeholder="Pilih Jari"
-                            />
-                        </div>
-                        <div className="field col-12 md:col-6">
-                            <label>Nomor Mesin <span className='text-red-600'>*</span></label>
-                            <InputText
-                                value={machineNumber}
-                                onChange={(e) => setMachineNumber((e.target as HTMLInputElement).value)}
-                            />
-                        </div>
-                        <div className="col-12 text-center">
-                            <Button
-                                label="Daftarkan Sidik Jari"
-                                onClick={handleRegister}
-                                loading={registerLoading}
-                                className="p-button-success"
-                            />
-                        </div>
+                <div className="p-fluid grid">
+                    <div className="field col-12 ">
+                        <label>Pilih Kelas</label>
+                        <Dropdown
+                            loading={loadingKelas}
+                            value={selectedClass}
+                            options={listKelas}
+                            onChange={(e) => {
+                                setSelectedClass(e.value);
+                                fetchStudentsWithFingerprintData(1, 1000, e.value, searchStudentDropdown, 'dropdown');
+                            }}
+                            placeholder={loadingKelas ? "Sedang memuat data kelas..." : "Pilih Kelas"}
+                            optionLabel="label"
+                            showClear
+                            filter
+                        />
                     </div>
-                )}
+                    <div className="field col-12">
+                        <label>Cari Siswa <span className="text-red-600">*</span></label>
+                        <InputText
+                            value={searchStudentDropdown}
+                            onChange={handleSearchChange}
+                            placeholder="Ketik minimal 2 huruf nama siswa untuk mencari siswa..."
+                        />
+                    </div>
+                    <div className="field col-12 ">
+                        <label>Pilih Siswa <span className="text-red-600">*</span></label>
+                        <Dropdown
+                            value={selectedStudent}
+                            options={studentsDropdown}
+                            onChange={(e) => setSelectedStudent(e.value)}
+                            optionLabel="student_name"
+                            placeholder={loadingStudentDropdown ? "Sedang mencari siswa..." : "Pilih siswa"}
+                            loading={loadingStudentDropdown}
+                            itemTemplate={studentItemTemplate}
+                            emptyMessage={searchStudentDropdown ? `Tidak ada siswa dengan nama ${searchStudentDropdown}` : "Ketik nama siswa di kolom cari siswa"}
+                        />
+                    </div>
+
+                    <div className="field col-12 md:col-6">
+                        <label>Pilih Jari <span className='text-red-600'>*</span></label>
+                        <Dropdown
+                            value={selectedFinger}
+                            options={fingerOptions}
+                            onChange={(e) => setSelectedFinger(e.value)}
+                            optionLabel="label"
+                            placeholder="Pilih Jari"
+                        />
+                    </div>
+                    <div className="field col-12 md:col-6">
+                        <label>Nomor Mesin <span className='text-red-600'>*</span></label>
+                        <InputText
+                            value={machineNumber}
+                            onChange={(e) => setMachineNumber((e.target as HTMLInputElement).value)}
+                        />
+                    </div>
+                    <div className="col-12 text-center">
+                        <Button
+                            label="Daftarkan Sidik Jari"
+                            onClick={handleRegister}
+                            loading={registerLoading}
+                            className="p-button-success"
+                        />
+                    </div>
+                </div>
+
             </div>
 
-            {isLoggedIn ? <div className='card'>
+            <div className='card'>
                 <DataTable value={studentsTableData}
                     dataKey="id" className="mt-4"
                     filters={filters}
@@ -567,10 +563,12 @@ const FingerprintPage = () => {
                     rows={rowsPerPage}
                     totalRecords={totalRecords}
                     onPage={(event) => {
-                        setCurrentPage((event.page ?? 0) + 1);
+                        const page = (event.page ?? 0) + 1;
+                        setCurrentPage(page);
                         setRowsPerPage(event.rows);
-                        fetchStudentsTable((event.page ?? 0) + 1, event.rows, selectedClassTable ?? undefined, searchStudentTable)
+                        fetchStudentsWithFingerprintData(page, event.rows, selectedClassTable ?? undefined, searchStudentTable);
                     }}
+
                     rowsPerPageOptions={[10, 20, 50, 100]}
                     tableStyle={{ minWidth: "50rem" }}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -609,34 +607,28 @@ const FingerprintPage = () => {
                             <strong>Kelas:</strong> {selectedStudentFingerprint?.class_group?.class_name}
                         </p>
                         <div style={{ fontWeight: '600', marginBottom: '15px' }}>Daftar Sidik Jari:</div>
-                        {fingerprintData.filter((fp) => fp.pin === selectedStudentFingerprint?.id.toString()).length > 0 ? (
+                        {selectedStudentFingerprint?.credential_ids?.length > 0 ? (
                             <ul style={{ listStyleType: 'none', paddingLeft: '0' }}>
-                                {fingerprintData
-                                    .filter((fp) => fp.pin === selectedStudentFingerprint?.id.toString())
-                                    .map((fp, index) => {
-                                        const fingerLabel =
-                                            fingerList.find((option) => option.value === fp.fid)?.label || "Unknown";
-                                        return (
-                                            <li
-                                                key={index}
-                                                className="bg-green-100 border-green-500 border-1"
-                                                style={{
-                                                    padding: '8px',
-                                                    borderRadius: '5px',
-                                                    marginBottom: '8px',
-                                                    fontSize: '14px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                }}
-                                            >
-                                                <i
-                                                    className="pi pi-check-circle"
-                                                    style={{ marginRight: '10px', color: '#0077b6' }}
-                                                ></i>
-                                                {fingerLabel}
-                                            </li>
-                                        );
-                                    })}
+                                {selectedStudentFingerprint.credential_ids.map((fid: any, index: number) => {
+                                    const fingerLabel = fingerList.find(option => option.value === parseInt(fid))?.label || `Finger ID ${fid}`;
+                                    return (
+                                        <li
+                                            key={index}
+                                            className="bg-green-100 border-green-500 border-1"
+                                            style={{
+                                                padding: '8px',
+                                                borderRadius: '5px',
+                                                marginBottom: '8px',
+                                                fontSize: '14px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <i className="pi pi-check-circle" style={{ marginRight: '10px', color: '#0077b6' }}></i>
+                                            {fingerLabel}
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         ) : (
                             <div
@@ -657,9 +649,7 @@ const FingerprintPage = () => {
                         )}
                     </div>
                 </Dialog>
-
-
-            </div> : ""}
+            </div>
         </>
     );
 };

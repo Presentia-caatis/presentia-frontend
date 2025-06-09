@@ -367,11 +367,13 @@ const SchoolStudentAttendancePage = () => {
 
     const fetchAttendances = async (page = 1, perPage = 20) => {
         try {
+            if (!user?.school_id) return;
             setLoadingAttendance(true);
             setListAttendances([]);
             const params: any = {
                 page,
-                perPage
+                perPage,
+                school_id: user.school_id,
             };
 
             if (startDate) {
@@ -408,7 +410,7 @@ const SchoolStudentAttendancePage = () => {
         try {
             setLoadingKelas(true);
             if (!user?.school_id) return;
-            const response = await classGroupService.getClassGroups(1, 100);
+            const response = await classGroupService.getClassGroups(1, 100, {}, Number(user.school_id));
             setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
                 value: kelas.id
@@ -608,7 +610,32 @@ const SchoolStudentAttendancePage = () => {
                             //     <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedAttendances?.length} />
                             // )
                         }
+                        <Button
+                            icon="pi pi-copy"
+                            severity="secondary"
+                            label="Salin Tautan Halaman Kehadiran Publik"
+                            tooltip="Halaman kehadiran yang dapat diakses tanpa login"
+                            onClick={() => {
+                                const publicLink = `${window.location.origin}/kehadiran/${user?.school_id}`;
+                                navigator.clipboard.writeText(publicLink).then(() => {
+                                    toast.current?.show({
+                                        severity: 'success',
+                                        summary: 'Berhasil',
+                                        detail: 'Link kehadiran publik berhasil disalin!',
+                                        life: 3000
+                                    });
+                                }).catch(() => {
+                                    toast.current?.show({
+                                        severity: 'error',
+                                        summary: 'Gagal',
+                                        detail: 'Gagal menyalin link.',
+                                        life: 3000
+                                    });
+                                });
+                            }}
+                        />
                     </div>
+
                     <Button
                         icon="pi pi-upload"
                         severity="help"

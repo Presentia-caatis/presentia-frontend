@@ -154,6 +154,7 @@ const AdminSchoolPage = () => {
                         <Button
                             icon="pi pi-sign-in"
                             label="Masuk"
+                            loading={schoolLoading}
                             onClick={async () => {
                                 try {
                                     localStorage.setItem("targetSchoolId", rowData.id);

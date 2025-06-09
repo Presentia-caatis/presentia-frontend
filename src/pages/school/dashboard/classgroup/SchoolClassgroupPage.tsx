@@ -116,7 +116,14 @@ const SchoolClassgroupPage = () => {
         try {
             setLoading(true);
             setClassgroupList([]);
-            const { responseData } = await classGroupService.getClassGroups(page, perPage, filters);
+
+            const { responseData } = await classGroupService.getClassGroups(
+                page,
+                perPage,
+                filters,
+                user?.school_id
+            );
+
             setClassgroupList(responseData.data.data);
             setTotalRecords(responseData.data.total);
         } catch (error: any) {

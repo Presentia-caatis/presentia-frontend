@@ -2,8 +2,17 @@
 import axiosClient from '../utils/axiosClient';
 
 class ClassGroupService {
-    async getClassGroups(page: number = 1, perPage: number = 10, filters: Record<string, any> = {}): Promise<any> {
+    async getClassGroups(
+        page: number = 1,
+        perPage: number = 10,
+        filters: Record<string, any> = {},
+        schoolId?: number | null
+    ): Promise<any> {
         const params: Record<string, any> = { page, perPage };
+
+        if (schoolId) {
+            params.school_id = schoolId;
+        }
 
         if (filters) {
             Object.entries(filters).forEach(([key, filter]) => {

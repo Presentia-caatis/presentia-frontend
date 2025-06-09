@@ -68,6 +68,12 @@ const SchoolSideBar = () => {
                     command: () => window.open(`${window.origin}/school/attendance`, '_blank'),
                     className: currentPath === `/school/attendance` ? 'active-route' : 'menu-item',
                 },
+                {
+                    label: 'Halaman Kehadiran (Publik)',
+                    icon: 'pi pi-calendar',
+                    command: () => window.open(`${window.origin}/kehadiran/${user?.school_id}`, '_blank'),
+                    className: currentPath === `/kehadiran` ? 'active-route' : 'menu-item',
+                },
             ],
         },
         {

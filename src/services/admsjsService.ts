@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const ADMSJSAPI = 'https://admsjs.presentia.matradipti.org';
+const ADMSJSAPI = 'http://195.35.21.214:23002';
 
 const admsjsClient = axios.create({
     baseURL: ADMSJSAPI,
