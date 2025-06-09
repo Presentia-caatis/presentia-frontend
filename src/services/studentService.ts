@@ -39,14 +39,14 @@ class StudentService {
     }
 
     async storeViaFile(payload: any) {
-        try {
-            const response = await axiosClient.post(`/student/store-via-file`, payload);
-            return response.data;
-        } catch (error) {
-            console.error(`Error adding students`, error);
-            throw error;
-        }
+        const response = await axiosClient.post(`/student/store-via-file`, payload, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
     }
+
 
     async exportStudents() {
         try {

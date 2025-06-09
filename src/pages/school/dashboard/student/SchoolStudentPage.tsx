@@ -16,7 +16,7 @@ import { Toast } from 'primereact/toast';
 import { Skeleton } from 'primereact/skeleton';
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { FilterMatchMode } from 'primereact/api';
-import { FileUpload } from 'primereact/fileupload';
+import { FileUpload, FileUploadSelectEvent } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
@@ -88,9 +88,20 @@ const SchoolStudentPage = () => {
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
-    const handleFileSelect = (event: any) => {
-        setSelectedFile(event.files[0]);
+    const handleFileSelect = (event: FileUploadSelectEvent) => {
+        const file = event.files?.[0];
+        if (file instanceof File) {
+            setSelectedFile(file);
+        } else {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'File tidak valid',
+                detail: 'Harap pilih file Excel (.xlsx atau .xls)',
+                life: 3000
+            });
+        }
     };
+
 
     const handleClearFile = () => {
         setSelectedFile(null);
@@ -176,6 +187,7 @@ const SchoolStudentPage = () => {
             formData.append('file', selectedFile);
             formData.append('school_id', user.school_id.toString());
 
+
             toast.current?.show({
                 severity: 'info',
                 summary: 'Loading...',
@@ -187,24 +199,19 @@ const SchoolStudentPage = () => {
 
             toast.current?.show({
                 severity: 'success',
-                summary: 'Sukses',
-                detail: 'Data berhasil di import!',
-                life: 3000
+                summary: 'Import Selesai',
+                detail: 'Data siswa berhasil diimport.',
+                life: 5000,
             });
 
             setShowImportDialog(false);
             fileUploadRef.current?.clear();
             setSelectedFile(null);
         } catch (error) {
-            console.error('Error uploading file:', error);
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Gagal',
-                detail: 'Terjadi kesalahan saat mengupload file.',
-                life: 3000
-            });
+            console.log("importing students:", error);
         } finally {
             setImportLoading(false);
+            fetchStudents();
         }
     };
 
