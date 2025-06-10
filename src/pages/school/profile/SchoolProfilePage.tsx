@@ -10,7 +10,6 @@ import { confirmPopup, ConfirmPopup } from 'primereact/confirmpopup';
 import defaultLogoSekolah from '../../../assets/defaultLogoSekolah.png';
 import { formatSchoolName } from '../../../utils/formatSchoolName';
 import { useNavigate } from 'react-router-dom';
-import { hasAnyPermission } from '../../../utils/hasAnyPermissions';
 import { useAuth } from '../../../context/AuthContext';
 
 const SchoolProfilePage = () => {

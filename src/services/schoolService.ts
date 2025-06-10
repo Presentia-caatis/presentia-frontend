@@ -1,6 +1,6 @@
 import axiosClient from '../utils/axiosClient';
 
-export interface School {
+export interface SchoolResponse {
   id?: number;
   subscription_plan_id: number;
   school_name: string;
@@ -10,6 +10,14 @@ export interface School {
   created_at?: string;
   updated_at?: string;
   logoImagePath?: string,
+}
+
+export interface CreateSchoolPayload {
+  name: string;
+  address: string;
+  timezone: string;
+  user_id: number;
+  logo_image?: File;
 }
 
 class SchoolService {
@@ -29,9 +37,20 @@ class SchoolService {
     return response.data;
   }
 
-  async create(school: Omit<School, 'id'>) {
-    const response = await axiosClient.post('/school', school);
-    return response.data;
+  async create(payload: CreateSchoolPayload) {
+    const formData = new FormData();
+    formData.append('name', payload.name);
+    formData.append('address', payload.address);
+    formData.append('timezone', payload.timezone);
+    formData.append('user_id', String(payload.user_id));
+    if (payload.logo_image) {
+      formData.append('logo_image', payload.logo_image);
+    }
+
+    const { data } = await axiosClient.post('/school', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data as SchoolResponse;
   }
 
   async update(id: number, school: FormData) {

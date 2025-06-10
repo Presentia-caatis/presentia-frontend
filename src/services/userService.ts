@@ -7,6 +7,11 @@ class UserService {
         return { responseData: response.data, status: response.status };
     }
 
+    async getUnassignedUsers(): Promise<any> {
+        const response = await axiosClient.get('/user/unassignedUsers');
+        return { responseData: response.data, status: response.status };
+    }
+
     async getUserById(userId: number): Promise<any> {
         const response = await axiosClient.get(`/user/${userId}`);
         return { responseData: response.data, status: response.status };
@@ -21,6 +26,7 @@ class UserService {
         const response = await axiosClient.post('/user', payload);
         return { responseData: response.data, status: response.status };
     }
+
     async updateUser(payload: FormData): Promise<any> {
         const response = await axiosClient.post(`/user`, payload, {
             headers: {

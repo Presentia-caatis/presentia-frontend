@@ -3,7 +3,7 @@ import { PrimeReactProvider } from "primereact/api";
 import { LayoutConfigProvider } from "./context/LayoutConfigContext";
 import "./style/index.scss";
 import AppRoutes from "./routes";
-import { ToastContextProvider } from "./layout/ToastContext";
+import { ToastContextProvider } from './layout/ToastContext';
 import { AuthProvider } from "./context/AuthContext";
 import { SchoolProvider } from "./context/SchoolContext";
 import { BrowserRouter } from "react-router-dom";

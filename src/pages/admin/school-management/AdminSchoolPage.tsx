@@ -38,6 +38,17 @@ const AdminSchoolPage = () => {
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
 
+
+    useEffect(() => {
+        if (isModalVisible) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+
+        return () => document.body.classList.remove('modal-open');
+    }, [isModalVisible]);
+
     const addSchool = (newSchool: SchoolData) => {
         setSchoolList((prev) => [...prev, newSchool]);
     };
