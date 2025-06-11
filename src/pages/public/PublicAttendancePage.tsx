@@ -25,6 +25,7 @@ import { absencePermitTypeService } from '../../services/absencePermitService';
 import checkInStatusService from '../../services/checkInStatusService';
 import classGroupService from '../../services/classGroupService';
 import { Toast } from 'primereact/toast';
+import attendanceReferenceService from '../../services/attendanceReferenceService';
 
 const countdownTime = 15;
 
@@ -34,6 +35,7 @@ const PublicAttendancePage = () => {
     const [autoSwitch] = useState<boolean>(() => {
         return JSON.parse(localStorage.getItem("autoSwitch") || "true");
     });
+    const toast = useRef<Toast>(null);
     const [pauseCountdown, setPauseCountdown] = useState<boolean>(true);
     const [activeIndex, setActiveIndex] = useState(0);
     const [attendanceData, setAttendanceData] = useState<any>([]);
@@ -51,8 +53,8 @@ const PublicAttendancePage = () => {
     const [totalRecords, setTotalRecords] = useState(0);
     const [listKelas, setListKelas] = useState([]);
     const [loadingKelas, setLoadingKelas] = useState(true);
-    const [loadingStatusPresensi, setLoadingStatusPresensi] = useState(true);
-    const [listStatusPresensi, setListStatusPresensi] = useState([]);
+    const [loadingStatusKehadiran, setLoadingStatusKehadiran] = useState(true);
+    const [listStatusKehadiran, setListStatusKehadiran] = useState([]);
     const [selectedKelas, setSelectedKelas] = useState<number[]>([]);
     const [selectedStatusPresensi, setSelectedStatusPresensi] = useState<number[]>([]);
     const [startDate, setStartDate] = useState<Date | null>(new Date());
@@ -181,8 +183,7 @@ const PublicAttendancePage = () => {
 
     useEffect(() => {
         fetchKelas();
-        // fetchStatusPresensi();
-        // fetchStatusAbsensi();
+        fetchStatusKehadiran();
     }, []);
 
     useEffect(() => {
@@ -263,22 +264,23 @@ const PublicAttendancePage = () => {
         }
     };
 
-    // const fetchStatusPresensi = async () => {
-    //     try {
-    //         setLoadingStatusPresensi(true);
-    //         const { responseData } = await checkInStatusService.getAll(1, 100);
-    //         setListStatusPresensi(responseData.data.data.map((status: { id: number; status_name: string, late_duration: number }) => ({
-    //             label: status.status_name,
-    //             late_duration: status.late_duration,
-    //             value: status.id
-    //         })));
-    //     } catch (error) {
-    //         console.error('Error fetching check-in status:', error);
-    //         setListStatusPresensi([]);
-    //     } finally {
-    //         setLoadingStatusPresensi(false);
-    //     }
-    // };
+    const fetchStatusKehadiran = async () => {
+        try {
+            setLoadingStatusKehadiran(true);
+            const response = await attendanceReferenceService.getAttendanceReferences(schoolId);
+            console.log(response.data.data);
+            // setListStatusKehadiran(responseData.data.data.map((status: { id: number; status_name: string, late_duration: number }) => ({
+            //     label: status.status_name,
+            //     late_duration: status.late_duration,
+            //     value: status.id
+            // })));
+        } catch (error) {
+            console.error('Error fetching check-in status:', error);
+            setListStatusKehadiran([]);
+        } finally {
+            setLoadingStatusKehadiran(false);
+        }
+    };
 
 
     // const fetchStatusAbsensi = async () => {
@@ -487,7 +489,7 @@ const PublicAttendancePage = () => {
                         </div>
                         <div className="col-12 md:col-6 xl:col-3">
                             <h5>Pilih Status Presensi</h5>
-                            <MultiSelect filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusPresensi} value={selectedStatusPresensi} options={listStatusPresensi} onChange={(e) => {
+                            <MultiSelect filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusKehadiran} value={selectedStatusPresensi} options={listStatusKehadiran} onChange={(e) => {
                                 setSelectedStatusPresensi(e.value);
                             }} optionLabel="label" className="w-full " />
                         </div>

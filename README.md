@@ -34,7 +34,27 @@ To start the development server:
 ```bash
 npm run dev
 ```
-The application will be accessible at `http://localhost:5173` by default.
+The application will be accessible at `http://localhost:8080` by default.
+
+---
+
+## Local
+
+To start the local server (dont forget to start backend local server first):
+```bash
+npm run dev:localdev
+```
+The application will be accessible at `http://localhost:8080` by default.
+
+---
+
+## Production
+
+To start the production server:
+```bash
+npm run dev:production
+```
+The application will be accessible at `http://localhost:8080` by default.
 
 ---
 
