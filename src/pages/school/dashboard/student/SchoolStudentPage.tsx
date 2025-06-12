@@ -299,7 +299,7 @@ const SchoolStudentPage = () => {
         try {
             if (!user?.school_id) return;
             setLoadingKelas(true);
-            const response = await classGroupService.getClassGroups(1, 100);
+            const response = await classGroupService.getClassGroups(1, 100, {}, Number(user.school_id));
             setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
                 label: kelas.class_name,
                 value: kelas.id
