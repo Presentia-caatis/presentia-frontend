@@ -455,8 +455,8 @@ const SchoolStudentAttendancePage = () => {
 
                 if (payload.remove_document == true) {
                     toast.current?.show({
-                        severity: "success",
-                        summary: "Sukses",
+                        severity: "info",
+                        summary: "Dihapus",
                         detail: "Dokumen bukti kehadiran berhasil dihapus!",
                         life: 3000,
                     });
