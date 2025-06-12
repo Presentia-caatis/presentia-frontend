@@ -294,6 +294,18 @@ const SchoolStudentAttendancePage = () => {
                     status.late_duration === -1
             );
 
+            if (file && selectedStatusAbsensi === null) {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Gagal",
+                    detail: "Status Absensi wajib dipilih jika ada bukti absensi!",
+                    life: 3000,
+                });
+                setLoadingSave(false);
+                return;
+            }
+
+
             if (!isAbsence) {
                 const window = editAttendanceData.attendance_window;
 
@@ -860,7 +872,7 @@ const SchoolStudentAttendancePage = () => {
                         header="Status"
                         body={(rowData) => {
                             const status = rowData.check_in_status?.status_name || "-";
-                            const permit = listStatusAbsensi.find(p => p.value === rowData.absence_permit_id);
+                            const permit = listStatusAbsensi.find(p => p.value === rowData.absence_permit?.absence_permit_type_id);
                             const permitLabel = permit ? permit.label : null;
 
                             return (
@@ -1119,9 +1131,24 @@ const SchoolStudentAttendancePage = () => {
                                         }} />
                                     </div>
                                     <div className="field">
+
                                         <label>Bukti Absensi (Format: PDF, JPG, PNG | Ukuran maksimal 5 MB)</label>
+                                        {!file && previewMode && (
+                                            <p style={{
+                                                marginTop: '0.5rem',
+                                                padding: '0.75rem',
+                                                backgroundColor: '#F9FAFB',
+                                                border: '1px dashed #CBD5E0',
+                                                borderRadius: '6px',
+                                                color: '#6B7280',
+                                                fontSize: '0.875rem'
+                                            }}>
+                                                Belum ada dokumen bukti absensi
+                                            </p>
+                                        )}
+
                                         <div className="mt-2 flex flex-column gap-2">
-                                            {!file && (
+                                            {!file && !previewMode && (
                                                 <FileUpload
                                                     name="demo[]"
                                                     accept="application/pdf,image/jpeg,image/png"
