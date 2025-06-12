@@ -55,6 +55,7 @@ interface AttendanceData {
             path: string;
             document_name: string;
         };
+        document_id?: number;
     };
 }
 
@@ -366,15 +367,12 @@ const SchoolStudentAttendancePage = () => {
 
             let documentId = null;
 
-            if (isFileChanged && editAttendanceData.absence_permit?.document?.id) {
-                try {
-                    await documentService.deleteDocument(editAttendanceData.absence_permit.document.id);
-                } catch (err) {
-                    console.warn("Gagal menghapus dokumen lama:", err);
-                }
+            if (!isFileChanged) {
+                console.log(editAttendanceData);
+                documentId = editAttendanceData.absence_permit?.document_id ?? null;
             }
 
-            if (selectedStatusAbsensi && file && file instanceof File) {
+            if (file && file instanceof File) {
                 try {
                     const now = new Date();
                     const wibTime = new Date(now.getTime() + 7 * 60 * 60 * 1000);
@@ -391,19 +389,12 @@ const SchoolStudentAttendancePage = () => {
                     if (uploadResponse?.data?.id) {
                         documentId = uploadResponse.data.id;
                     }
-
-                    toast.current?.show({
-                        severity: "success",
-                        summary: "Sukses",
-                        detail: "Upload bukti absensi berhasil!",
-                        life: 3000,
-                    });
                 } catch (error) {
-                    console.error("Gagal mengunggah dokumen:", error);
+                    console.error("Gagal upload dokumen:", error);
                     toast.current?.show({
                         severity: "error",
                         summary: "Gagal",
-                        detail: "Gagal mengunggah dokumen!",
+                        detail: "Upload dokumen gagal!",
                         life: 3000,
                     });
                     setLoadingSave(false);
@@ -423,25 +414,44 @@ const SchoolStudentAttendancePage = () => {
             }
 
             const attendanceIds = [editAttendanceData.id];
-
+            const hasExistingPermit = !!editAttendanceData.absence_permit?.id;
+            const permitId = editAttendanceData.absence_permit?.id;
             if (selectedStatusAbsensi) {
-                await absencePermitService.create({
+                const payload: any = {
                     attendance_ids: attendanceIds,
                     absence_permit_type_id: selectedStatusAbsensi,
                     description: absenceDescription ?? "Siswa tidak masuk",
-                    document_id: documentId ?? null,
-                });
+                    document_id: documentId,
+                };
+
+                if (!documentId && isFileChanged && editAttendanceData.absence_permit?.document_id) {
+                    payload.remove_document = true;
+                }
+
+                if (hasExistingPermit) {
+                    await absencePermitService.update(permitId, payload);
+                } else {
+                    await absencePermitService.create(payload);
+                }
 
                 toast.current?.show({
                     severity: "success",
                     summary: "Sukses",
-                    detail: "Data absensi berhasil diperbarui!",
+                    detail: hasExistingPermit ? "Data izin diperbarui!" : "Data izin ditambahkan!",
                     life: 3000,
                 });
-            } else if (editAttendanceData.absence_permit?.id) {
-                await absencePermitService.delete(
-                    editAttendanceData.absence_permit.id
-                );
+
+                if (payload.remove_document == true) {
+                    toast.current?.show({
+                        severity: "success",
+                        summary: "Sukses",
+                        detail: "Dokumen bukti kehadiran berhasil dihapus!",
+                        life: 3000,
+                    });
+                }
+
+            } else if (hasExistingPermit) {
+                await absencePermitService.delete(permitId);
 
                 toast.current?.show({
                     severity: "info",
@@ -449,6 +459,15 @@ const SchoolStudentAttendancePage = () => {
                     detail: "Data izin ketidakhadiran telah dihapus.",
                     life: 3000,
                 });
+
+                if (editAttendanceData.absence_permit?.document_id) {
+                    try {
+                        console.log(documentId);
+                        await documentService.deleteDocument(editAttendanceData.absence_permit.document_id);
+                    } catch (err) {
+                        console.warn("Gagal menghapus dokumen lama:", err);
+                    }
+                }
             }
 
 
@@ -1006,37 +1025,49 @@ const SchoolStudentAttendancePage = () => {
                                 options={listStatusPresensi}
                                 disabled={previewMode}
                                 onChange={(e) => {
-                                    const selectedStatus = listStatusPresensi.find(
-                                        (status: any) => status.value === e.value
-                                    ) as { value: number; late_duration: number } | undefined;
-
+                                    const selectedStatus = listStatusPresensi.find((status: { value: number; late_duration: number }) => status.value === e.value) as { value: number; late_duration: number } | undefined;
                                     if (!selectedStatus || !editAttendanceData) return;
 
                                     const isTidakHadir = selectedStatus.late_duration === -1;
+                                    const prevStatus = listStatusPresensi.find((status: { value: number; late_duration: number }) => status.value === editAttendanceData.check_in_status_id) as { value: number; late_duration: number } | undefined;
+                                    const wasTidakHadir = prevStatus?.late_duration === -1;
+
+                                    let newCheckIn = editAttendanceData.check_in_time;
+                                    let newCheckOut = editAttendanceData.check_out_time;
+
+                                    if (wasTidakHadir && !isTidakHadir) {
+                                        const window = editAttendanceData.attendance_window;
+                                        const baseCheckIn = new Date(`${window.date}T${window.check_in_start_time}`);
+                                        const baseCheckOut = new Date(`${window.date}T${window.check_out_end_time}`);
+
+                                        if (selectedStatus.late_duration > 0) {
+                                            newCheckIn = new Date(baseCheckIn.getTime() * 60 * 1000);
+                                        } else {
+                                            newCheckIn = baseCheckIn;
+                                        }
+
+                                        newCheckOut = baseCheckOut;
+                                    }
+
 
                                     setEditAttendanceData({
                                         ...editAttendanceData,
                                         check_in_status_id: e.value,
-                                        check_in_time: isTidakHadir ? null : backupAttendanceTime.checkIn,
-                                        check_out_time: isTidakHadir ? null : backupAttendanceTime.checkOut,
+                                        check_in_time: isTidakHadir ? null : newCheckIn,
+                                        check_out_time: isTidakHadir ? null : newCheckOut,
                                     });
 
                                     if (isTidakHadir) {
                                         setSelectedStatusAbsensi(backupPermit.typeId);
                                         setAbsenceDescription(backupPermit.description);
-
-                                        if (!isFileChanged) {
-                                            setFile(backupPermit.file);
-                                        }
+                                        if (!isFileChanged) setFile(backupPermit.file);
                                     } else {
                                         setSelectedStatusAbsensi(null);
                                         setAbsenceDescription("Siswa tidak masuk");
-
-                                        if (!isFileChanged) {
-                                            setFile(null);
-                                        }
+                                        if (!isFileChanged) setFile(null);
                                     }
                                 }}
+
 
 
                                 placeholder="Pilih Status"
