@@ -283,7 +283,7 @@ const SchoolStudentPage = () => {
             if (!school?.id) return;
             setStudentData([]);
 
-            const response = await studentService.getStudent(page, perPage, classGroupId, search, filters);
+            const response = await studentService.getStudent(page, perPage, classGroupId, search, filters, school.id);
             setStudentData(response.data.data);
             setTotalRecords(response.data.total);
         } catch (error) {

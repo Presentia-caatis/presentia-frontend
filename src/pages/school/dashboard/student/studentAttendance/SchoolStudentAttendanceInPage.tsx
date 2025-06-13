@@ -107,7 +107,7 @@ const SchoolStudentAttendanceInPage = () => {
                     <InputText
                         value={nis}
                         onChange={(e) => setNis(e.target.value)}
-                        className="w-full text-center py-4 text-2xl border border-2 border-black-alpha-90"
+                        className="w-full text-center py-4 text-2xl border border-1 border-gray-400"
                         placeholder="Masukkan NIS"
                     />
                 </form>

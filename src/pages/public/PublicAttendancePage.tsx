@@ -3,86 +3,98 @@ import { useEffect, useRef, useState } from 'react';
 import { Card } from 'primereact/card';
 import { Tag } from 'primereact/tag';
 import { Button } from 'primereact/button';
-import { Tooltip } from 'primereact/tooltip';
 import { useNavigate, useParams } from 'react-router-dom';
 import defaultLogoSekolah from "../../assets/defaultLogoSekolah.png";
 import AttendanceService from '../../services/attendanceService';
 import { Helmet } from 'react-helmet';
-import { formatSchoolName } from '../../utils/formatSchoolName';
-import { TabMenu } from 'primereact/tabmenu';
-import { formatTime } from '../../utils/formatTime';
-import { InputSwitch } from 'primereact/inputswitch';
+import { formatDateWithDay, formatTime } from '../../utils/formatTime';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Skeleton } from 'primereact/skeleton';
 import schoolService from '../../services/schoolService';
 import { Calendar, CalendarProps } from 'primereact/calendar';
-import { MultiSelect } from 'primereact/multiselect';
 import { addHours } from 'date-fns';
 import { InputText } from 'primereact/inputtext';
-import { absencePermitTypeService } from '../../services/absencePermitService';
-import checkInStatusService from '../../services/checkInStatusService';
-import classGroupService from '../../services/classGroupService';
 import { Toast } from 'primereact/toast';
-import attendanceReferenceService from '../../services/attendanceReferenceService';
-
-const countdownTime = 15;
+import { Dropdown } from 'primereact/dropdown';
+import studentService from '../../services/studentService';
 
 const PublicAttendancePage = () => {
     const navigate = useNavigate();
     const { schoolId } = useParams();
-    const [autoSwitch] = useState<boolean>(() => {
-        return JSON.parse(localStorage.getItem("autoSwitch") || "true");
-    });
     const toast = useRef<Toast>(null);
-    const [pauseCountdown, setPauseCountdown] = useState<boolean>(true);
-    const [activeIndex, setActiveIndex] = useState(0);
     const [attendanceData, setAttendanceData] = useState<any>([]);
-    const [loading, setLoading] = useState(true);
-    const [countdown, setCountdown] = useState(countdownTime);
-    const [currentTime, setCurrentTime] = useState(new Date());
-    const formattedDate = currentTime.toLocaleDateString('id-ID');
-    const formattedTime = currentTime.toLocaleTimeString('id-ID', { hour12: false });
-    const [entryStartTime, setEntryStartTime] = useState<Date | null>(null);
-    const [entryEndTime, setEntryEndTime] = useState<Date | null>(null);
-    const [exitStartTime, setExitStartTime] = useState<Date | null>(null);
-    const [exitEndTime, setExitEndTime] = useState<Date | null>(null);
+    const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
-    const [listKelas, setListKelas] = useState([]);
-    const [loadingKelas, setLoadingKelas] = useState(true);
-    const [loadingStatusKehadiran, setLoadingStatusKehadiran] = useState(true);
-    const [listStatusKehadiran, setListStatusKehadiran] = useState([]);
-    const [selectedKelas, setSelectedKelas] = useState<number[]>([]);
-    const [selectedStatusPresensi, setSelectedStatusPresensi] = useState<number[]>([]);
-    const [startDate, setStartDate] = useState<Date | null>(new Date());
-    const [endDate, setEndDate] = useState<Date | null>(new Date());
-    const [searchName, setSearchName] = useState('');
-    const [debouncedSearchName, setDebouncedSearchName] = useState('');
-    const [debouncedSelectedKelas, setDebouncedSelectedKelas] = useState<number[]>([]);
-    const [loadingStatusAbsensi, setLoadingStatusAbsensi] = useState(true);
-    const [listStatusAbsensi, setListStatusAbsensi] = useState<{ label: string; value: number }[]>([]);
-    const isFirstLoad = useRef(true);
-    const isFilterChanging = useRef(false);
+    const [startDate, setStartDate] = useState<Date>(() => {
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth(), 1);
+    });
 
+    const [endDate, setEndDate] = useState<Date>(() => {
+        return new Date();
+    });
 
+    const [selectedStudent, setSelectedStudent] = useState<any>({ value: '', label: '', full: null });
+    const [studentOptions, setStudentOptions] = useState<any[]>([]);
+    const [studentSearchTerm, setStudentSearchTerm] = useState('');
+    const [studentLoading, setStudentLoading] = useState(false);
+    const [debouncedStudentSearchTerm, setDebouncedStudentSearchTerm] = useState('');
+    const [sortField, setSortField] = useState<string>('attendanceWindow.date');
+    const [sortOrder, setSortOrder] = useState<1 | -1>(-1);
 
     const [school, setSchool] = useState<any>(null);
-    const [schoolLoading, setSchoolLoading] = useState(true);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setDebouncedStudentSearchTerm(studentSearchTerm);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [studentSearchTerm]);
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            if (debouncedStudentSearchTerm.length < 3) {
+                setStudentOptions([]);
+                return;
+            }
+
+            setStudentLoading(true);
+            try {
+                const response = await studentService.getStudent(1, 20, undefined, debouncedStudentSearchTerm, undefined, schoolId);
+                const students = response.data.data;
+
+                const options = students.map((student: any) => ({
+                    label: `${student.student_name.toUpperCase()} (${student.nis})`,
+                    value: student.id,
+                    full: student
+                }));
+
+                setStudentOptions(options);
+
+            } catch (error) {
+                console.error('Error fetching student options', error);
+            } finally {
+                setStudentLoading(false);
+            }
+        };
+
+        fetchStudents();
+    }, [debouncedStudentSearchTerm]);
+
+
 
     const fetchSchool = async (id: string | undefined) => {
         if (!id) return;
-        setSchoolLoading(true);
         try {
             const response = await schoolService.getById(parseInt(id));
             setSchool(response.data);
         } catch (error) {
             console.error("Failed to load school", error);
             navigate('/404');
-        } finally {
-            setSchoolLoading(false);
         }
     };
 
@@ -106,12 +118,10 @@ const PublicAttendancePage = () => {
     };
 
 
-    const handleRefresh = async () => {
-        fetchAttendance(currentPage, rowsPerPage);
-    };
 
     const fetchAttendance = async (page = 1, perPage = 20) => {
-        if (!schoolId || !startDate || !endDate) return;
+        if (!schoolId || !startDate || !endDate || !selectedStudent.value) return;
+
 
         try {
             setLoading(true);
@@ -122,7 +132,9 @@ const PublicAttendancePage = () => {
                 school_id: schoolId,
                 simplify: "1",
                 filter: {}
+
             };
+
 
             if (startDate) {
                 params.startDate = startDate.toISOString().slice(0, 10);
@@ -131,18 +143,12 @@ const PublicAttendancePage = () => {
                 params.endDate = endDate.toISOString().slice(0, 10);
             }
 
-            if (debouncedSelectedKelas.length > 0) {
-                params.classGroup = debouncedSelectedKelas.join(',');
+            if (selectedStudent) {
+                params.filter.student_id = selectedStudent.value;
             }
 
+            params[`sort[${sortField}]`] = sortOrder === -1 ? 'desc' : 'asc';
 
-            if (selectedStatusPresensi.length > 0) {
-                params.filter.check_in_status_id = selectedStatusPresensi.join(',');
-            }
-
-            if (debouncedSearchName.trim()) {
-                params.filter['student.student_name'] = debouncedSearchName;
-            }
 
             const response: any = await AttendanceService.getAttendances(params);
 
@@ -159,145 +165,31 @@ const PublicAttendancePage = () => {
         } catch (error: any) {
             console.error("Error fetching attendance data", error);
         } finally {
-            setCountdown(countdownTime);
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setDebouncedSearchName(searchName);
-        }, 500);
-
-        return () => clearTimeout(timeout);
-    }, [searchName]);
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            setDebouncedSelectedKelas(selectedKelas);
-        }, 500);
-
-        return () => clearTimeout(timeout);
-    }, [selectedKelas]);
-
-
-    useEffect(() => {
-        fetchKelas();
-        fetchStatusKehadiran();
-    }, []);
 
     useEffect(() => {
         fetchSchool(schoolId);
     }, [schoolId]);
 
     useEffect(() => {
-        isFilterChanging.current = true;
         setCurrentPage(1);
-    }, [debouncedSearchName, debouncedSelectedKelas, selectedStatusPresensi, startDate, endDate]);
+    }, [startDate, endDate, sortOrder, sortField, selectedStudent]);
 
 
     useEffect(() => {
-        if (isFirstLoad.current) {
-            isFirstLoad.current = false;
-            return;
-        }
-
-        if (isFilterChanging.current && currentPage !== 1) {
-            return;
-        }
-
+        if (!selectedStudent) return;
         fetchAttendance(currentPage, rowsPerPage);
-
-        isFilterChanging.current = false;
     }, [
-        debouncedSearchName,
-        debouncedSelectedKelas,
-        selectedStatusPresensi,
+        selectedStudent,
         startDate,
         endDate,
         currentPage,
-        rowsPerPage
+        rowsPerPage,
+        sortField,
+        sortOrder
     ]);
-
-    useEffect(() => {
-        localStorage.setItem("autoSwitch", JSON.stringify(autoSwitch));
-    }, [autoSwitch]);
-
-    useEffect(() => {
-        const countdownInterval = setInterval(() => {
-            setCountdown((prevCountdown) => {
-                if (loading) return countdownTime;
-                if (pauseCountdown) return prevCountdown;
-                if (prevCountdown === 1) {
-                    handleRefresh();
-                    return countdownTime;
-                }
-                return prevCountdown - 1;
-            });
-        }, 1000);
-
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => {
-            clearInterval(countdownInterval);
-            clearInterval(timer);
-        };
-    }, [loading, pauseCountdown]);
-
-
-    const fetchKelas = async () => {
-        try {
-            setLoadingKelas(true);
-            if (!schoolId) return;
-            const response = await classGroupService.getClassGroups(1, 100, {}, Number(schoolId));
-            setListKelas(response.responseData.data.data.map((kelas: { id: number; class_name: string }) => ({
-                label: kelas.class_name,
-                value: kelas.id
-            })));
-
-        } catch (error) {
-            console.error('Error fetching students:', error);
-        } finally {
-            setLoadingKelas(false);
-        }
-    };
-
-    const fetchStatusKehadiran = async () => {
-        try {
-            setLoadingStatusKehadiran(true);
-            const response = await attendanceReferenceService.getAttendanceReferences(schoolId);
-            console.log(response.data.data);
-            // setListStatusKehadiran(responseData.data.data.map((status: { id: number; status_name: string, late_duration: number }) => ({
-            //     label: status.status_name,
-            //     late_duration: status.late_duration,
-            //     value: status.id
-            // })));
-        } catch (error) {
-            console.error('Error fetching check-in status:', error);
-            setListStatusKehadiran([]);
-        } finally {
-            setLoadingStatusKehadiran(false);
-        }
-    };
-
-
-    // const fetchStatusAbsensi = async () => {
-    //     try {
-    //         setLoadingStatusAbsensi(true);
-    //         const responseData = await absencePermitTypeService.getAll(1, 100);
-    //         setListStatusAbsensi(responseData.data.data.map((permit: { id: number; permit_name: string }) => ({
-    //             label: permit.permit_name,
-    //             value: permit.id
-    //         })));
-    //     } catch (error) {
-    //         console.error('Error fetching absence permit type', error);
-    //         setListStatusAbsensi([]);
-    //     } finally {
-    //         setLoadingStatusAbsensi(false);
-    //     }
-    // };
 
     if (!school) {
         return (
@@ -307,32 +199,6 @@ const PublicAttendancePage = () => {
         );
     }
 
-    const eventDetail = {
-        isEvent: false,
-        name: 'Pekan Kreativitas',
-        startTime: '08:00',
-        endTime: '12:00',
-    };
-
-    // const fetchLeaderboard = async () => {
-    //     try {
-    //         const response = await AttendanceService.getAttendances({
-    //             type: "in",
-    //             sortBy: "time",
-    //             order: "asc",
-    //             limit: 3
-    //         });
-
-    //         setTopThree(response.data.data);
-    //     } catch (error) {
-    //         console.error("Failed to fetch leaderboard", error);
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     fetchLeaderboard();
-    // }, []);
-
 
 
     return (
@@ -341,8 +207,8 @@ const PublicAttendancePage = () => {
             <Helmet>
                 <title>{school ? school.name : "Presentia"}</title>
             </Helmet>
-            <div className='flex h-8rem justify-content-between w-full px-4 gap-1'>
-                <div className='my-auto flex'>
+            <div className='flex h-8rem justify-content-center md:justify-content-between w-full px-4 gap-1'>
+                <div className='my-auto hidden md:flex'>
                     <Button
                         icon="pi pi-copy"
                         severity="secondary"
@@ -371,7 +237,7 @@ const PublicAttendancePage = () => {
 
                 <div className='my-auto text-center flex gap-3'>
                     <img
-                        loading="lazy" src={school?.logoImagePath || defaultLogoSekolah}
+                        loading="lazy" src={school?.logo_image_path || defaultLogoSekolah}
                         alt="Logo Sekolah"
                         className='w-4rem h-4rem '
                         onError={(e) => {
@@ -380,198 +246,196 @@ const PublicAttendancePage = () => {
                     />
                     <div className=' text-lg md:text-6xl font-bold text-black-alpha-90 my-auto hidden md:block'>{school ? school.name : "Loading..."}</div>
                 </div>
-                <div className='my-auto'>
-                    <div className='flex justify-content-center gap-2 align-content-end'>
-                        <Tag
-                            value={countdown.toString()}
-                            severity="info"
-                            className={`w-3rem text-xl cursor-pointer transition-all ${pauseCountdown ? 'opacity-50' : ''}`}
-                            id="countdown-tooltip"
-                            data-pr-tooltip={`Klik untuk ${pauseCountdown ? "Mengaktifkan" : "Menonaktifkan"} Countdown`}
-                            rounded
-                            style={{
-                                border: '1px solid var(--blue-500)',
-                                backgroundColor: pauseCountdown ? 'var(--gray-300)' : 'transparent',
-                                color: pauseCountdown ? 'var(--gray-600)' : 'var(--blue-500)'
-                            }}
-                            onClick={() => setPauseCountdown(!pauseCountdown)}
-                        />
+                <div className='my-auto hidden md:block w-17rem'>
 
-                        <Button
-                            label="Refresh"
-                            icon="pi pi-refresh"
-                            className="p-button p-button-primary"
-                            onClick={() => handleRefresh()}
-                            loading={loading}
-                        />
-                        <Tooltip target="#countdown-tooltip" position="left" />
-                    </div>
                 </div>
             </div>
-            <div className="w-full flex justify-content-center">        <Card className="text-center shadow-1 col-12 py-0 w-10 overflow-auto mb-4">
-                <div className="flex justify-content-between align-items-center mb-4 gap-2 white-space-nowrap">
-                    <div>
-                        <h5>{formattedDate}</h5>
-                        <p>{formattedTime}</p>
+            <div className="w-full flex justify-content-center">
+                <Card className="text-center shadow-1 col-12 py-0 w-10 overflow-auto mb-4">
+                    <div className="text-center w-full lg:pl-3 ">
+                        <h2 className='font-bold'>DAFTAR PRESENSI SISWA</h2>
                     </div>
-                    <div className="sm:block hidden text-center w-full lg:pl-3 ">
-                        <h2>Daftar presensi masuk siswa</h2>
-                    </div>
+
                     <div>
-                        {eventDetail?.isEvent ? (
-                            <div className="flex flex-column align-items-center gap-2">
-                                <Tag value="Sedang Event" severity="info" />
-                                <div
-                                    className="text-sm text-secondary border-round px-2 py-1 text-left"
-                                    style={{
-                                        backgroundColor: 'var(--blue-50)',
-                                        border: '1px solid var(--blue-300)',
-                                    }}
-                                >
-                                    Event: {eventDetail.name} <br />
+                        <div className="grid mt-4 ">
+                            <div className="col-12 md:col-6">
+                                <h5>Pilih Tanggal Kehadiran <span className="text-red-600">*</span></h5>
+                                <div className="flex gap-2 justify-content-center">
+                                    <div>
+                                        <Calendar
+                                            id="startDate"
+                                            value={startDate}
+                                            onChange={handleStartDateChange}
+                                            maxDate={endDate ?? undefined}
+                                            readOnlyInput
+                                            className="w-full"
+                                            placeholder="Tanggal Awal"
+                                            showIcon
+                                            dateFormat="dd/mm/yy"
+                                        />
+                                    </div>
+                                    <div className="my-auto">
+                                        -
+                                    </div>
+                                    <div>
+                                        <Calendar
+                                            id="endDate"
+                                            value={endDate}
+                                            onChange={handleEndDateChange}
+                                            minDate={startDate ?? undefined}
+                                            readOnlyInput
+                                            className="w-full"
+                                            placeholder="Tanggal Akhir"
+                                            showIcon
+                                            dateFormat="dd/mm/yy"
+                                        />
+                                    </div>
                                 </div>
+                                {startDate && endDate && (
+                                    <div className="text-xl font-semibold mb-3 text-center pt-4">
+                                        Menampilkan kehadiran{" "}
+                                        {startDate.toDateString() === endDate.toDateString() ? (
+                                            <span className="text-primary">{formatDateWithDay(startDate)}</span>
+                                        ) : (
+                                            <>
+                                                dari <span className="text-primary">{formatDateWithDay(startDate)}</span> sampai{" "}
+                                                <span className="text-primary">{formatDateWithDay(endDate)}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <Tag value="Tidak Ada Event" severity="secondary" />
-                        )}
-                    </div>
-                </div>
-                <div>
-                    <div className="grid mt-4">
-                        <div className="col-12 md:col-6 xl:col-3">
-                            <h5>Pilih Tanggal Kehadiran <span className="text-red-600">*</span></h5>
-                            <div className="flex gap-2">
-                                <div>
-                                    <Calendar
-                                        id="startDate"
-                                        value={startDate}
-                                        onChange={handleStartDateChange}
-                                        maxDate={endDate ?? undefined}
-                                        readOnlyInput
-                                        className="w-full"
-                                        placeholder="Tanggal Awal"
-                                        showIcon
-                                        dateFormat="dd/mm/yy"
-                                    />
-                                </div>
-                                <div className="my-auto">
-                                    -
-                                </div>
-                                <div>
-                                    <Calendar
-                                        id="endDate"
-                                        value={endDate}
-                                        onChange={handleEndDateChange}
-                                        minDate={startDate ?? undefined}
-                                        readOnlyInput
-                                        className="w-full"
-                                        placeholder="Tanggal Akhir"
-                                        showIcon
-                                        dateFormat="dd/mm/yy"
-                                    />
+                            <div className="col-12 md:col-6">
+                                <h5 className='white-space-nowrap'>Cari Nama Siswa (min. 3 huruf) <span className="text-red-600">*</span></h5>
+                                <div className='flex flex-column justify-content-center'>
+                                    <div>
+                                        <InputText
+                                            value={studentSearchTerm}
+                                            onChange={(e) => setStudentSearchTerm(e.target.value)}
+                                            placeholder="Ketik nama siswa"
+                                            className="w-full mb-2"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Dropdown
+                                            value={selectedStudent.value}
+                                            onChange={(e) => {
+                                                const selectedId = e.value;
+
+                                                const selected = studentOptions.find(opt => opt.value === selectedId);
+
+                                                if (selected) {
+                                                    setSelectedStudent(selected);
+                                                    console.log(selected);
+                                                }
+                                            }}
+                                            options={studentOptions}
+                                            optionLabel="label"
+                                            placeholder={studentSearchTerm.length < 3 ? 'Ketik min. 3 huruf untuk cari siswa' : studentOptions.length === 0 ? 'Tidak ada hasil' : 'Pilih siswa'}
+                                            showClear
+                                            disabled={studentSearchTerm.length < 3 || studentOptions.length === 0}
+                                            className="w-full"
+                                            loading={studentLoading}
+                                        />
+
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="col-12 md:col-6 xl:col-3">
-                            <h5>Pilih Kelas</h5>
-                            <MultiSelect filter placeholder="Silahkan Pilih Kelas" showClear loading={loadingKelas} value={selectedKelas} options={listKelas} onChange={(e) => {
-                                setSelectedKelas(e.value);
-                            }} optionLabel="label" className="w-full" />
+                    </div>
+                    {selectedStudent.value && (
+                        <div className="mt-3 text-center">
+                            <h5 className="">Menampilkan presensi siswa:</h5>
+                            <div className="mt-2">
+                                <Tag
+                                    value={`${selectedStudent.full?.student_name} (${selectedStudent.full?.nis}) - ${selectedStudent.full?.class_group?.class_name ?? ''}`}
+                                    className="p-3 text-xl"
+                                    icon="pi pi-user"
+                                    severity="info"
+                                />
+                            </div>
                         </div>
-                        <div className="col-12 md:col-6 xl:col-3">
-                            <h5>Cari Nama Siswa</h5>
-                            <InputText
-                                className="w-full"
-                                value={searchName}
-                                onChange={(e) => setSearchName(e.target.value)}
-                                placeholder="Contoh: Budi, Sari, dll"
+                    )}
+
+                    <div className="mt-3 overflow-x-auto w-full">
+                        <DataTable
+                            dataKey='id'
+                            value={attendanceData}
+                            emptyMessage={loading ? (
+                                <div className="flex flex-column align-items-center gap-3 py-4">
+                                    <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                    <span className="text-gray-500 font-semibold">Memuat data kehadiran...</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-column align-items-center gap-3 py-4">
+                                    <i className="pi pi-calendar-times text-gray-400" style={{ fontSize: "2rem" }} />
+                                    <span className="text-gray-500 font-semibold">Belum ada data kehadiran</span>
+                                    {!selectedStudent.value ? (
+                                        <small className="text-center text-red-500 font-semibold">
+                                            Silakan cari dan pilih siswa terlebih dahulu untuk menampilkan data kehadiran.
+                                        </small>
+                                    ) : <small className="text-center text-gray-500 font-semibold">
+                                        Siswa yang dipilih tidak ada data kehadiran
+                                    </small>}
+                                </div>
+                            )}
+                            paginator
+                            lazy
+                            onSort={(e) => {
+                                setSortField(e.sortField);
+                                setSortOrder(e.sortOrder === 1 || e.sortOrder === -1 ? e.sortOrder : -1);
+                            }}
+                            sortField={sortField}
+                            sortOrder={sortOrder}
+                            first={(currentPage - 1) * rowsPerPage}
+                            rows={rowsPerPage}
+                            totalRecords={totalRecords}
+                            onPage={(event) => {
+                                if (loading) return;
+                                setCurrentPage((event.page ?? 0) + 1);
+                                setRowsPerPage(event.rows);
+                            }}
+                            rowsPerPageOptions={[10, 20, 50, 100]}
+                            showGridlines
+                            stripedRows
+                            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} kehadiran">
+                            <Column
+                                field="attendanceWindow.date"
+                                header="Tanggal"
+                                sortable
+                                headerStyle={{ width: "20%", minWidth: "140px" }}
+                                bodyStyle={{ width: "20%", minWidth: "140px" }}
+                                className='text-lg'
+                                body={(rowData) =>
+                                    loading
+                                        ? <Skeleton width="100px" />
+                                        : rowData.attendance_window?.date
+                                            ? formatDateWithDay(rowData.attendance_window.date)
+                                            : "-"
+                                }
                             />
-                        </div>
-                        <div className="col-12 md:col-6 xl:col-3">
-                            <h5>Pilih Status Presensi</h5>
-                            <MultiSelect filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusKehadiran} value={selectedStatusPresensi} options={listStatusKehadiran} onChange={(e) => {
-                                setSelectedStatusPresensi(e.value);
-                            }} optionLabel="label" className="w-full " />
-                        </div>
+                            <Column field="check_in_time" header="Waktu Masuk"
+                                className="text-lg"
+                                headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
+                                bodyStyle={{ width: "5%", whiteSpace: "nowrap" }}
+                                body={(rowData) => loading ? <Skeleton width="50px" /> : formatTime(rowData.check_in_time)}
+                            />
+                            <Column field="check_out_time" header="Waktu Pulang"
+                                className="text-lg"
+                                headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
+                                bodyStyle={{ width: "5%", whiteSpace: "nowrap" }}
+                                body={(rowData) => loading ? <Skeleton width="50px" /> : formatTime(rowData.check_out_time)}
+                            />
+                            <Column field="check_in_status.status_name" header="Keterangan"
+                                className="text-lg"
+                                headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
+                                bodyStyle={{ width: "5%", whiteSpace: "nowrap" }}
+                                body={(rowData) => loading ? <Skeleton width="60px" /> : rowData.check_in_status?.status_name}
+                            />
+                        </DataTable>
                     </div>
-                </div>
-                <div className='mt-4'>
-                    <DataTable
-                        dataKey='id'
-                        value={attendanceData}
-                        emptyMessage={loading ? (
-                            <div className="flex flex-column align-items-center gap-3 py-4">
-                                <ProgressSpinner style={{ width: "50px", height: "50px" }} />
-                                <span className="text-gray-500 font-semibold">Memuat data kehadiran...</span>
-                            </div>
-                        ) : (
-                            <div className="flex flex-column align-items-center gap-3 py-4">
-                                <i className="pi pi-calendar-times text-gray-400" style={{ fontSize: "2rem" }} />
-                                <span className="text-gray-500 font-semibold">Belum ada data kehadiran</span>
-                                <small className="text-gray-400">Silakan lakukan presensi terlebih dahulu.</small>
-                            </div>
-                        )}
-                        paginator
-                        lazy
-                        first={(currentPage - 1) * rowsPerPage}
-                        rows={rowsPerPage}
-                        totalRecords={totalRecords}
-                        onPage={(event) => {
-                            if (loading) return;
-                            setCurrentPage((event.page ?? 0) + 1);
-                            setRowsPerPage(event.rows);
-                        }}
-                        rowsPerPageOptions={[10, 20, 50, 100]}
-                        showGridlines
-                        stripedRows
-                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} siswa">
-                        <Column field="indexNumber" header="Nomor" style={{ width: "1%" }}
-                            body={(rowData) => loading ? <Skeleton width="20px" /> : rowData.indexNumber}
-                        />
-                        <Column field="student.student_name" header="Nama"
-                            className="text-lg"
-                            headerStyle={{ width: "40%", minWidth: "200px" }}
-                            bodyStyle={{ width: "40%", minWidth: "200px" }}
-                            body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.student_name?.toUpperCase()}
-                        />
-                        <Column field="student.class_group.class_name" header="Kelas"
-                            className="text-lg"
-                            headerStyle={{ width: "10%", minWidth: "60px" }}
-                            bodyStyle={{ width: "10%", minWidth: "60px" }}
-                            body={(rowData) => loading ? <Skeleton width="80%" /> : rowData.student?.class_group.class_name?.toUpperCase()}
-                        />
-                        <Column
-                            field="check_in_time"
-                            header="Tanggal"
-                            headerStyle={{ width: "10%", minWidth: "60px" }}
-                            bodyStyle={{ width: "10%", minWidth: "60px" }}
-                            className='text-lg'
-                            body={(rowData) => loading ? <Skeleton width="100px" /> :
-                                rowData.attendance_window.date ? rowData.attendance_window.date : "-"
-                            }
-                        />
-                        <Column field="check_in_time" header="Waktu Masuk"
-                            className="text-lg"
-                            headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
-                            bodyStyle={{ width: "5%", whiteSpace: "nowrap" }}
-                            body={(rowData) => loading ? <Skeleton width="50px" /> : formatTime(rowData.check_in_time)}
-                        />
-                        <Column field="check_out_time" header="Waktu Pulang"
-                            className="text-lg"
-                            headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
-                            bodyStyle={{ width: "5%", whiteSpace: "nowrap" }}
-                            body={(rowData) => loading ? <Skeleton width="50px" /> : formatTime(rowData.check_out_time)}
-                        />
-                        <Column field="check_in_status.status_name" header="Keterangan"
-                            className="text-lg"
-                            headerStyle={{ width: "5%", whiteSpace: "nowrap" }}
-                            bodyStyle={{ width: "5%", whiteSpace: "nowrap" }}
-                            body={(rowData) => loading ? <Skeleton width="60px" /> : rowData.check_in_status?.status_name}
-                        />
-                    </DataTable>
-                </div>
-            </Card ></div>
+                </Card ></div>
         </div>
 
     );

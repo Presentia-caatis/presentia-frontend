@@ -122,6 +122,7 @@ const SchoolStudentAttendanceListPage = () => {
             params.type = activeIndex === 0 ? "in" : "out";
 
             params.simplify = "1";
+            params.school_id = user.school_id;
 
             const response: any = await AttendanceService.getAttendances(params);
             const total = response.data.total;

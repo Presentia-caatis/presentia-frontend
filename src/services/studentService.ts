@@ -7,10 +7,11 @@ class StudentService {
         perPage: number = 10,
         classGroupId?: string | number,
         search?: string,
-        filters?: Record<string, any>
+        filters?: Record<string, any>,
+        schoolId?: string | number
     ) {
         try {
-            const params: Record<string, any> = { page, perPage, class_group_id: classGroupId, search };
+            const params: Record<string, any> = { page, perPage, class_group_id: classGroupId, search, 'school_id': schoolId };
 
             if (filters) {
                 Object.entries(filters).forEach(([key, filter]) => {
