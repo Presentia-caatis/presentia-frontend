@@ -78,13 +78,14 @@ const SchoolStudentAttendancePage = () => {
     const [listKelas, setListKelas] = useState([]);
     const [loadingKelas, setLoadingKelas] = useState(true);
     const [loadingAttendance, setLoadingAttendance] = useState(true);
-    const [loadingStatusPresensi, setLoadingStatusPresensi] = useState(true);
+    const [loadingStatus, setLoadingStatus] = useState(true);
     const [loadingSave, setLoadingSave] = useState(false);
+    const [listStatus, setListStatus] = useState<{ label: string; value: any; late_duration?: number; type?: string }[]>([]);
     const [listStatusPresensi, setListStatusPresensi] = useState([]);
     const [loadingStatusAbsensi, setLoadingStatusAbsensi] = useState(true);
     const [listStatusAbsensi, setListStatusAbsensi] = useState<{ label: string; value: number }[]>([]);
     const [selectedKelas, setSelectedKelas] = useState<number[]>([]);
-    const [selectedStatusPresensi, setSelectedStatusPresensi] = useState<number[]>([]);
+    const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
     const [selectedStatusAbsensi, setSelectedStatusAbsensi] = useState<number | null>(null);
     const [absenceDescription, setAbsenceDescription] = useState("Siswa tidak masuk");
     const [selectedAttendances, setSelectedAttendances] = useState([]);
@@ -148,6 +149,7 @@ const SchoolStudentAttendancePage = () => {
 
     useEffect(() => {
         fetchKelas();
+        fetchStatus();
         fetchStatusPresensi();
         fetchStatusAbsensi();
     }, []);
@@ -193,8 +195,8 @@ const SchoolStudentAttendancePage = () => {
 
         const documentChanged = (() => {
             if (!backupPermit.file && !file) return false;
-            if (backupPermit.file && !file) return true; // file dihapus
-            if (!backupPermit.file && file) return true; // file ditambah
+            if (backupPermit.file && !file) return true;
+            if (!backupPermit.file && file) return true;
 
             return (
                 (backupPermit.file?.name !== file?.name) ||
@@ -534,9 +536,23 @@ const SchoolStudentAttendancePage = () => {
             if (selectedKelas && selectedKelas.length > 0) {
                 params.classGroup = selectedKelas.join(',');
             }
-            if (selectedStatusPresensi && selectedStatusPresensi.length > 0) {
-                params.checkInStatusId = selectedStatusPresensi.join(',');
+
+            if (selectedStatus && selectedStatus.length > 0) {
+                const selectedPresensiIds = selectedStatus
+                    .filter((val) => val.startsWith("presensi-"))
+                    .map((val) => val.replace("presensi-", ""));
+                const selectedAbsensiIds = selectedStatus
+                    .filter((val) => val.startsWith("absensi-"))
+                    .map((val) => val.replace("absensi-", ""));
+
+                if (selectedPresensiIds.length > 0) {
+                    params.checkInStatusId = selectedPresensiIds.join(',');
+                }
+                if (selectedAbsensiIds.length > 0) {
+                    params.absencePermitTypeId = selectedAbsensiIds.join(',');
+                }
             }
+
 
             if (globalFilter) {
                 params.search = globalFilter;
@@ -573,7 +589,7 @@ const SchoolStudentAttendancePage = () => {
 
     const fetchStatusPresensi = async () => {
         try {
-            setLoadingStatusPresensi(true);
+            setLoadingStatus(true);
             const { responseData } = await checkInStatusService.getAll(1, 100);
             setListStatusPresensi(responseData.data.data.map((status: { id: number; status_name: string, late_duration: number }) => ({
                 label: status.status_name,
@@ -584,9 +600,40 @@ const SchoolStudentAttendancePage = () => {
             console.error('Error fetching check-in status:', error);
             setListStatusPresensi([]);
         } finally {
-            setLoadingStatusPresensi(false);
+            setLoadingStatus(false);
         }
     };
+
+    const fetchStatus = async () => {
+        setLoadingStatus(true);
+        try {
+            const presensiRes = await checkInStatusService.getAll(1, 100);
+            const presensiStatus = presensiRes.responseData.data.data.map(
+                (status: { id: number; status_name: string; late_duration: number }) => ({
+                    label: status.status_name,
+                    value: `presensi-${status.id}`,
+                    type: 'presensi',
+                })
+            );
+
+            const absensiRes = await absencePermitTypeService.getAll(1, 100);
+            const absensiStatus = absensiRes.data.data.map(
+                (permit: { id: number; permit_name: string }) => ({
+                    label: permit.permit_name,
+                    value: `absensi-${permit.id}`,
+                    type: 'absensi',
+                })
+            );
+
+            setListStatus([...presensiStatus, ...absensiStatus]);
+        } catch (error) {
+            console.error('Error fetching status data:', error);
+            setListStatus([]);
+        } finally {
+            setLoadingStatus(false);
+        }
+    };
+
 
 
     const fetchStatusAbsensi = async () => {
@@ -743,9 +790,9 @@ const SchoolStudentAttendancePage = () => {
                         }} optionLabel="label" className="w-full" />
                     </div>
                     <div className=" col-12 xl:col-3">
-                        <h5>Pilih Status Presensi</h5>
-                        <MultiSelect filter placeholder="Silahkan Pilih Status Presensi" showClear loading={loadingStatusPresensi} value={selectedStatusPresensi} options={listStatusPresensi} onChange={(e) => {
-                            setSelectedStatusPresensi(e.value);
+                        <h5>Pilih Status</h5>
+                        <MultiSelect filter placeholder="Silahkan Pilih Status " showClear loading={loadingStatus} value={selectedStatus} options={listStatus} onChange={(e) => {
+                            setSelectedStatus(e.value);
                         }} optionLabel="label" className="w-full " />
                     </div>
                 </div>
