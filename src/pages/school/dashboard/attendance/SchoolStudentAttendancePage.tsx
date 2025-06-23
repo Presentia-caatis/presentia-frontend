@@ -549,8 +549,9 @@ const SchoolStudentAttendancePage = () => {
                     params.checkInStatusId = selectedPresensiIds.join(',');
                 }
                 if (selectedAbsensiIds.length > 0) {
-                    params.absencePermitTypeId = selectedAbsensiIds.join(',');
+                    params['absence_permit.absence_permit_type_id'] = selectedAbsensiIds.join(',');
                 }
+
             }
 
 
