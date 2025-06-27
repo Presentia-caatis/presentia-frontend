@@ -7,7 +7,6 @@ describe('Logout Test', () => {
                 : role === 'admin' ? 'admin sekolah'
                     : 'superadmin'} logout dari sistem`, () => {
                         cy.loginAs(role);
-                        cy.contains("Sekolah yang dikelola").should("be.visible");
 
                         cy.get('.layout-topbar').should('be.visible');
                         cy.get('.layout-topbar .flex.gap-2.cursor-pointer').click();

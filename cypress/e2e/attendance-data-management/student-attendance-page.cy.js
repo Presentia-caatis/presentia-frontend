@@ -130,7 +130,6 @@ describe('Student Attendance Page Test', () => {
             });
 
           cy.contains('Memuat data kehadiran...').should('not.exist');
-
           cy.get('.p-datatable tbody').then(($tbody) => {
             if ($tbody.find('tr').length === 0 || $tbody.text().includes('Belum ada data kehadiran')) {
               cy.contains('Belum ada data kehadiran').should('be.visible');

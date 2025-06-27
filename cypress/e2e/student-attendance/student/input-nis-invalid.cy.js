@@ -1,10 +1,10 @@
-describe('Input NIS Valid Test', () => {
+describe('Input NIS Invalid Test', () => {
     const school = Cypress.env('schoolName');
     const roles = ['admin'];
 
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'admin' ? 'siswa'
-            : role} melakukan presensi dengan input NIS yang valid`, () => {
+            : role} melakukan presensi dengan NIS yang tidak valid`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
 
@@ -26,25 +26,27 @@ describe('Input NIS Valid Test', () => {
                     cy.get('.layout-sidebar').contains('Presensi Manual').click();
                     cy.visit('/school/student/attendance/in');
 
-                    const randomNis = Math.floor(Math.random() * 10000000000);
+                    const nis = '7860761511';
 
                     cy.get('input[placeholder="Masukkan NIS"]')
-                        .type(randomNis.toString())
-                        .type('{enter}');
+                        .clear()
+                        .type(`${nis}{enter}`);
 
-                    cy.get('.p-toast').should('be.visible').invoke('text').then((text) => {
-                        if (text.trim() === 'Gagal\nResource not found') {
-                            cy.get('.p-toast').should('have.text', 'Gagal\nResource not found');
-                        } else if (text.includes('Sukses')) {
-                            cy.get('.p-toast').should('contain.text', 'Sukses');
-                        } else if (text.includes('Peringatan')) {
-                            cy.get('.p-toast').should('contain.text', 'Peringatan');
-                        } else if (text.includes('Gagal')) {
-                            cy.get('.p-toast').should('contain.text', 'Gagal');
-                        } else {
-                            throw new Error('Tidak ada toast');
-                        }
-                    });
+                    cy.get('.p-toast')
+                        .should('be.visible')
+                        .invoke('text')
+                        .then((text) => {
+                            const trimmed = text.trim();
+                            if (trimmed === 'Gagal\nResource not found') {
+                                expect(trimmed).to.include('Gagal');
+                                expect(trimmed).to.include('Resource not found');
+                            } else if (trimmed === 'Gagal\nWaktu presensi diluar jangka waktu yang ditentukan') {
+                                expect(trimmed).to.include('Gagal');
+                                expect(trimmed).to.include('Waktu presensi diluar jangka waktu yang ditentukan');
+                            } else {
+                                expect(trimmed).to.match(/Sukses|Peringatan|Gagal/);
+                            }
+                        });
                 });
             });
     });

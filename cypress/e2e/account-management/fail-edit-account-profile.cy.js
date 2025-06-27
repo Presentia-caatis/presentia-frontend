@@ -1,5 +1,4 @@
 describe('Failed to Edit Account Profile Test', () => {
-    const school = Cypress.env('schoolName');
     const roles = ['general_user', 'staf', 'admin', 'superadmin',];
 
     roles.forEach((role) => {
@@ -14,6 +13,17 @@ describe('Failed to Edit Account Profile Test', () => {
                         cy.get('.absolute.bg-white').should('be.visible');
                         cy.contains(/Profile Pengguna|Profile/).click();
                         cy.url().should('include', '/user/profile');
+
+                        const menuItems = [
+                            { label: 'Profile Kamu', iconClass: 'pi-user' },
+                            { label: 'Ganti Password', iconClass: 'pi-lock' },
+                            { label: 'Logout', iconClass: 'pi-sign-out' },
+                        ];
+
+                        menuItems.forEach(({ label, iconClass }) => {
+                            cy.contains(label).should('be.visible');
+                            cy.get(`.pi.${iconClass}`).should('exist');
+                        });
 
                         cy.get('h1').should('contain.text', 'Profile Pengguna');
                         cy.get('img.w-5rem.h-5rem.border-circle').should('exist');
@@ -43,34 +53,25 @@ describe('Failed to Edit Account Profile Test', () => {
                             }
                         });
 
+                        const allNames = ["Presentia Dummy Account 1", "Presentia Dummy 1", "Presentia Account 1", "Presentia Test Account 1", "Presentia Test 1"];
+                        const randomName = allNames[Math.floor(Math.random() * allNames.length)];
+
                         cy.get('input[placeholder="Masukkan Nama Lengkap"]')
-                            .invoke('val')
-                            .then((currentName) => {
-                                const allNames = ["Presentia Dummy Account 1", "Presentia Dummy 1", "Presentia Account 1", "Presentia Test Account 1", "Presentia Test 1"];
+                            .clear()
+                            .type(randomName)
+                            .should('have.value', randomName);
 
-                                let newName = allNames.find(name => name !== currentName);
-                                if (!newName) {
-                                    const timestamp = Date.now();
-                                    newName = `${currentName} ${timestamp}`;
-                                }
-
-                                cy.get('input[placeholder="Masukkan Nama Lengkap"]')
-                                    .clear()
-                                    .type(newName)
-                                    .should('have.value', newName);
-
-                                cy.contains('Simpan Pembaruan')
-                                    .click();
-                                cy.get('.p-confirm-popup')
+                        cy.contains('Simpan Pembaruan')
+                            .click();
+                        cy.get('.p-confirm-popup')
+                            .should('be.visible')
+                            .and('contain.text', 'Apakah Anda yakin ingin mengubah data?')
+                            .within(() => {
+                                cy.get('.pi.pi-exclamation-triangle').should('be.visible');
+                                cy.get('button.p-button-success')
                                     .should('be.visible')
-                                    .and('contain.text', 'Apakah Anda yakin ingin mengubah data?')
-                                    .within(() => {
-                                        cy.get('.pi.pi-exclamation-triangle').should('be.visible');
-                                        cy.get('button.p-button-success')
-                                            .should('be.visible')
-                                            .and('contain.text', 'Ya')
-                                            .click();
-                                    });
+                                    .and('contain.text', 'Ya')
+                                    .click();
                             });
 
                         cy.get('.p-toast').should('be.visible').then((toast) => {

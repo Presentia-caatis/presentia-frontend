@@ -35,7 +35,6 @@ describe('Search Student Data Test', () => {
 
                         cy.get('table').should('be.visible');
                         cy.contains('Memuat data siswa...').should('not.exist');
-
                         cy.get('.card h5')
                             .should('contain.text', 'Data Siswa')
                             .invoke('text')
@@ -44,14 +43,14 @@ describe('Search Student Data Test', () => {
                         cy.get('.p-input-icon-left input[placeholder="Search..."]').should('exist');
                         cy.get('.p-input-icon-left input[placeholder="Search..."]')
                             .clear()
-                            .type('Siswa');
+                            .type('Siswa Baru Telkom');
                         cy.contains('Memuat data siswa...').should('exist');
                         cy.wait(2000);
                         cy.get('table tbody tr').each(($row) => {
                             cy.wrap($row).find('td').eq(1).invoke('text').then(text => {
                                 const uppercasedText = text.trim().toUpperCase();
                                 expect(text.trim()).to.equal(uppercasedText);
-                                expect(uppercasedText).to.include('SISWA');
+                                expect(uppercasedText).to.include('SISWA BARU TELKOM');
                             });
                         });
                     });

@@ -51,8 +51,8 @@ describe('Delete Class Data Test', () => {
 
                 cy.get('table').should('be.visible');
                 cy.contains('Memuat data kelas...').should('not.exist');
-
                 cy.get('.card h5').should('contain.text', 'Daftar Kelas');
+
                 cy.get('table thead tr').eq(1).within(() => {
                     cy.get('th').eq(1).find('input').clear().type('X TJKT');
                 });
@@ -67,7 +67,6 @@ describe('Delete Class Data Test', () => {
                             .within(() => {
                                 cy.get('button.p-button-danger').click();
                             });
-
 
                         cy.get('.p-confirm-popup')
                             .should('be.visible')
@@ -86,7 +85,6 @@ describe('Delete Class Data Test', () => {
 
                         cy.get('.p-toast').should('be.visible');
                         cy.contains('.p-toast-summary', 'Menghapus...').should('be.visible');
-
                         cy.get('.p-toast-detail')
                             .should('be.visible')
                             .invoke('text')

@@ -7,6 +7,7 @@ describe('Failed to Login ADMS Page Test', () => {
             : role} tidak dapat login ADMS`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
+                
                 const buttons = [
                     { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `/school/${school}/dashboard` },
                 ];
@@ -26,6 +27,7 @@ describe('Failed to Login ADMS Page Test', () => {
                     cy.url().should('include', `/school/${school}/fingerprint`);
 
                     cy.get('.card h1').should('contain.text', 'Login untuk mendaftaran Sidik Jari');
+                    
                     cy.get('label').contains('Username').parent().find('input').type('presentiaadms');
                     cy.get('label').contains('Password').parent().find('input').type('PresentiaPwd');
 
@@ -33,6 +35,7 @@ describe('Failed to Login ADMS Page Test', () => {
                         .should('be.visible')
                         .and('not.be.disabled')
                         .click();
+
                     cy.get('.p-toast-message')
                         .should('contain.text', 'Login Gagal')
                         .and('contain.text', 'Periksa kembali kredensial Anda.')

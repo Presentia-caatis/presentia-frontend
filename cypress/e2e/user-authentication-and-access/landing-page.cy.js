@@ -13,11 +13,7 @@ describe('Landing Page Test', () => {
                             cy.get('div.layout-topbar').contains(text).should('be.visible');
                         });
 
-                        const introContent = [
-                            'Presentia',
-                            'Digitalisasi Absensi Sekolah Anda',
-                            'Optimalkan pengelolaan kehadiran siswa'
-                        ];
+                        const introContent = ['Presentia', 'Digitalisasi Absensi Sekolah Anda', 'Optimalkan pengelolaan kehadiran siswa'];
                         introContent.forEach(text => {
                             cy.contains(text).should('be.visible');
                         });

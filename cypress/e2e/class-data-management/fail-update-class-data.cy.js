@@ -51,10 +51,10 @@ describe('Failed to Update Class Data Test', () => {
 
                     cy.get('table').should('be.visible');
                     cy.contains('Memuat data kelas...').should('not.exist');
-
                     cy.get('.card h5').should('contain.text', 'Daftar Kelas');
 
                     const classNames = [];
+
                     cy.get('table tbody tr').each(($row, index) => {
                         cy.wrap($row).find('td').eq(1).invoke('text').then((text) => {
                             classNames.push({ name: text.trim(), index });
@@ -69,7 +69,7 @@ describe('Failed to Update Class Data Test', () => {
                         const duplicateName = shuffled[1].name;
 
                         cy.get('table tbody tr').eq(targetClass.index).within(() => {
-                            cy.get('button.p-button-success').click(); // tombol edit
+                            cy.get('button.p-button-success').click();
                         });
 
                         cy.get('.p-dialog').should('be.visible');

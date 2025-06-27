@@ -51,11 +51,10 @@ describe('Add Class Data Test', () => {
 
                 cy.get('table').should('be.visible');
                 cy.contains('Memuat data kelas...').should('not.exist');
-
-                cy.get('.card h5')
-                    .should('contain.text', 'Daftar Kelas')
+                cy.get('.card h5').should('contain.text', 'Daftar Kelas')
 
                 const existingClassNames = [];
+
                 cy.get('table tbody tr').each(($row) => {
                     cy.wrap($row).find('td').eq(1).invoke('text').then((text) => {
                         const namaKelas = text.trim().toUpperCase();
@@ -88,28 +87,11 @@ describe('Add Class Data Test', () => {
                             });
 
                         cy.get('.p-toast').should('be.visible');
-                        cy.get('.p-toast-summary')
+                        cy.get('.p-toast-summary', 'Sukses').should('be.visible');
+                        cy.get('.p-toast-detail')
                             .should('be.visible')
                             .invoke('text')
-                            .then((summaryText) => {
-                                if (summaryText.includes('Sukses')) {
-                                    cy.get('.p-toast-detail')
-                                        .should('be.visible')
-                                        .invoke('text')
-                                        .then((detailText) => {
-                                            expect(detailText).to.match(/Berhasil membuat kelas baru .+!/);
-                                        });
-                                } else if (summaryText.includes('Gagal menambahkan kelas')) {
-                                    cy.get('.p-toast-detail')
-                                        .should('be.visible')
-                                        .invoke('text')
-                                        .then((detailText) => {
-                                            expect(detailText).to.include('Nama kelas tidak boleh sama dengan yang sudah terdaftar');
-                                        });
-                                } else {
-                                    throw new Error('Tidak ada toast');
-                                }
-                            });
+                            .should('match', /Berhasil membuat kelas baru .+!/);
                         cy.wait(1000);
                     }
                 });

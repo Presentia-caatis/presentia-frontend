@@ -11,7 +11,7 @@ describe('Login ADMS Page Test', () => {
 
         cy.get('.layout-sidebar').should('be.visible');
         cy.get('.layout-sidebar').contains('Daftar Sekolah').click();
-                cy.url().should('include', '/admin/school');
+        cy.url().should('include', '/admin/school');
 
         cy.get('table').should('be.visible');
         cy.contains('td', schoolName).should('be.visible');
@@ -38,6 +38,7 @@ describe('Login ADMS Page Test', () => {
           cy.readFile('cypress.env.json').then((data) => {
             const localUsername = data.users.adms.username;
             const localPassword = data.users.adms.password;
+            
             cy.get('label').contains('Username').parent().find('input').type(localUsername);
             cy.get('label').contains('Password').parent().find('input').type(localPassword);
           });
@@ -47,6 +48,12 @@ describe('Login ADMS Page Test', () => {
           .should('be.visible')
           .and('not.be.disabled')
           .click();
+
+        cy.get(".p-toast-message")
+          .should("contain", "Login Berhasil")
+          .and("contain", "Anda berhasil login.")
+          .should("be.visible");
+
         cy.url().should('include', `/school/${school}/fingerprint`);
       });
   });

@@ -34,7 +34,6 @@ describe('Filter Student Data Test', () => {
 
                 cy.get('table').should('be.visible');
                 cy.contains('Memuat data siswa...').should('not.exist');
-
                 cy.get('.card h5')
                     .should('contain.text', 'Data Siswa')
                     .invoke('text')

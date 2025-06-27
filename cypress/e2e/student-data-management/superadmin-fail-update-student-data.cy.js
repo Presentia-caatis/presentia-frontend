@@ -70,9 +70,12 @@ describe('Failed to Update Student Data Test', () => {
 
                         if (nama.includes(filterInput)) {
                             cy.wrap($row).find('button.p-button-success').should('exist').click();
+
                             cy.get('.p-dialog').should('be.visible');
                             cy.get('.p-dialog .p-dialog-title').should('have.text', 'Edit Data Siswa');
+
                             const labels = ['Nama', 'NIS', 'NISN', 'Kelas', 'Jenis Kelamin', 'Status Siswa'];
+
                             labels.forEach(label => {
                                 cy.contains('label', label).should('be.visible');
                             });

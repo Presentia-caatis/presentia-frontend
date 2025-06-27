@@ -6,7 +6,6 @@ describe('Total Presence Test', () => {
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'superadmin' ? 'superadmin'
             : role} melihat jumlah presensi siswa`, () => {
-
                 cy.loginAs(role);
                 cy.contains("Selamat datang di dashboard admin").should("be.visible");
 
@@ -35,6 +34,7 @@ describe('Total Presence Test', () => {
                     .and('not.match', /(undefined|null)/);
 
                 const todayRegex = /\d{1,2} \w+ \d{4}/;
+                
                 cy.get('h3')
                     .should('be.visible')
                     .invoke('text')

@@ -7,6 +7,7 @@ describe('Login ADMS Page Test', () => {
       : role} dapat login ADMS`, () => {
         cy.loginAs(role);
         cy.contains("Sekolah yang dikelola").should("be.visible");
+
         const buttons = [
           { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `/school/${school}/dashboard` },
         ];
@@ -37,6 +38,7 @@ describe('Login ADMS Page Test', () => {
             cy.readFile('cypress.env.json').then((data) => {
               const localUsername = data.users.adms.username;
               const localPassword = data.users.adms.password;
+
               cy.get('label').contains('Username').parent().find('input').type(localUsername);
               cy.get('label').contains('Password').parent().find('input').type(localPassword);
             });
@@ -46,6 +48,12 @@ describe('Login ADMS Page Test', () => {
             .should('be.visible')
             .and('not.be.disabled')
             .click();
+
+          cy.get(".p-toast-message")
+            .should("contain", "Login Berhasil")
+            .and("contain", "Anda berhasil login.")
+            .should("be.visible");
+
           cy.url().should('include', `/school/${school}/fingerprint`);
         });
       });

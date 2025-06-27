@@ -87,35 +87,29 @@ describe('Class List Page Test', () => {
                     });
                 });
 
-                cy.get('table tbody tr').then(($rows) => {
-                    expect($rows).to.have.length.greaterThan(0);
+                cy.get('table tbody tr').should('have.length.greaterThan', 0).each(($row) => {
+                    cy.wrap($row).within(() => {
+                        cy.get('td').each(($cell, colIndex, $cells) => {
+                            const isLast = colIndex === $cells.length - 1;
 
-                    cy.wrap($rows).each(($row, rowIndex) => {
-                        cy.wrap($row).within(() => {
-                            cy.get('td').each(($cell, colIndex, $cells) => {
-                                if (colIndex === 0) {
-                                    cy.wrap($cell).find('input.p-checkbox-input').should('exist');
-                                } else if (colIndex === $cells.length - 1) {
-                                    cy.wrap($cell).find('button.p-button-info').should('exist');
-                                    cy.wrap($cell).find('button.p-button-success').should('exist');
-                                    cy.wrap($cell).find('button.p-button-danger').should('exist');
-                                } else {
-                                    cy.wrap($cell)
-                                        .invoke('text')
-                                        .then((textValue) => {
-                                            textValue = textValue.trim();
-                                            expect(textValue).not.to.be.empty;
+                            if (colIndex === 0) {
+                                cy.wrap($cell).find('input.p-checkbox-input').should('exist');
+                            } else if (isLast) {
+                                cy.wrap($cell).find('button.p-button-info').should('exist');
+                                cy.wrap($cell).find('button.p-button-success').should('exist');
+                                cy.wrap($cell).find('button.p-button-danger').should('exist');
+                            } else {
+                                cy.wrap($cell).invoke('text').then((text) => {
+                                    const trimmed = text.trim();
+                                    expect(trimmed).not.to.be.empty;
 
-                                            cy.wrap(null).then(() => {
-                                                if (colIndex === 1) {
-                                                    expect(textValue).to.match(/\S+/);
-                                                } else if (colIndex === 2) {
-                                                    expect(textValue).to.match(/^\d+$/);
-                                                }
-                                            });
-                                        });
-                                }
-                            });
+                                    if (colIndex === 1) {
+                                        expect(trimmed).to.match(/\S+/);
+                                    } else if (colIndex === 2) {
+                                        expect(trimmed).to.match(/^\d+$/);
+                                    }
+                                });
+                            }
                         });
                     });
                 });

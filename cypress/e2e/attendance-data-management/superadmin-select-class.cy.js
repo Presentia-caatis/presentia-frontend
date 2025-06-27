@@ -107,44 +107,44 @@ describe("Select Class for Attendance Data Test", () => {
                 cy.get('.p-input-icon-left input[placeholder="Search..."]').should(
                     "exist"
                 );
-            });
 
-        cy.contains("h5", "Pilih Kelas")
-            .should("be.visible")
-            .parent()
-            .find(".p-multiselect")
-            .should("be.visible")
-            .click();
-        cy.get(".p-multiselect-panel").should("be.visible");
-        cy.get(".p-multiselect-item").then(($items) => {
-            const randomIndex = Math.floor(Math.random() * $items.length);
-            cy.wrap($items[randomIndex]).click();
-        });
-        cy.get("body").click(0, 0);
-        cy.contains("button", "Tampilkan").click();
-
-        cy.contains("Memuat data kehadiran...").should("not.exist");
-        cy.wait(1000);
-        cy.get("table tbody tr").then(($rows) => {
-            if ($rows.length === 1) {
-                cy.wrap($rows)
-                    .first()
-                    .within(() => {
-                        cy.get("td")
-                            .invoke("text")
-                            .should("include", "Belum ada data kehadiran");
-                    });
-            } else {
-                cy.get("table tbody tr").each(($row) => {
-                    cy.wrap($row)
-                        .find("td")
-                        .eq(4)
-                        .invoke("text")
-                        .then((textValue) => {
-                            expect(textValue.trim()).to.match(/\S+/);
-                        });
+                cy.contains("h5", "Pilih Kelas")
+                    .should("be.visible")
+                    .parent()
+                    .find(".p-multiselect")
+                    .should("be.visible")
+                    .click();
+                cy.get(".p-multiselect-panel").should("be.visible");
+                cy.get(".p-multiselect-item").then(($items) => {
+                    const randomIndex = Math.floor(Math.random() * $items.length);
+                    cy.wrap($items[randomIndex]).click();
                 });
-            }
-        });
+                cy.get("body").click(0, 0);
+                cy.contains("button", "Tampilkan").click();
+
+                cy.contains("Memuat data kehadiran...").should("not.exist");
+                cy.wait(1000);
+                cy.get("table tbody tr").then(($rows) => {
+                    if ($rows.length === 1) {
+                        cy.wrap($rows)
+                            .first()
+                            .within(() => {
+                                cy.get("td")
+                                    .invoke("text")
+                                    .should("include", "Belum ada data kehadiran");
+                            });
+                    } else {
+                        cy.get("table tbody tr").each(($row) => {
+                            cy.wrap($row)
+                                .find("td")
+                                .eq(4)
+                                .invoke("text")
+                                .then((textValue) => {
+                                    expect(textValue.trim()).to.match(/\S+/);
+                                });
+                        });
+                    }
+                });
+            });
     });
 });

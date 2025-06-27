@@ -51,11 +51,11 @@ describe('Failed to Add Class Data Test', () => {
 
                     cy.get('table').should('be.visible');
                     cy.contains('Memuat data kelas...').should('not.exist');
-
                     cy.get('.card h5')
                         .should('contain.text', 'Daftar Kelas')
 
                     const classNames = [];
+
                     cy.get('table tbody tr').each(($row) => {
                         cy.wrap($row).find('td').eq(1).invoke('text').then((text) => {
                             classNames.push(text.trim());

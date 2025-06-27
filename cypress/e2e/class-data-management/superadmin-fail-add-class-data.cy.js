@@ -51,7 +51,6 @@ describe('Failed to Add Class Data Test', () => {
 
                 cy.get('table').should('be.visible');
                 cy.contains('Memuat data kelas...').should('not.exist');
-
                 cy.get('.card h5')
                     .should('contain.text', 'Daftar Kelas')
 

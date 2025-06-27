@@ -1,4 +1,4 @@
-describe('Edit Account Password Test', () => {
+describe('Failed to Edit Account Password Test', () => {
     const roles = ['general_user', 'staf', 'admin', 'superadmin',];
 
     const getCredentialForRole = (role, type) => {
@@ -22,8 +22,9 @@ describe('Edit Account Password Test', () => {
             : role === 'staf' ? 'staf sekolah'
                 : role === 'admin' ? 'admin sekolah'
                     : 'superadmin'} tidak dapat mengubah password akun`, function () {
+
                         const oldPassword = getCredentialForRole(role, 'password');
-                        const newPassword = 'PasswordBaru';
+                        const newPassword = 'Passwordbaru123';
 
                         cy.loginAs(role);
                         cy.get('.layout-topbar').should('be.visible');
@@ -65,6 +66,7 @@ describe('Edit Account Password Test', () => {
                             cy.contains('h5', label).should('be.visible');
                             cy.get(inputId).should('exist');
                         });
+
                         const changePassword = (oldPassword, newPassword, confirmPass) => {
                             cy.get('#currentPassword').type(oldPassword);
                             cy.get('#newPassword').type(newPassword);

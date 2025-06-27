@@ -34,6 +34,7 @@ describe('School Dashboard Page Test', () => {
                     .and('not.match', /(undefined|null)/);
 
                 const todayRegex = /\d{1,2} \w+ \d{4}/;
+                
                 cy.get('h3')
                     .should('be.visible')
                     .invoke('text')

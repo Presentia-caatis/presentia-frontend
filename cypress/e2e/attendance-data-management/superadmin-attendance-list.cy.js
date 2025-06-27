@@ -92,6 +92,7 @@ describe('Attendance List Page Test', () => {
                 cy.get('.p-input-icon-left input[placeholder="Search..."]').should('exist');
 
                 const expectedHeaders = ["Nama", "NIS", "Kelamin", "Kelas", "Tanggal", "Waktu Masuk", "Waktu Pulang", "Status"];
+
                 cy.get('table thead tr').first().within(() => {
                     cy.get('th').each(($th, index, $ths) => {
                         if (index === 0) {

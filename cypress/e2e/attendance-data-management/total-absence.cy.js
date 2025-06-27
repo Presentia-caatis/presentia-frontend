@@ -6,7 +6,6 @@ describe('Total Absence Test', () => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
                 : role} melihat jumlah absensi siswa`, () => {
-
                     cy.loginAs(role);
                     cy.contains("Sekolah yang dikelola").should("be.visible");
 
@@ -22,7 +21,6 @@ describe('Total Absence Test', () => {
                                 cy.contains(text).should('be.visible');
                             })
                             .click();
-
                         cy.url().should('include', url);
 
                         cy.get('h1')
@@ -37,6 +35,7 @@ describe('Total Absence Test', () => {
                             .and('not.match', /(undefined|null)/);
 
                         const todayRegex = /\d{1,2} \w+ \d{4}/;
+                        
                         cy.get('h3')
                             .should('be.visible')
                             .invoke('text')

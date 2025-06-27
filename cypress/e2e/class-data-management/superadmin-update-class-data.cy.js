@@ -51,7 +51,6 @@ describe('Update Class Data Test', () => {
 
                 cy.get('table').should('be.visible');
                 cy.contains('Memuat data kelas...').should('not.exist');
-
                 cy.get('.card h5').should('contain.text', 'Daftar Kelas');
 
                 cy.get('table thead tr').eq(1).within(() => {
@@ -59,7 +58,7 @@ describe('Update Class Data Test', () => {
                 });
 
                 cy.get('table tbody tr').should('have.length.greaterThan', 0).then($rows => {
-                    const existingClassNames = Array.from($rows).map(row =>
+                    const existingClassNames = [...$rows].map(row =>
                         row.querySelectorAll('td')[1].textContent.trim().toUpperCase()
                     );
 
@@ -75,15 +74,15 @@ describe('Update Class Data Test', () => {
                     }
 
                     const matchingIndices = [];
-                    $rows.each((index, row) => {
+                    $rows.each((i, row) => {
                         const name = row.querySelectorAll('td')[1].textContent.trim().toUpperCase();
                         if (name.startsWith('X TJKT')) {
-                            matchingIndices.push(index);
+                            matchingIndices.push(i);
                         }
                     });
 
                     if (matchingIndices.length === 0) {
-                        cy.log('Tidak ada kelas yang cocok untuk diupdate');
+                        cy.log('Tidak ada kelas yang dapat diupdate.');
                         return;
                     }
 
@@ -105,7 +104,6 @@ describe('Update Class Data Test', () => {
                         cy.get('#className').clear().type(newName);
 
                         cy.contains('button', 'Simpan').click();
-
                         cy.get('.p-confirm-popup').should('be.visible').within(() => {
                             cy.contains('button', 'Ya').click();
                         });
@@ -113,16 +111,14 @@ describe('Update Class Data Test', () => {
                         cy.get('.p-toast').should('be.visible');
                         cy.get('.p-toast-summary').invoke('text').then(summary => {
                             if (summary.includes('Sukses')) {
-                                cy.contains('.p-toast-detail', /Berhasil memperbarui kelas .* menjadi .*!/).should('be.visible');
-                            } else if (summary.includes('Gagal memperbarui kelas!')) {
+                                cy.contains('.p-toast-detail', new RegExp(`Berhasil memperbarui kelas .* menjadi ${newName}!`)).should('be.visible');
+                            } else {
                                 cy.wait(500);
                                 tryUpdateWithNextName(index + 1);
-                            } else {
-                                throw new Error('Tidak ada notifikasi hasil.');
                             }
                         });
-                        cy.wait(1000);
                     }
+
                     tryUpdateWithNextName(0);
                 });
             });

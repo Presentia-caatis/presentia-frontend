@@ -93,11 +93,20 @@ describe('Update Student Data Test', () => {
                                 cy.get('input#status1').should('be.checked');
 
                                 const names = ["Siswa Sekolah Satu Update", "Siswa Sekolah Dua Update", "Siswa Sekolah Tiga Update", "Siswa Sekolah Empat Update"];
-                                const newName = names[Math.floor(Math.random() * names.length)];
 
                                 cy.get('#edit-nama')
-                                    .clear()
-                                    .type(newName);
+                                    .invoke('val')
+                                    .then((oldName) => {
+                                        const availableNames = names.filter(name => name !== oldName);
+
+                                        expect(availableNames.length).to.be.greaterThan(0);
+
+                                        const newName = availableNames[Math.floor(Math.random() * availableNames.length)];
+
+                                        cy.get('#edit-nama')
+                                            .clear()
+                                            .type(newName);
+                                    });
 
                                 cy.get('.p-dialog:visible')
                                     .contains('label', 'Jenis Kelamin')
@@ -133,5 +142,6 @@ describe('Update Student Data Test', () => {
                     });
                 });
             });
+
     });
 });

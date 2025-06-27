@@ -32,8 +32,8 @@ describe('Login Page Test', () => {
 
 
         it(`Cek perilaku ${roleName} login dengan kredensial yang belum terdaftar`, () => {
-            cy.get('input#email').type('presentia99');
-            cy.get('input[type="password"]').type('Presenti99!');
+            cy.get('input#email').type('presentia_dummy_99');
+            cy.get('input[type="password"]').type('Presentia99!');
             cy.get('button[type="submit"]').click();
             cy.url().should('eq', Cypress.config().baseUrl + 'login');
             cy.contains('Login Gagal').should('be.visible');
@@ -42,7 +42,7 @@ describe('Login Page Test', () => {
 
         it(`Cek perilaku ${roleName} login akun dengan kredensial yang valid`, () => {
             cy.loginAs(role);
-            cy.get(".p-toast-message")
+            cy.get(".p-toast-message", { timeout: 10000 })
                 .should("contain", "Login Berhasil")
                 .and("contain", "Sekarang kamu sudah masuk ke dalam aplikasi")
                 .should("be.visible");

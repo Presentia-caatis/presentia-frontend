@@ -7,6 +7,7 @@ describe("Select Class for Student Fingerprint Registration Test", () => {
             : role} memilih kelas siswa yang akan didaftarkan sidik jarinya`, () => {
                 cy.loginAs(role);
                 cy.contains("Sekolah yang dikelola").should("be.visible");
+                
                 const buttons = [
                     { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah', url: `/school/${school}/dashboard` },
                 ];

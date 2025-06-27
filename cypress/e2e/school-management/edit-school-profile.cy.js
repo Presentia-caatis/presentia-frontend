@@ -60,37 +60,44 @@ describe('Edit School Profile Test', () => {
                         }
                     });
 
-                    cy.get('input[placeholder="Masukkan Nama Sekolah"]')
-                        .invoke('val')
-                        .then((currentName) => {
-                            const allNames = ["SMK Telkom", "SMK Telkom Bandung", "Sekolah Menengah Kejuruan Telkom", "Sekolah Menengah Kejuruan Telkom Bandung"];
-                            const newName = allNames.find((name) => name !== currentName);
-                            expect(newName, 'Nama baru tidak boleh sama dengan yang lama').to.exist;
+                    const allNames = ["SMK Telkom", "SMK Telkom Bandung", "Sekolah Menengah Kejuruan Telkom", "Sekolah Menengah Kejuruan Telkom Bandung"];
 
-                            cy.get('input[placeholder="Masukkan Nama Sekolah"]').clear().type(newName);
-                            cy.get('input[placeholder="Masukkan Nama Sekolah"]').should('have.value', newName);
+                    cy.get('input[placeholder="Masukkan Nama Sekolah"]').then(($input) => {
+                        const currentName = $input.val();
+                        const availableNames = allNames.filter(name => name !== currentName);
+                        expect(availableNames.length).to.be.greaterThan(0);
 
-                            cy.contains('Simpan Pembaruan').click();
-                            cy.get('.p-confirm-popup')
-                                .should('be.visible')
-                                .and('contain.text', 'Apakah Anda yakin ingin mengubah data sekolah?')
-                                .within(() => {
-                                    cy.get('.pi.pi-exclamation-triangle').should('be.visible');
-                                    cy.get('button.p-button-success')
-                                        .should('be.visible')
-                                        .and('contain.text', 'Ya')
-                                        .click();
-                                });
-                        });
+                        const newName = availableNames[Math.floor(Math.random() * availableNames.length)];
+                        cy.wrap($input).clear().type(newName);
+                        cy.wrap($input).should('have.value', newName);
+
+                        cy.contains('Simpan Pembaruan').click();
+                        cy.get('.p-confirm-popup')
+                            .should('be.visible')
+                            .and('contain.text', 'Apakah Anda yakin ingin mengubah data sekolah?')
+                            .within(() => {
+                                cy.get('.pi.pi-exclamation-triangle').should('be.visible');
+                                cy.get('button.p-button-success')
+                                    .should('be.visible')
+                                    .and('contain.text', 'Ya')
+                                    .click();
+                            });
+                    });
 
                     cy.get('body').then(($body) => {
-                        const text = $body.text();
-                        if (text.includes('Data sekolah berhasil diperbarui.')) {
-                            cy.contains('Data sekolah berhasil diperbarui.').should('be.visible');
-                        } else if (text.includes('Gagal memperbarui data sekolah')) {
-                            cy.contains('Gagal memperbarui data sekolah').should('be.visible');
+                        if ($body.find('.p-toast-message').length) {
+                            cy.get('.p-toast-message').then(($toast) => {
+                                const toastText = $toast.text();
+                                if (toastText.includes('Data sekolah berhasil diperbarui.')) {
+                                    cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
+                                    cy.contains('.p-toast-detail', 'Data sekolah berhasil diperbarui.').should('be.visible');
+                                } else {
+                                    cy.contains('.p-toast-summary', 'Gagal').should('be.visible');
+                                    cy.contains('.p-toast-detail', 'Gagal memperbarui data sekolah.').should('be.visible');
+                                }
+                            });
                         } else {
-                            cy.log('Toast export tidak muncul');
+                            cy.log('Tidak ada toast yang muncul.');
                         }
                     });
                 });
