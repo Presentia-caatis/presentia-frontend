@@ -1,4 +1,6 @@
 "use strict";
+import "cypress-real-events/support";
+import "cypress-wait-until";
 /// <reference types="cypress" />
 // ***********************************************
 // This example commands.ts shows you how to
@@ -36,3 +38,35 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add("loginAs", (role) => {
+    const upperRole = role.toUpperCase();
+
+    let username = Cypress.env(`${upperRole}_USERNAME`);
+    let password = Cypress.env(`${upperRole}_PASSWORD`);
+
+    if (!username || !password) {
+        const users = Cypress.env("users");
+        const localUser = users?.[role];
+
+        if (!localUser) {
+            throw new Error(
+                `Data login untuk role "${role}" tidak ditemukan di environment variable maupun env.json`
+            );
+        }
+
+        username = localUser.username;
+        password = localUser.password;
+    }
+
+    cy.visit("/");
+    cy.contains("Login").click();
+    cy.url().should("include", "/login");
+    cy.get("#email").type(username);
+    cy.get("#password").type(password);
+    cy.get('button[type="submit"]').click();
+    cy.get(".p-toast-message", { timeout: 10000 })
+        .should("contain", "Login Berhasil")
+        .and("contain", "Sekarang kamu sudah masuk ke dalam aplikasi")
+        .should("be.visible");
+});
