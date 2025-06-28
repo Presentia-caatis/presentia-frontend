@@ -41,7 +41,7 @@ describe('Attendance List Page Test', () => {
                             ]
                         },
                         { label: 'Pilih Kelas', selector: '.p-multiselect' },
-                        { label: 'Pilih Status Presensi', selector: '.p-multiselect' }
+                        { label: 'Pilih Jenis Kehadiran / Ketidakhadiran', selector: '.p-multiselect' }
                     ];
 
                     filters.forEach((filter) => {

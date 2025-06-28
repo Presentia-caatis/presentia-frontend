@@ -72,14 +72,9 @@ describe('Failed to Edit Account Profile Test', () => {
                             .click();
                     });
 
-                cy.get('.p-toast').should('be.visible').then((toast) => {
-                    if (toast.text().includes('Profil berhasil diperbarui.')) {
-                        cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
-                        cy.contains('.p-toast-detail', 'Profil berhasil diperbarui.').should('be.visible');
-                    } else {
-                        cy.contains('.p-toast-summary', 'Gagal').should('be.visible');
-                        cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data.').should('be.visible');
-                    }
+                cy.get('.p-toast').should('be.visible').then(() => {
+                    cy.contains('.p-toast-summary', 'Gagal').should('be.visible');
+                    cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data.').should('be.visible');
                 });
             });
     });

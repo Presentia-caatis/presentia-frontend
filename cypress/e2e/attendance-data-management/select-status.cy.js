@@ -92,51 +92,41 @@ describe('Select Status for Attendance Data Test', () => {
                         .should('match', /^Data kehadiran siswa\s+\S+/);
                     cy.get('.p-input-icon-left input[placeholder="Search..."]').should('exist');
 
+                    cy.wait(5000);
                     cy.contains('h5', 'Pilih Jenis Kehadiran / Ketidakhadiran')
                         .should('be.visible')
                         .parent()
                         .find('.p-multiselect')
                         .should('be.visible')
-                        .click();
+                        .click({ force: true });
+                    cy.get('.p-multiselect-panel', { timeout: 5000 }).should('be.visible');
+                    cy.get('.p-multiselect-panel')
+                        .contains('.p-multiselect-item', 'Absent')
+                        .should('be.visible')
+                        .within(() => {
+                            cy.get('.p-checkbox').click();
+                        });
 
-                    cy.wait(5000);
-                    cy.get('.p-multiselect-panel').should('be.visible');
-                    cy.get('.p-multiselect-panel').then(($panel) => {
-                        if ($panel.text().includes('No available options')) {
-                            cy.log('Tidak ada opsi presensi');
+                    cy.get('body').click(0, 0);
+                    cy.contains('button', 'Tampilkan').click();
+
+                    cy.contains('Memuat data kehadiran...').should('not.exist');
+                    cy.wait(1000);
+                    cy.get('table tbody tr').then(($rows) => {
+                        if ($rows.length === 1) {
+                            cy.wrap($rows).first().within(() => {
+                                cy.get('td')
+                                    .invoke('text')
+                                    .should('include', 'Belum ada data kehadiran');
+                            });
                         } else {
-                            cy.get('.p-multiselect-item')
-                                .should('have.length.greaterThan', 0)
-                                .then(($items) => {
-                                    const randomIndex = Math.floor(Math.random() * $items.length);
-
-                                    cy.wrap($items[randomIndex])
-                                        .find('div.p-checkbox')
-                                        .click();
-
-                                    cy.get('body').click(0, 0);
-                                    cy.contains('button', 'Tampilkan').click();
-
-                                    cy.contains('Memuat data kehadiran...').should('not.exist');
-                                    cy.wait(1000);
-                                    cy.get('table tbody tr').then(($rows) => {
-                                        if ($rows.length === 1) {
-                                            cy.wrap($rows).first().within(() => {
-                                                cy.get('td')
-                                                    .invoke('text')
-                                                    .should('include', 'Belum ada data kehadiran');
-                                            });
-                                        } else {
-                                            cy.get('table tbody tr').each(($row) => {
-                                                cy.wrap($row).find('td').eq(8)
-                                                    .invoke('text')
-                                                    .then((textValue) => {
-                                                        expect(textValue).to.match(/^(On Time|Late|Absent)$/);
-                                                    });
-                                            });
-                                        }
+                            cy.get('table tbody tr').each(($row) => {
+                                cy.wrap($row).find('td').eq(8)
+                                    .invoke('text')
+                                    .then((textValue) => {
+                                        expect(textValue).to.match(/^(On Time|Late|Absent)$/);
                                     });
-                                });
+                            });
                         }
                     });
                 });
