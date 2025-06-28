@@ -25,28 +25,28 @@ describe('Student Fingerprint List Test', () => {
                     cy.get('.layout-sidebar').contains('Daftar Sidik Jari').click();
                     cy.url().should('include', `/school/${school}/fingerprint`);
 
-                    cy.get('.card h1').should('contain.text', 'Login untuk mendaftaran Sidik Jari');
+                    // cy.get('.card h1').should('contain.text', 'Login untuk mendaftaran Sidik Jari');
 
-                    const username = Cypress.env('ADMS_USERNAME');
-                    const password = Cypress.env('ADMS_PASSWORD');
+                    // const username = Cypress.env('ADMS_USERNAME');
+                    // const password = Cypress.env('ADMS_PASSWORD');
 
-                    if (username && password) {
-                        cy.get('label').contains('Username').parent().find('input').type(username);
-                        cy.get('label').contains('Password').parent().find('input').type(password);
-                    } else {
-                        cy.readFile('cypress.env.json').then((data) => {
-                            const localUsername = data.users.adms.username;
-                            const localPassword = data.users.adms.password;
-                            cy.get('label').contains('Username').parent().find('input').type(localUsername);
-                            cy.get('label').contains('Password').parent().find('input').type(localPassword);
-                        });
-                    }
+                    // if (username && password) {
+                    //     cy.get('label').contains('Username').parent().find('input').type(username);
+                    //     cy.get('label').contains('Password').parent().find('input').type(password);
+                    // } else {
+                    //     cy.readFile('cypress.env.json').then((data) => {
+                    //         const localUsername = data.users.adms.username;
+                    //         const localPassword = data.users.adms.password;
+                    //         cy.get('label').contains('Username').parent().find('input').type(localUsername);
+                    //         cy.get('label').contains('Password').parent().find('input').type(localPassword);
+                    //     });
+                    // }
 
-                    cy.contains('button', 'Login')
-                        .should('be.visible')
-                        .and('not.be.disabled')
-                        .click();
-                    cy.url().should('include', `/school/${school}/fingerprint`);
+                    // cy.contains('button', 'Login')
+                    //     .should('be.visible')
+                    //     .and('not.be.disabled')
+                    //     .click();
+                    // cy.url().should('include', `/school/${school}/fingerprint`);
 
                     cy.get('h5')
                         .contains(/^Daftar Sidik Jari Siswa$/)

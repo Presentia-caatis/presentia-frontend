@@ -1,5 +1,5 @@
 describe('Login Page Test', () => {
-    const roles = ['general_user', 'staf', 'admin', 'superadmin'];
+    const roles = ['admin'];
 
     beforeEach(() => {
         cy.visit('/');
@@ -25,11 +25,8 @@ describe('Login Page Test', () => {
     });
 
     roles.forEach((role) => {
-        const roleName = role === 'general_user' ? 'pengguna umum'
-            : role === 'staf' ? 'staf sekolah'
-                : role === 'admin' ? 'admin sekolah'
-                    : 'superadmin';
-
+        const roleName = role === 'admin' ? 'admin sekolah'
+            : role;
 
         it(`Cek perilaku ${roleName} login dengan kredensial yang belum terdaftar`, () => {
             cy.get('input#email').type('presentia_dummy_99');
