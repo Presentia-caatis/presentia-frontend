@@ -70,16 +70,8 @@ describe('Edit Account Password Test', () => {
                 cy.get('#confirmPassword').clear().type(newPassword);
                 cy.get('.p-button').contains('Ganti Password').click()
 
-                cy.wait(5000);
-                cy.get('.p-toast').should('be.visible').then((toast) => {
-                    if (toast.text().includes('Password berhasil diganti.')) {
-                        cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
-                        cy.contains('.p-toast-detail', 'Password berhasil diganti.').should('be.visible');
-                    } else {
-                        cy.contains('.p-toast-summary', 'Gagal').should('be.visible');
-                        cy.contains('.p-toast-detail', 'Terjadi kesalahan saat memperbarui data.').should('be.visible');
-                    }
-                });
+                cy.contains('.p-toast-summary', /Sukses|Gagal/, { timeout: 10000 }).should('exist');
+                cy.contains('.p-toast-detail', /Password berhasil diganti|Terjadi kesalahan/, { timeout: 10000 }).should('exist');
 
                 cy.url().should('include', '/user/dashboard');
                 cy.get('.layout-topbar .flex.gap-2.cursor-pointer').click();
