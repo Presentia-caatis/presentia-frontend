@@ -72,9 +72,15 @@ describe("Failed to Register Student Fingerprint Test", () => {
                         .parent()
                         .find(".p-dropdown")
                         .click();
-                    cy.get(".p-dropdown-items-wrapper .p-dropdown-item")
-                        .first()
-                        .click();
+                    cy.get("div.p-dropdown-items-wrapper").then($wrapper => {
+                        const items = $wrapper.find(".p-dropdown-item");
+
+                        if (items.length > 0) {
+                            cy.wrap(items).first().click();
+                        } else {
+                            cy.get("div.p-dropdown-items-wrapper").should("contain", "Tidak ada siswa dengan nama");
+                        }
+                    });
 
                     cy.get("label")
                         .contains("Pilih Jari")

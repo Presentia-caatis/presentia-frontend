@@ -86,7 +86,9 @@ describe('Add Class Data Test', () => {
                                 });
 
                             cy.get('.p-toast').should('be.visible');
-                            cy.get('.p-toast-summary', 'Sukses').should('be.visible');
+                            cy.get('.p-toast-summary')
+                                .should('be.visible')
+                                .and('contain.text', 'Sukses');
                             cy.get('.p-toast-detail')
                                 .should('be.visible')
                                 .invoke('text')
