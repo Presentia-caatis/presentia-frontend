@@ -62,7 +62,7 @@ describe('Update Class Data Test', () => {
                             row.querySelectorAll('td')[1].textContent.trim().toUpperCase()
                         );
 
-                        const allPossibleNames = Array.from({ length: 20 }, (_, i) =>
+                        const allPossibleNames = Array.from({ length: 50 }, (_, i) =>
                             `X TJKT ${String(i + 1).padStart(2, '0')}`
                         );
 

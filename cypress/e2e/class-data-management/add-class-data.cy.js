@@ -62,7 +62,7 @@ describe('Add Class Data Test', () => {
                         });
                     }).then(() => {
                         const allClassNames = Array.from({ length: 20 }, (_, i) =>
-                            `X TJKT ${String(i + 1).padStart(2, '0')}`
+                            `X DKV ${String(i + 1).padStart(2, '0')}`
                         );
 
                         const missingClass = allClassNames.find(kelas => !existingClassNames.includes(kelas));
@@ -86,9 +86,7 @@ describe('Add Class Data Test', () => {
                                 });
 
                             cy.get('.p-toast').should('be.visible');
-                            cy.get('.p-toast-summary')
-                                .should('be.visible')
-                                .and('contain.text', 'Sukses');
+                            cy.contains('.p-toast-summary', 'Sukses').should('be.visible');
                             cy.get('.p-toast-detail')
                                 .should('be.visible')
                                 .invoke('text')
