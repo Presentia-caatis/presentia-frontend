@@ -119,10 +119,15 @@ const SchoolStudentAttendanceListPage = () => {
                 params.endDate = dates[1].toLocaleDateString("en-CA");
             }
 
-            params.type = activeIndex === 0 ? "in" : "out";
+            const sortKey = activeIndex === 0 ? "check_in_time" : "check_out_time";
+
+            params.sort = {
+                [sortKey]: "desc"
+            };
 
             params.simplify = "1";
             params.school_id = user.school_id;
+            params.isExcludeCheckInAbsentStudent = 1;
 
             const response: any = await AttendanceService.getAttendances(params);
             const total = response.data.total;

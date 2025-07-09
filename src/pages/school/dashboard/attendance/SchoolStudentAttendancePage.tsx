@@ -536,6 +536,11 @@ const SchoolStudentAttendancePage = () => {
             if (selectedKelas && selectedKelas.length > 0) {
                 params.classGroup = selectedKelas.join(',');
             }
+            const filters: Record<string, string> = {};
+
+            if (globalFilter) {
+                filters['student.student_name'] = globalFilter;
+            }
 
             if (selectedStatus && selectedStatus.length > 0) {
                 const selectedPresensiIds = selectedStatus
@@ -548,19 +553,13 @@ const SchoolStudentAttendancePage = () => {
                 if (selectedPresensiIds.length > 0) {
                     params.checkInStatusId = selectedPresensiIds.join(',');
                 }
-                const filters: Record<string, string> = {};
 
                 if (selectedAbsensiIds.length > 0) {
                     filters['absencePermit.absence_permit_type_id'] = selectedAbsensiIds.join(',');
                 }
-                params.filter = filters;
-
             }
+            params.filter = filters;
 
-
-            if (globalFilter) {
-                params.search = globalFilter;
-            }
             const response = await attendanceService.getAttendances(params);
 
             setListAttendances(response.data.data);
@@ -794,8 +793,8 @@ const SchoolStudentAttendancePage = () => {
                         }} optionLabel="label" className="w-full" />
                     </div>
                     <div className=" col-12 xl:col-3">
-                        <h5>Pilih Status</h5>
-                        <MultiSelect filter placeholder="Silahkan Pilih Status " showClear loading={loadingStatus} value={selectedStatus} options={listStatus} onChange={(e) => {
+                        <h5>Pilih Jenis Kehadiran / Ketidakhadiran</h5>
+                        <MultiSelect filter placeholder="Silahkan Pilih Jenis Kehadiran / Ketidakhadiran " showClear loading={loadingStatus} value={selectedStatus} options={listStatus} onChange={(e) => {
                             setSelectedStatus(e.value);
                         }} optionLabel="label" className="w-full " />
                     </div>
@@ -858,6 +857,7 @@ const SchoolStudentAttendancePage = () => {
                 <DataTable
                     selectionMode="multiple"
                     dataKey='id'
+                    stripedRows
                     value={listAttendances}
                     selection={selectedAttendances}
                     onSelectionChange={(e) => setSelectedAttendances(e.value)}
@@ -1137,128 +1137,128 @@ const SchoolStudentAttendancePage = () => {
                             />
                         </div>
 
-                        {listStatusPresensi.find(
+                        {/* {listStatusPresensi.find(
                             (status: { value: number; late_duration: number }) =>
                                 status.value === editAttendanceData.check_in_status_id &&
                                 status.late_duration === -1
-                        ) && (
-                                <>
-                                    <Divider />
-                                    <Message
-                                        style={{
-                                            border: 'solid #696cff',
-                                            borderWidth: '0 0 0 6px',
-                                            color: '#696cff',
-                                        }}
-                                        className="border-primary w-full justify-content-start"
-                                        severity="info"
-                                        content={
-                                            <div className="flex align-items-center">
-                                                <i className="pi pi-calendar" style={{ fontSize: '1.5rem', color: '#696cff' }} />
-                                                <div className="ml-2">Lengkapi Bukti Absensi.</div>
-                                            </div>
-                                        }
-                                    />
-                                    <br />
-                                    <div className="field">
-                                        <label>Status Absensi</label>
-                                        <Dropdown
-                                            filter
-                                            placeholder="Silahkan Pilih Status Absensi"
-                                            showClear
-                                            loading={loadingStatusAbsensi}
-                                            value={selectedStatusAbsensi}
-                                            options={listStatusAbsensi}
+                        ) && ( */}
+                        <>
+                            <Divider />
+                            <Message
+                                style={{
+                                    border: 'solid #696cff',
+                                    borderWidth: '0 0 0 6px',
+                                    color: '#696cff',
+                                }}
+                                className="border-primary w-full justify-content-start"
+                                severity="info"
+                                content={
+                                    <div className="flex align-items-center">
+                                        <i className="pi pi-calendar" style={{ fontSize: '1.5rem', color: '#696cff' }} />
+                                        <div className="ml-2">Isi Bukti Absensi.</div>
+                                    </div>
+                                }
+                            />
+                            <br />
+                            <div className="field">
+                                <label>Status Absensi</label>
+                                <Dropdown
+                                    filter
+                                    placeholder="Silahkan Pilih Status Absensi"
+                                    showClear
+                                    loading={loadingStatusAbsensi}
+                                    value={selectedStatusAbsensi}
+                                    options={listStatusAbsensi}
+                                    disabled={previewMode}
+                                    onChange={(e) => setSelectedStatusAbsensi(e.value)}
+                                    optionLabel="label"
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="field">
+                                <label>Keterangan Absensi</label>
+                                <InputText value={absenceDescription} disabled={previewMode} placeholder="Keterangan siswa tidak masuk" onChange={(value) => {
+                                    setAbsenceDescription(value.target.value);
+                                }} />
+                            </div>
+                            <div className="field">
+
+                                <label>Bukti Absensi (Format: PDF, JPG, PNG | Ukuran maksimal 5 MB)</label>
+                                {!file && previewMode && (
+                                    <p style={{
+                                        marginTop: '0.5rem',
+                                        padding: '0.75rem',
+                                        backgroundColor: '#F9FAFB',
+                                        border: '1px dashed #CBD5E0',
+                                        borderRadius: '6px',
+                                        color: '#6B7280',
+                                        fontSize: '0.875rem'
+                                    }}>
+                                        Belum ada dokumen bukti absensi
+                                    </p>
+                                )}
+
+                                <div className="mt-2 flex flex-column gap-2">
+                                    {!file && !previewMode && (
+                                        <FileUpload
+                                            name="demo[]"
+                                            accept="application/pdf,image/jpeg,image/png"
+                                            mode="basic"
+                                            maxFileSize={5000000}
+                                            chooseLabel="Pilih File"
+                                            customUpload
+                                            onSelect={handleFileSelect}
+                                            auto={false}
                                             disabled={previewMode}
-                                            onChange={(e) => setSelectedStatusAbsensi(e.value)}
-                                            optionLabel="label"
-                                            className="w-full"
+                                            emptyTemplate={<p className="m-0">Upload file disini.</p>}
                                         />
-                                    </div>
-                                    <div className="field">
-                                        <label>Keterangan Absensi</label>
-                                        <InputText value={absenceDescription} disabled={previewMode} placeholder="Keterangan siswa tidak masuk" onChange={(value) => {
-                                            setAbsenceDescription(value.target.value);
-                                        }} />
-                                    </div>
-                                    <div className="field">
-
-                                        <label>Bukti Absensi (Format: PDF, JPG, PNG | Ukuran maksimal 5 MB)</label>
-                                        {!file && previewMode && (
-                                            <p style={{
-                                                marginTop: '0.5rem',
-                                                padding: '0.75rem',
-                                                backgroundColor: '#F9FAFB',
-                                                border: '1px dashed #CBD5E0',
-                                                borderRadius: '6px',
-                                                color: '#6B7280',
-                                                fontSize: '0.875rem'
-                                            }}>
-                                                Belum ada dokumen bukti absensi
-                                            </p>
-                                        )}
-
-                                        <div className="mt-2 flex flex-column gap-2">
-                                            {!file && !previewMode && (
-                                                <FileUpload
-                                                    name="demo[]"
-                                                    accept="application/pdf,image/jpeg,image/png"
-                                                    mode="basic"
-                                                    maxFileSize={5000000}
-                                                    chooseLabel="Pilih File"
-                                                    customUpload
-                                                    onSelect={handleFileSelect}
-                                                    auto={false}
-                                                    disabled={previewMode}
-                                                    emptyTemplate={<p className="m-0">Upload file disini.</p>}
-                                                />
-                                            )}
-                                            {file && (
-                                                <div className="flex align-items-center justify-content-between p-2 border-round border-1 surface-border">
-                                                    <div className="flex gap-2">
-                                                        {file.type === 'application/pdf' && (
-                                                            <i className="pi pi-file-pdf" style={{ fontSize: '1.5rem', color: '#FF5252' }}></i>
-                                                        )}
-                                                        {file.type === 'image/jpeg' && (
-                                                            <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#2196F3' }}></i>
-                                                        )}
-                                                        {file.type === 'image/png' && (
-                                                            <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#4CAF50' }}></i>
-                                                        )}
-                                                        <div className="flex flex-column justify-content-start">
-                                                            <div
-                                                                className="overflow-hidden text-left text-overflow-ellipsis white-space-nowrap w-28rem"
-                                                                title={file.name}
-                                                            >
-                                                                {file.name}
-                                                            </div>
-                                                            <small className="text-left">
-                                                                {(file.size / 1024).toFixed(2)} KB
-                                                            </small>
-                                                        </div>
+                                    )}
+                                    {file && (
+                                        <div className="flex align-items-center justify-content-between p-2 border-round border-1 surface-border">
+                                            <div className="flex gap-2">
+                                                {file.type === 'application/pdf' && (
+                                                    <i className="pi pi-file-pdf" style={{ fontSize: '1.5rem', color: '#FF5252' }}></i>
+                                                )}
+                                                {file.type === 'image/jpeg' && (
+                                                    <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#2196F3' }}></i>
+                                                )}
+                                                {file.type === 'image/png' && (
+                                                    <i className="pi pi-image" style={{ fontSize: '1.5rem', color: '#4CAF50' }}></i>
+                                                )}
+                                                <div className="flex flex-column justify-content-start">
+                                                    <div
+                                                        className="overflow-hidden text-left text-overflow-ellipsis white-space-nowrap w-28rem"
+                                                        title={file.name}
+                                                    >
+                                                        {file.name}
                                                     </div>
-                                                    <div className="flex gap-2">
-                                                        <a href={file.previewUrl} target="_blank" rel="noopener noreferrer">
-                                                            <Button icon="pi pi-eye" className="p-button-sm p-button-outlined" tooltip="Lihat File" />
-                                                        </a>
-
-                                                        {
-                                                            !previewMode && (<Button
-                                                                icon="pi pi-trash"
-                                                                className="p-button-sm p-button-danger"
-                                                                onClick={handleClearFile}
-                                                                tooltip="Hapus File"
-                                                            />)
-                                                        }
-
-                                                    </div>
+                                                    <small className="text-left">
+                                                        {(file.size / 1024).toFixed(2)} KB
+                                                    </small>
                                                 </div>
-                                            )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <a href={file.previewUrl} target="_blank" rel="noopener noreferrer">
+                                                    <Button icon="pi pi-eye" className="p-button-sm p-button-outlined" tooltip="Lihat File" />
+                                                </a>
+
+                                                {
+                                                    !previewMode && (<Button
+                                                        icon="pi pi-trash"
+                                                        className="p-button-sm p-button-danger"
+                                                        onClick={handleClearFile}
+                                                        tooltip="Hapus File"
+                                                    />)
+                                                }
+
+                                            </div>
                                         </div>
-                                    </div>
-                                    <Divider />
-                                </>
-                            )}
+                                    )}
+                                </div>
+                            </div>
+                            <Divider />
+                        </>
+                        {/* )} */}
                         {
                             !previewMode && (
                                 <Button

@@ -22,7 +22,7 @@ const SchoolProfilePage = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isModified, setIsModified] = useState(false);
     const { user } = useAuth();
-    const [hasAccess, setHasAccess] = useState(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)))
+    const [hasAccess, setHasAccess] = useState(user?.roles.some(role => ['super_admin', 'school_admin', 'school_coadmin'].includes(role)))
     const navigate = useNavigate();
 
     useEffect(() => {

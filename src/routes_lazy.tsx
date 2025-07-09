@@ -32,7 +32,7 @@ const UserSupportDetailPage = lazy(() => import('./pages/user/dashboard/support/
 const AdminSubscribtionPage = lazy(() => import('./pages/admin/subscription/AdminSubscriptionPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const SchoolStudentAttendanceListPage = lazy(() => import('./pages/school/dashboard/student/SchoolAttendanceListPage'));
-const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/fingerprintRegisterPage'));
+const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/FingerprintRegisterPage'));
 const SchoolCheckInStatusPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolCheckInStatusPage'));
 
 const CenteredLoader = () => (
@@ -91,13 +91,13 @@ const AppRoutes = () => {
                 <Route path="check-in/status" element={withSuspense(SchoolCheckInStatusPage)} />
                 <Route path="absence-permit/type" element={withSuspense(AbsenceStatusListPage)} />
                 <Route path="classroom" element={withSuspense(ClassroomListPage)} />
-                <Route path="fingerprint" element={<RoleGuard roles={['school_admin', 'super_admin']}>
+                <Route path="fingerprint" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
                     {withSuspense(FingerprintPage)}
                 </RoleGuard>} />
             </Route>
 
             <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
-            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin']}>{
+            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>{
                 withSuspense(StudentAttendanceInPage)}</RoleGuard>} />
             <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
 

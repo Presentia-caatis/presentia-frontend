@@ -12,3 +12,25 @@ body {
 body.modal-open {
   overflow: hidden;
 }
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.badge.pending {
+  background-color: #fdf6b2;
+  color: #b7791f;
+}
+
+.badge.accepted {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.badge.rejected {
+  background-color: #fed7d7;
+  color: #c53030;
+}

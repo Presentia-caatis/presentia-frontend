@@ -145,6 +145,7 @@ const SchoolAbsenceStatusPage = () => {
 
             <Tooltip className='p-1' target=".student-count-tooltip" />
             <DataTable
+                stripedRows
                 dataKey="id"
                 selection={selectedPermits!}
                 selectionMode="multiple"
@@ -221,7 +222,7 @@ const SchoolAbsenceStatusPage = () => {
                 visible={showAddDialog}
                 style={{ width: '450px' }}
                 onHide={() => setShowAddDialog(false)}
-                header="Tambah Status Baru"
+                header="Tambah/Edit Data Absensi"
                 footer={
                     <div>
                         <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => setShowAddDialog(false)} />

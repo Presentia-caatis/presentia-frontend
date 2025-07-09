@@ -104,7 +104,7 @@ const SchoolTopbar = () => {
                             {user?.fullname || 'Loading...'}
                         </div>
                         <div className='text-left md:text-right'>
-                            <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] == "school_staff" ? 'Staff Sekolah' : user?.roles[0] == "school_admin" ? "Admin Sekolah" : user?.roles[0] || 'Loading'}</Tag>
+                            <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] == "school_staff" ? 'Staff Sekolah' : user?.roles[0] == "school_admin" ? "Owner" : user?.roles[0] == "school_coadmin" ? "Admin Sekolah" : user?.roles[0] || 'Loading'}</Tag>
                         </div>
                     </div>
                     <div className=''>

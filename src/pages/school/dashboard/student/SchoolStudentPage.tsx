@@ -21,6 +21,7 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 
 
+
 type StudentData = {
     id: number;
     student_name: string;
@@ -515,16 +516,16 @@ const SchoolStudentPage = () => {
                                 setShowAddDialog(true);
                             }} />
                             <Button
-                                icon="pi pi-upload"
+                                icon="pi pi-file-import"
                                 severity="info"
                                 label="Import"
                                 onClick={() => setShowImportDialog(true)}
                             />
                             <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
                         </div>
-                        <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
+                        {/* <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
                             handleExport();
-                        }} label='Export' />
+                        }} label='Export' /> */}
                     </div>
                 )}
 

@@ -30,7 +30,7 @@ import UserSupportDetailPage from './pages/user/dashboard/support/UserSupportDet
 import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SchoolStudentAttendanceListPage from './pages/school/dashboard/student/SchoolAttendanceListPage';
-import FingerprintPage from './pages/school/dashboard/admin/fingerprintRegisterPage';
+import FingerprintPage from './pages/school/dashboard/admin/FingerprintRegisterPage';
 import SchoolCheckInStatusPage from './pages/school/dashboard/attendance/SchoolCheckInStatusPage';
 
 const AppRoutes = () => {
@@ -72,7 +72,7 @@ const AppRoutes = () => {
                 <Route path="absence-permit/type" element={<AbsenceStatusListPage />} />
                 <Route path="classroom" element={<ClassroomListPage />} />
                 <Route path="fingerprint" element={
-                    <RoleGuard roles={['school_admin', 'super_admin']}>
+                    <RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
                         <FingerprintPage />
                     </RoleGuard>
                 } />
@@ -80,7 +80,7 @@ const AppRoutes = () => {
 
             <Route path="/school/attendance" element={<SchoolStudentAttendanceListPage />} />
             <Route path="/school/student/attendance/in" element={
-                <RoleGuard roles={['school_admin', 'super_admin']}>
+                <RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
                     <StudentAttendanceInPage />
                 </RoleGuard>
             } />

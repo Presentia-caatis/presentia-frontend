@@ -79,7 +79,7 @@ const SchoolDashboardPage = () => {
                     datasets: [
                         {
                             data: dailyValues,
-                            backgroundColor: ["#EF4444", "#10B981", "#F59E0B", "#6366F1", "#A855F7"],
+                            backgroundColor: ["#10B981", "#EF4444", "#F59E0B", "#6366F1", "#A855F7"],
                         },
                     ],
                 });
@@ -219,6 +219,38 @@ const SchoolDashboardPage = () => {
                         </div>
                     </div>
                 </div>
+                {/* <div className="col-12">
+                    <div className="card h-full flex flex-column" style={{ minHeight: '300px' }}>
+                        <h5 className="mb-3">Statistik Kehadiran Harian</h5>
+                        <div className="flex-1 h-full">
+                            {dailyChartLoading ? (
+                                <Skeleton width="100%" height="100%" />
+                            ) : dailyDataArray.length === 0 ? (
+                                <h3 className="mt-4">Tidak Ada Data Kehadiran</h3>
+                            ) : (
+                                <Carousel
+                                    value={dailyDataArray}
+                                    numVisible={3}
+                                    numScroll={1}
+                                    circular
+                                    autoplayInterval={4000}
+                                    showIndicators
+                                    showNavigators
+                                    className="w-full h-full"
+                                    contentClassName="h-full"
+                                    itemTemplate={(item) => (
+                                        <div className="h-full flex flex-column justify-content-center align-items-center px-4">
+                                            <div className="card w-full h-full flex flex-column justify-content-center align-items-center shadow-2">
+                                                <span className="text-500 font-medium text-lg ">{item.key}</span>
+                                                <div className="text-900 font-bold text-5xl">{item.value}</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div> */}
                 {schoolLoading || (school?.dailyData && school.dailyData.length > 0) ? (
                     <div className="col-6 w-full h-full">
                         <div className="card">
@@ -254,8 +286,6 @@ const SchoolDashboardPage = () => {
                         </div>
                     </div>
                 ) : null}
-
-
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
                         <h5>Perbandingan Kehadiran Hari Ini</h5>
@@ -268,6 +298,8 @@ const SchoolDashboardPage = () => {
                         )}
                     </div>
                 </div>
+
+
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center h-full">
                         <h5>Statistik Kehadiran Harian</h5>
@@ -280,6 +312,8 @@ const SchoolDashboardPage = () => {
                         )}
                     </div>
                 </div>
+
+
 
                 <div className="col-12 xl:col-6">
                     <div className="card flex flex-column align-items-center">
@@ -297,7 +331,7 @@ const SchoolDashboardPage = () => {
                         {chartLoading ? (
                             <Skeleton width="100%" height="200px" />
                         ) : (
-                            <Chart type="doughnut" data={studentGenderChart} options={chartOptions} />
+                            <Chart type="pie" data={studentGenderChart} options={chartOptions} />
                         )}
                     </div>
                 </div>

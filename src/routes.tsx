@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import RoleGuard from './components/RoleGuard';
 import { ForgotPasswordPage, ResetPasswordPage } from './components/public/ForgotPassword';
 import PublicAttendancePage from './pages/public/PublicAttendancePage';
+import SchoolAttendanceWindowPage from './pages/school/dashboard/attendance/SchoolAttendanceWindowPage';
+import SchoolUsersPage from './pages/school/dashboard/admin/SchoolUsersPage';
 
 const Login = lazy(() => import('./pages/auth/LoginPage'));
 const AdminLayout = lazy(() => import('./layout/AdminLayout'));
@@ -34,7 +36,7 @@ const UserSupportDetailPage = lazy(() => import('./pages/user/dashboard/support/
 const AdminSubscribtionPage = lazy(() => import('./pages/admin/subscription/AdminSubscriptionPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const SchoolStudentAttendanceListPage = lazy(() => import('./pages/school/dashboard/student/SchoolAttendanceListPage'));
-const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/fingerprintRegisterPage'));
+const FingerprintPage = lazy(() => import('./pages/school/dashboard/admin/FingerprintRegisterPage'));
 const SchoolCheckInStatusPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolCheckInStatusPage'));
 
 const CenteredLoader = () => (
@@ -90,16 +92,20 @@ const AppRoutes = () => {
                 <Route path="attendance-record-result" element={withSuspense(StudentAttendanceRecordResultPage)} />
                 <Route path="custom-event" element={withSuspense(CustomEventPage)} />
                 <Route path="default-attendance-time" element={withSuspense(DefaultAttendanceTimePage)} />
+                <Route path="attendance-window" element={withSuspense(SchoolAttendanceWindowPage)} />
                 <Route path="check-in/status" element={withSuspense(SchoolCheckInStatusPage)} />
                 <Route path="absence-permit/type" element={withSuspense(AbsenceStatusListPage)} />
                 <Route path="classroom" element={withSuspense(ClassroomListPage)} />
-                <Route path="fingerprint" element={<RoleGuard roles={['school_admin', 'super_admin']}>
+                <Route path="fingerprint" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
                     {withSuspense(FingerprintPage)}
+                </RoleGuard>} />
+                <Route path="users" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
+                    {withSuspense(SchoolUsersPage)}
                 </RoleGuard>} />
             </Route>
 
             <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
-            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin']}>{
+            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>{
                 withSuspense(StudentAttendanceInPage)}</RoleGuard>} />
             <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
             <Route path="/forgot-password" element={withSuspense(ForgotPasswordPage)} />

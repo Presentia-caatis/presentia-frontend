@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosClient from '../utils/axiosClient';
 
-const dashboardService = {
+const DashboardService = {
   getStaticStatistics: async () => {
     try {
       const response = await axiosClient.get(`/dashboard-statistic/static`);
@@ -23,4 +23,4 @@ const dashboardService = {
   },
 };
 
-export default dashboardService;
+export default DashboardService;

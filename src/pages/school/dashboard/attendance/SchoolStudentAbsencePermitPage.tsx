@@ -337,6 +337,7 @@ const SchoolStudentAbsencePermitPage = () => {
                     />
                 </div>
                 <DataTable
+                    stripedRows
                     selectionMode="multiple"
                     dataKey='id'
                     value={listAttendances}

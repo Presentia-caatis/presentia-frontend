@@ -26,7 +26,7 @@ const SchoolSetAttendanceTimePage = () => {
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
     const [initialData, setInitialData] = useState<any>(null);
     const { user } = useAuth();
-    const [hasAccess, setHasAccess] = useState(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)))
+    const [hasAccess, setHasAccess] = useState(user?.roles.some(role => ['super_admin', 'school_admin', 'school_coadmin'].includes(role)))
 
     const toast = useRef<Toast>(null);
     const msgs = useRef<Messages>(null);
@@ -182,10 +182,23 @@ const SchoolSetAttendanceTimePage = () => {
             id: '1',
             sticky: true,
             severity: 'info',
-            detail: 'Waktu yang ditentukan akan menjadi default waktu presensi.',
+            content: (
+                <div className="flex align-items-start gap-2">
+                    <i className="pi pi-info-circle text-blue-500 text-xl mt-1" />
+                    <div>
+                        <p>
+                            Waktu ini akan dijadikan sebagai <b>default presensi mulai besok hari</b>.<br />
+                            Jika Anda ingin mengatur waktu presensi untuk <b>hari ini</b>, silakan buka halaman{' '}
+                            <a href="/school/.../attendance-window" className="text-primary underline">Konfigurasi Waktu Presensi</a>.
+                        </p>
+                    </div>
+                </div>
+            ),
             closable: false,
         });
+
     });
+
 
     const today = new Date();
     const todayString = today.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -196,7 +209,7 @@ const SchoolSetAttendanceTimePage = () => {
             <div className="card">
                 <div className="flex justify-content-between">
                     <div>
-                        <h1>Konfigurasi Waktu Presensi</h1>
+                        <h1>Waktu Presensi Default</h1>
                     </div>
                     <div className="my-auto">
                         <h3>{todayString}</h3>

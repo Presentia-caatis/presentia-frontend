@@ -7,8 +7,19 @@ class UserService {
         return { responseData: response.data, status: response.status };
     }
 
-    async getUnassignedUsers(): Promise<any> {
-        const response = await axiosClient.get('/user/unassignedUsers');
+    async getUnassignedUsers(search = '', perPage = 30): Promise<any> {
+        const response = await axiosClient.get('/user/unassignedUsers', {
+            params: {
+                perPage,
+                filter: search.length >= 3 ? { fullname: search } : {},
+            },
+        });
+        return { responseData: response.data, status: response.status };
+    }
+
+
+    async getSchoolUsers(params = {}) {
+        const response = await axiosClient.get(`/user/school`, { params });
         return { responseData: response.data, status: response.status };
     }
 
@@ -48,6 +59,11 @@ class UserService {
     async linkUserToSchool(userId: number, schoolId?: number): Promise<any> {
         const response = await axiosClient.post(`/user/link-to-school/${userId}`, { school_id: schoolId });
         return { responseData: response.data, status: response.status };
+    }
+
+    async removeUserFromSchool(userId: number): Promise<any> {
+        const response = await axiosClient.post(`/user/school/remove/${userId}`);
+        return response;
     }
 }
 

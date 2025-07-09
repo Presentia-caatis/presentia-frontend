@@ -53,7 +53,7 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/dashboard`),
                     className: currentPath === `/school/${schoolName}/dashboard` ? 'active-route' : 'menu-item',
                 },
-                ...(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)) ? [
+                ...(user?.roles.some(role => ['super_admin', 'school_admin', 'school_coadmin'].includes(role)) ? [
                     {
                         label: 'Presensi Manual',
                         icon: 'pi pi-address-book',
@@ -91,12 +91,18 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/classroom`),
                     className: currentPath === `/school/${schoolName}/classroom` ? 'active-route' : 'menu-item',
                 },
-                ...(user?.roles.some(role => ['super_admin', 'school_admin'].includes(role)) ? [
+                ...(user?.roles.some(role => ['super_admin', 'school_admin', 'school_coadmin'].includes(role)) ? [
                     {
                         label: 'Daftar Sidik Jari',
                         icon: 'pi pi-key',
                         command: () => navigate(`/school/${schoolName}/fingerprint`),
                         className: currentPath === `/school/${schoolName}/fingerprint` ? 'active-route' : 'menu-item',
+                    },
+                    {
+                        label: 'Daftar Pengguna',
+                        icon: 'pi pi-briefcase',
+                        command: () => navigate(`/school/${schoolName}/users`),
+                        className: currentPath === `/school/${schoolName}/users` ? 'active-route' : 'menu-item',
                     }
                 ] : [])
             ],
@@ -117,10 +123,16 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolName}/custom-event` ? 'active-route' : 'menu-item',
                 },
                 {
-                    label: 'Konfigurasi Waktu Presensi',
+                    label: 'Waktu Presensi Default',
                     icon: 'pi pi-clock',
                     command: () => navigate(`/school/${schoolName}/default-attendance-time`),
                     className: currentPath === `/school/${schoolName}/default-attendance-time` ? 'active-route' : 'menu-item',
+                },
+                {
+                    label: 'Konfigurasi Waktu Presensi',
+                    icon: 'pi pi-clock',
+                    command: () => navigate(`/school/${schoolName}/attendance-window`),
+                    className: currentPath === `/school/${schoolName}/attendance-window` ? 'active-route' : 'menu-item',
                 },
                 {
                     label: 'Daftar Status Presensi',

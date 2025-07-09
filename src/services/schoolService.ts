@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosClient from '../utils/axiosClient';
 
 export interface SchoolResponse {
@@ -30,7 +31,6 @@ class SchoolService {
     const response = await axiosClient.get(`/school/by-name/${schoolName}`)
     return response.data;
   }
-
 
   async getById(id: number) {
     const response = await axiosClient.get(`/school/${id}`);
