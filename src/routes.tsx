@@ -6,6 +6,7 @@ import { ForgotPasswordPage, ResetPasswordPage } from './components/public/Forgo
 import PublicAttendancePage from './pages/public/PublicAttendancePage';
 import SchoolAttendanceWindowPage from './pages/school/dashboard/attendance/SchoolAttendanceWindowPage';
 import SchoolUsersPage from './pages/school/dashboard/admin/SchoolUsersPage';
+import UserInvitationPage from './pages/user/Invitation/UserInvitationPage';
 
 const Login = lazy(() => import('./pages/auth/LoginPage'));
 const AdminLayout = lazy(() => import('./layout/AdminLayout'));
@@ -69,6 +70,7 @@ const AppRoutes = () => {
 
             <Route path="/user" element={withSuspense(UserLayout)}>
                 <Route path="dashboard" element={withSuspense(UserDashboard)} />
+                <Route path="dashboard/invitation" element={withSuspense(UserInvitationPage)} />
                 <Route path="dashboard/billing" element={withSuspense(UserBillingPage)} />
                 <Route path="invoice/:id" element={withSuspense(UserInvoiceDetailPage)} />
                 <Route path="dashboard/support" element={withSuspense(UserSupportPage)} />

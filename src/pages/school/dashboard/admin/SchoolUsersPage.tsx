@@ -17,6 +17,7 @@ import { InputText } from "primereact/inputtext";
 import schoolInviationService from "../../../../services/schoolInviationService";
 import { ConfirmPopup, confirmPopup } from 'primereact/confirmpopup';
 import { Badge } from "primereact/badge";
+import { statusLabels } from "../../../../utils/statusLabel";
 
 
 
@@ -105,10 +106,13 @@ const SchoolUsersPage = () => {
             setLoadingInvitations(true);
             setInvitations([]);
             try {
-                const params: any = {};
+                const params: any = {
+                    sort: {
+                        created_at: 'desc',
+                    },
+                };
 
                 if (invitationStatusFilter && invitationStatusFilter !== 'semua') {
-                    console.log(invitationStatusFilter);
                     params.filter = {
                         status: invitationStatusFilter,
                     };
@@ -315,17 +319,17 @@ const SchoolUsersPage = () => {
             <div className="card">
                 <h1>Daftar Pengguna {school?.name ?? 'Loading...'}</h1>
                 {hasAnyPermission(user, ['manage_students']) && (
-                    <div className='flex flex-column md:flex-row card'>
+                    <div className='flex flex-column md:flex-row card gap-2'>
                         <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
                             <Button icon="pi pi-plus" severity='success' label='Tambah Pengguna' onClick={() => setShowAddDialog(true)} />
                         </div>
-                        <div className="pl-2 relative">
+                        <div className="relative">
                             <Button
                                 icon="pi pi-envelope"
                                 label="Undangan"
                                 onClick={() => setShowInvitationDialog(true)}
                                 severity="info"
-                                className="pr-5"
+                                className="pr-5 w-full"
                             />
                             {totalPendingInvitations > 0 && (
                                 <Badge
@@ -510,7 +514,7 @@ const SchoolUsersPage = () => {
                         value={invitationStatusFilter}
                         options={[
                             { label: 'Semua', value: 'semua' },
-                            { label: 'Pending', value: 'pending' },
+                            { label: 'Menunggu', value: 'pending' },
                             { label: 'Diterima', value: 'accepted' },
                             { label: 'Ditolak', value: 'rejected' },
                         ]}
@@ -598,15 +602,9 @@ const SchoolUsersPage = () => {
                                 rejected: 'danger',
                             };
 
-                            const labelMap: Record<string, string> = {
-                                pending: 'Pending',
-                                accepted: 'Diterima',
-                                rejected: 'Ditolak',
-                            };
-
                             return (
                                 <Badge
-                                    value={labelMap[status] || status}
+                                    value={statusLabels[status] || status}
                                     severity={severityMap[status]}
                                 />
                             );

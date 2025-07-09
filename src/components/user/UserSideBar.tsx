@@ -16,12 +16,12 @@ const UserSideBar = () => {
                     command: () => navigate('/user/dashboard'),
                     className: currentPath === '/user/dashboard' ? 'active-route' : 'menu-item'
                 },
-                // {
-                //     label: 'Pembayaran',
-                //     icon: 'pi pi-fw pi-receipt',
-                //     command: () => navigate('/user/dashboard/billing'),
-                //     className: currentPath === '/user/dashboard/billing' ? 'active-route' : 'menu-item'
-                // },
+                {
+                    label: 'Undangan',
+                    icon: 'pi pi-fw pi-envelope',
+                    command: () => navigate('/user/dashboard/invitation'),
+                    className: currentPath === '/user/dashboard/invitation' ? 'active-route' : 'menu-item'
+                },
                 {
                     label: 'Bantuan',
                     icon: 'pi pi-fw pi-headphones',

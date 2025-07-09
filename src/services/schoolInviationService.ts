@@ -43,11 +43,11 @@ class SchoolInvitationService {
         return response.data;
     }
 
-    async respondInvitation(payload: {
-        invitation_id: number;
+    async respondInvitation(invitation_id: number, payload: {
         status: 'accepted' | 'rejected';
+        school_id: number;
     }) {
-        const response = await axiosClient.post('/school-invitation/respond', payload);
+        const response = await axiosClient.post(`/school-invitation/respond/${invitation_id}`, payload);
         return response.data;
     }
 }
