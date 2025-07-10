@@ -20,6 +20,17 @@ class AttendanceWindowService {
             throw error;
         }
     }
+
+    async generateAttendanceWindow(data: any) {
+        try {
+            const response = await axiosClient.post(`/attendance-window/generate-window`, data);
+            return response.data;
+        } catch (error) {
+            console.error('Error generating attendance window:', error);
+            throw error;
+        }
+    }
+
 }
 
 export default new AttendanceWindowService();

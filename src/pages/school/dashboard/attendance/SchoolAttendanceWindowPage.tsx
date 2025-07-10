@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
 import { Button } from 'primereact/button';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
+import { Message } from 'primereact/message';
 import { Dialog } from 'primereact/dialog';
 import { RadioButton } from 'primereact/radiobutton';
 import { Toast } from 'primereact/toast';
@@ -14,8 +16,10 @@ import { useMountEffect } from 'primereact/hooks';
 import { Messages } from 'primereact/messages';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Skeleton } from 'primereact/skeleton';
+import { format, formatDate } from 'date-fns';
 import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 import attendanceWindowService from '../../../../services/attendanceWindowService';
+import { Calendar } from 'primereact/calendar';
 
 const defaultCheckInStatus = {
     status_name: '',
@@ -26,9 +30,11 @@ const defaultCheckInStatus = {
 
 const SchoolAttendanceWindowPage = () => {
     const [showDialog, setShowDialog] = useState(false);
+    const [generateDialog, setGenerateDialog] = useState(false);
+    const [generateDate, setGenerateDate] = useState<Date | null>(null);
     const [checkInStatusData, setCheckInStatusData] = useState<any>(defaultCheckInStatus);
     const [originalData, setOriginalData] = useState<any>(defaultCheckInStatus);
-    const [selectedAttendanceWindow, setSelectedAttendanceWindow] = useState<any[]>([]);
+    const [selectedAttendanceWindow, setSelectedAttendanceWindow] = useState<any>({});
     const [attendanceWindowList, setAttendanceWindowList] = useState<any[]>([]);
     const { user } = useAuth();
     const msgs = useRef<Messages>(null);
@@ -72,6 +78,35 @@ const SchoolAttendanceWindowPage = () => {
         });
     });
 
+    const handleGenerateWindow = async () => {
+        if (!generateDate) return;
+
+        try {
+            setLoadingButton(true);
+            await attendanceWindowService.generateAttendanceWindow({
+                date: generateDate?.toLocaleDateString('sv-SE'),
+            });
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Berhasil',
+                detail: 'Waktu presensi berhasil dibuat.',
+                life: 3000,
+            });
+            setGenerateDialog(false);
+            setGenerateDate(null);
+            fetchAttendanceWindow();
+        } catch (error: any) {
+            const message = error.response?.data?.message || 'Gagal membuat waktu presensi';
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: message,
+                life: 4000,
+            });
+        } finally {
+            setLoadingButton(false);
+        }
+    };
 
 
     const fetchAttendanceWindow = async (page = 1, perPage = 20) => {
@@ -138,6 +173,46 @@ const SchoolAttendanceWindowPage = () => {
             accept: () => handleDelete(id),
         });
     };
+
+    const isAttendanceWindowValid = () => {
+        const aw = selectedAttendanceWindow;
+        return (
+            aw.name &&
+            aw.date &&
+            aw.check_in_start_time &&
+            aw.check_in_end_time &&
+            aw.check_out_start_time &&
+            aw.check_out_end_time &&
+            aw.check_in_start_time < aw.check_in_end_time &&
+            aw.check_in_end_time < aw.check_out_start_time &&
+            aw.check_out_start_time < aw.check_out_end_time
+        );
+    };
+
+    const handleSaveAttendanceWindow = async () => {
+        try {
+            setLoadingButton(true);
+            await attendanceWindowService.updateAttendanceWindow(selectedAttendanceWindow.id, selectedAttendanceWindow);
+            toast.current?.show({
+                severity: 'success',
+                summary: 'Berhasil',
+                detail: 'Waktu presensi berhasil diperbarui.',
+                life: 3000,
+            });
+            setShowDialog(false);
+            fetchAttendanceWindow();
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Gagal',
+                detail: 'Gagal memperbarui waktu presensi.',
+                life: 3000,
+            });
+        } finally {
+            setLoadingButton(false);
+        }
+    };
+
 
     const handleSave = async () => {
         try {
@@ -218,8 +293,7 @@ const SchoolAttendanceWindowPage = () => {
                 hasAnyPermission(user, ['manage_schools']) && (
                     <div className="flex justify-content-between p-4 card">
                         <div className="flex gap-2">
-                            <Button icon="pi pi-plus" severity="success" label="Tambah Jendela" onClick={() => setShowDialog(true)} />
-
+                            <Button icon="pi pi-calendar-plus" severity="success" label="Generate Waktu Presensi" onClick={() => setGenerateDialog(true)} />
                         </div>
                     </div>
                 )
@@ -263,104 +337,194 @@ const SchoolAttendanceWindowPage = () => {
                 <Column field="check_out_start_time" header="Pulang Mulai" />
                 <Column field="check_out_end_time" header="Pulang Selesai" />
                 <Column field="type" header="Tipe" body={(rowData) => rowData.type === 'default' ? 'Default' : 'Libur'} />
+                <Column
+                    body={(rowData) => (
+                        <Button
+                            icon="pi pi-pencil"
+                            className="p-button-text p-button-sm"
+                            onClick={() => {
+                                setSelectedAttendanceWindow(rowData);
+                                setShowDialog(true);
+                            }}
+                            tooltip="Ubah"
+                            tooltipOptions={{ position: 'top' }}
+                        />
+                    )}
+                    style={{ width: '80px' }}
+                />
+
             </DataTable>
 
             <Dialog
                 visible={showDialog}
-                style={{ width: '450px' }}
-                onHide={() => { setShowDialog(false); resetForm() }}
-                header="Tambah/Edit waktu presensi"
-                footer={
-                    <div>
-                        <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => { setShowDialog(false); resetForm() }} />
-                        <Button label="Simpan" icon="pi pi-check" loading={loadingButton} onClick={(e) => confirmSaveCheckInStatus(e)} disabled={!isDataValid() || !isDataChanged()} />
-                    </div>
-                }
+                style={{ width: '600px' }}
+                onHide={() => {
+                    setShowDialog(false);
+                    setSelectedAttendanceWindow({});
+                }}
+                header="Ubah Waktu Presensi"
                 modal
                 className="p-fluid"
-            >
-                <div className='field'>
-                    {checkInStatusData.late_duration === -1 && (
-                        <div className="p-message p-message-info p-component mb-3">
-                            <div className="p-message-wrapper">
-                                <span className="p-message-icon pi pi-info-circle"></span>
-                                <div className="p-message-text">
-                                    Status ini akan digunakan untuk siswa yang tidak melakukan presensi, nama disesuaikan dengan aturan ini.
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {checkInStatusData.late_duration === 0 && (
-                        <div className="p-message p-message-info p-component mb-3">
-                            <div className="p-message-wrapper">
-                                <span className="p-message-icon pi pi-info-circle"></span>
-                                <div className="p-message-text">
-                                    Status ini akan digunakan untuk siswa yang presensi tepat waktu, nama disesuaikan dengan aturan ini.
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                </div>
-                <div className="field">
-                    <label htmlFor="status_name">Nama Status <span className='text-red-600'>*</span></label>
-                    <InputText
-                        id="status_name"
-                        placeholder='masukkan nama status'
-                        value={checkInStatusData.status_name}
-                        onChange={(e) => setCheckInStatusData({ ...checkInStatusData, status_name: e.target.value })}
-                        required
-                        autoFocus
-                    />
-                </div>
-                <div className="field">
-                    <label htmlFor="description">Deskripsi <span className='text-red-600'>*</span></label>
-                    <InputText
-                        id="description"
-                        placeholder='masukkan deskripsi status'
-                        value={checkInStatusData.description}
-                        onChange={(e) => setCheckInStatusData({ ...checkInStatusData, description: e.target.value })}
-                    />
-                </div>
-                <div className="field">
-                    <label htmlFor="late_duration">Durasi Keterlambatan (Menit) <span className='text-red-600'>*</span></label>
-                    <InputText
-                        id="late_duration"
-                        type="number"
-                        value={checkInStatusData.late_duration}
-                        disabled={disableDefaultStatusForm}
-                        onChange={(e) => setCheckInStatusData({ ...checkInStatusData, late_duration: parseInt(e.target.value) })}
-                    />
-                </div>
-                <div className='field'>
-                    <label htmlFor="status">Status <span className='text-red-600'>*</span></label>
-                    <div className="formgrid grid">
-                        <div className="field-radiobutton col-6">
-                            <RadioButton
-                                inputId="status1"
-                                name="status"
-                                value={1}
-                                onChange={() => setCheckInStatusData({ ...checkInStatusData, is_active: 1 })}
-                                checked={checkInStatusData.is_active === 1}
-                                disabled={disableDefaultStatusForm}
-                            />
-                            <label htmlFor="status1" className="ml-2">Aktif</label>
-                        </div>
-                        <div className="field-radiobutton col-6">
-                            <RadioButton
-                                inputId="status2"
-                                name="status"
-                                value={0}
-                                onChange={() => setCheckInStatusData({ ...checkInStatusData, is_active: 0 })}
-                                checked={checkInStatusData.is_active === 0}
-                                disabled={disableDefaultStatusForm}
-                            />
-                            <label htmlFor="status2" className="ml-2">Tidak Aktif</label>
-                        </div>
+                footer={
+                    <div>
+                        <Button
+                            label="Batal"
+                            icon="pi pi-times"
+                            className="p-button-text"
+                            onClick={() => {
+                                setShowDialog(false);
+                                setSelectedAttendanceWindow({});
+                            }}
+                        />
+                        <Button
+                            label="Simpan"
+                            icon="pi pi-check"
+                            loading={loadingButton}
+                            onClick={handleSaveAttendanceWindow}
+                            disabled={!isAttendanceWindowValid()}
+                        />
                     </div>
+                }
+            >
+                <div className="field">
+                    <label htmlFor="name">Nama <span className="text-red-500">*</span></label>
+                    <InputText
+                        id="name"
+                        value={selectedAttendanceWindow.name || ''}
+                        onChange={(e) =>
+                            setSelectedAttendanceWindow({
+                                ...selectedAttendanceWindow,
+                                name: e.target.value,
+                            })
+                        }
+                        placeholder="Nama presensi"
+                    />
+                </div>
+
+                <div className="field">
+                    <label htmlFor="date">Tanggal <span className="text-red-500">*</span></label>
+                    <Calendar
+                        id="date"
+                        value={selectedAttendanceWindow.date ? new Date(selectedAttendanceWindow.date) : null}
+                        onChange={(e) =>
+                            setSelectedAttendanceWindow({
+                                ...selectedAttendanceWindow,
+                                date: e.value ? format(e.value, 'yyyy-MM-dd') : '',
+                            })
+                        }
+                        dateFormat="yy-mm-dd"
+                        showIcon
+                    />
+                </div>
+
+                <div className="grid">
+                    <div className="col-6 field">
+                        <label>Masuk Mulai <span className="text-red-500">*</span></label>
+                        <Calendar
+                            value={selectedAttendanceWindow.check_in_start_time ? new Date(`1970-01-01T${selectedAttendanceWindow.check_in_start_time}`) : null}
+                            onChange={(e) =>
+                                setSelectedAttendanceWindow({
+                                    ...selectedAttendanceWindow,
+                                    check_in_start_time: e.value ? formatDate(e.value, 'HH:mm:ss') : '',
+                                })
+                            }
+                            timeOnly
+                            hourFormat="24"
+                            showIcon
+                            placeholder="HH:mm:ss"
+                        />
+                    </div>
+
+                    <div className="col-6 field">
+                        <label>Masuk Selesai <span className="text-red-500">*</span></label>
+                        <Calendar
+                            value={selectedAttendanceWindow.check_in_end_time ? new Date(`1970-01-01T${selectedAttendanceWindow.check_in_end_time}`) : null}
+                            onChange={(e) =>
+                                setSelectedAttendanceWindow({
+                                    ...selectedAttendanceWindow,
+                                    check_in_end_time: e.value ? formatDate(e.value, 'HH:mm:ss') : '',
+                                })
+                            }
+                            timeOnly
+                            hourFormat="24"
+                            showIcon
+                            placeholder="HH:mm:ss"
+                        />
+                    </div>
+
+                    <div className="col-6 field">
+                        <label>Pulang Mulai <span className="text-red-500">*</span></label>
+                        <Calendar
+                            value={selectedAttendanceWindow.check_out_start_time ? new Date(`1970-01-01T${selectedAttendanceWindow.check_out_start_time}`) : null}
+                            onChange={(e) =>
+                                setSelectedAttendanceWindow({
+                                    ...selectedAttendanceWindow,
+                                    check_out_start_time: e.value ? formatDate(e.value, 'HH:mm:ss') : '',
+                                })
+                            }
+                            timeOnly
+                            hourFormat="24"
+                            showIcon
+                            placeholder="HH:mm:ss"
+                        />
+                    </div>
+
+                    <div className="col-6 field">
+                        <label>Pulang Selesai <span className="text-red-500">*</span></label>
+                        <Calendar
+                            value={selectedAttendanceWindow.check_out_end_time ? new Date(`1970-01-01T${selectedAttendanceWindow.check_out_end_time}`) : null}
+                            onChange={(e) =>
+                                setSelectedAttendanceWindow({
+                                    ...selectedAttendanceWindow,
+                                    check_out_end_time: e.value ? formatDate(e.value, 'HH:mm:ss') : '',
+                                })
+                            }
+                            timeOnly
+                            hourFormat="24"
+                            showIcon
+                            placeholder="HH:mm:ss"
+                        />
+                    </div>
+
+                    {!isAttendanceWindowValid() && (
+                        <Message
+                            severity="warn"
+                            text="Pastikan semua kolom waktu terisi dengan benar dan urutan waktunya valid."
+                            className="mt-3"
+                        />
+                    )}
                 </div>
             </Dialog>
+
+
+            <Dialog
+                visible={generateDialog}
+                style={{ width: '400px' }}
+                header="Generate Waktu Presensi"
+                modal
+                className="p-fluid"
+                onHide={() => { setGenerateDialog(false); setGenerateDate(null); }}
+                footer={
+                    <div>
+                        <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => { setGenerateDialog(false); setGenerateDate(null); }} />
+                        <Button label="Generate" icon="pi pi-check" loading={loadingButton} onClick={handleGenerateWindow} disabled={!generateDate} />
+                    </div>
+                }
+            >
+                <div className="field">
+                    <label htmlFor="generate-date">Pilih Tanggal <span className="text-red-500">*</span></label>
+                    <Calendar
+                        id="generate-date"
+                        value={generateDate}
+                        onChange={(e) => setGenerateDate(e.value ?? null)}
+                        dateFormat="yy-mm-dd"
+                        showIcon
+                        placeholder="Pilih tanggal"
+                    />
+                </div>
+            </Dialog>
+
+
         </div >
     );
 };
