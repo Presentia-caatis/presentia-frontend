@@ -53,15 +53,12 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/dashboard`),
                     className: currentPath === `/school/${schoolName}/dashboard` ? 'active-route' : 'menu-item',
                 },
-                ...(user?.roles.some(role => ['super_admin', 'school_admin', 'school_coadmin'].includes(role)) ? [
-                    {
-                        label: 'Presensi Manual',
-                        icon: 'pi pi-address-book',
-                        command: () => window.open(`${window.origin}/school/student/attendance/in`, '_blank'),
-                        className: currentPath === `/school/student/attendance/in` ? 'active-route' : 'menu-item',
-                    },
-                ] : [])
-                ,
+                {
+                    label: 'Presensi Manual',
+                    icon: 'pi pi-address-book',
+                    command: () => window.open(`${window.origin}/school/student/attendance/in`, '_blank'),
+                    className: currentPath === `/school/student/attendance/in` ? 'active-route' : 'menu-item',
+                },
                 {
                     label: 'Presensi Hari Ini',
                     icon: 'pi pi-calendar',
@@ -134,18 +131,20 @@ const SchoolSideBar = () => {
                     command: () => navigate(`/school/${schoolName}/attendance-window`),
                     className: currentPath === `/school/${schoolName}/attendance-window` ? 'active-route' : 'menu-item',
                 },
-                {
-                    label: 'Daftar Status Presensi',
-                    icon: 'pi pi-check-circle',
-                    command: () => navigate(`/school/${schoolName}/check-in/status`),
-                    className: currentPath === `/school/${schoolName}/check-in/status` ? 'active-route' : 'menu-item',
-                },
-                {
-                    label: 'Daftar Status Absensi',
-                    icon: 'pi pi-times-circle',
-                    command: () => navigate(`/school/${schoolName}/absence-permit/type`),
-                    className: currentPath === `/school/${schoolName}/absence-permit/type` ? 'active-route' : 'menu-item',
-                },
+                ...(user?.roles.some(role => ['super_admin', 'school_admin', 'school_coadmin'].includes(role)) ? [
+                    {
+                        label: 'Daftar Status Presensi',
+                        icon: 'pi pi-check-circle',
+                        command: () => navigate(`/school/${schoolName}/check-in/status`),
+                        className: currentPath === `/school/${schoolName}/check-in/status` ? 'active-route' : 'menu-item',
+                    },
+                    {
+                        label: 'Daftar Status Absensi',
+                        icon: 'pi pi-times-circle',
+                        command: () => navigate(`/school/${schoolName}/absence-permit/type`),
+                        className: currentPath === `/school/${schoolName}/absence-permit/type` ? 'active-route' : 'menu-item',
+                    },
+                ] : []),
             ],
         },
     ];

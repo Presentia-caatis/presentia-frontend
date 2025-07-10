@@ -107,8 +107,9 @@ const AppRoutes = () => {
             </Route>
 
             <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
-            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>{
-                withSuspense(StudentAttendanceInPage)}</RoleGuard>} />
+            <Route path="/school/student/attendance/in" element={
+                withSuspense(StudentAttendanceInPage)
+            } />
             <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
             <Route path="/forgot-password" element={withSuspense(ForgotPasswordPage)} />
             <Route path="/reset-password" element={withSuspense(ResetPasswordPage)} />

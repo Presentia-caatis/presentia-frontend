@@ -32,8 +32,6 @@ const AdminSchoolPage = () => {
     const { user, updateUser } = useAuth();
     const { school, schoolLoading } = useSchool();
 
-    const [globalFilter, setGlobalFilter] = useState("");
-    const [debouncedFilter, setDebouncedFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
@@ -49,9 +47,6 @@ const AdminSchoolPage = () => {
         return () => document.body.classList.remove('modal-open');
     }, [isModalVisible]);
 
-    const addSchool = (newSchool: SchoolData) => {
-        setSchoolList((prev) => [...prev, newSchool]);
-    };
 
     const fetchSchools = async (currentPage: number, rowsPerPage: number) => {
         try {
@@ -155,10 +150,10 @@ const AdminSchoolPage = () => {
                         />
                     )}
                 />
-                <Column sortable field="name" header="Nama Sekolah"></Column>
-                <Column sortable field="plan" header="Paket"></Column>
-                <Column sortable field="dueDate" header="Pembayaran Selanjutnya"></Column>
-                <Column sortable field="address" header="Alamat"></Column>
+                <Column field="name" header="Nama Sekolah"></Column>
+                <Column field="plan" header="Paket"></Column>
+                <Column field="dueDate" header="Pembayaran Selanjutnya"></Column>
+                <Column field="address" header="Alamat"></Column>
                 <Column
                     header="Aksi"
                     body={(rowData) => (
@@ -185,9 +180,9 @@ const AdminSchoolPage = () => {
             <AdminCreateSchoolModal
                 visible={isModalVisible}
                 onClose={() => setModalVisible(false)}
-                onSave={(newSchool: SchoolData) => {
-                    addSchool(newSchool);
+                onSave={() => {
                     setModalVisible(false);
+                    fetchSchools(currentPage, rowsPerPage);
                 }}
             />
         </div>

@@ -17,14 +17,7 @@ type OwnerData = {
 
 type AdminCreateSchoolModalProps = {
     onClose: () => void;
-    onSave: (newSchool: {
-        id: number;
-        name: string;
-        plan: string;
-        dueDate: string;
-        owner: string;
-        status: string;
-    }) => void;
+    onSave: () => void;
     visible: boolean;
 };
 
@@ -163,7 +156,7 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
                 });
                 return;
             }
-            const response = await schoolService.create({
+            await schoolService.create({
                 name: schoolData.name,
                 address: schoolData.address,
                 timezone: 'Asia/Jakarta',
@@ -171,16 +164,7 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
                 logo_image: schoolData.logo_image,
             });
 
-
-            // const newSchool = {
-            //     id: response.responseData.data.id,
-            //     name: response.responseData.data.name,
-            //     plan: 'Free', // Assuming default plan is Free
-            //     dueDate: response.responseData.data.latest_subscription || '',
-            //     owner: schoolData.owner.fullname,
-            //     status: response.responseData.data.status || 'active',
-            // };
-            // onSave(newSchool);
+            onSave();
             toast.current?.show({
                 severity: 'success',
                 summary: 'Berhasil',
@@ -264,7 +248,7 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
             <div className="grid">
                 <div className="col-12 mb-3">
                     <label htmlFor="owner" className="block mb-2">
-                        Pemilik Sekolah
+                        Pemilik Sekolah <span className="text-red-500">*</span>
                     </label>
                     <Dropdown
                         value={schoolData.owner}
@@ -278,14 +262,21 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
                         className="w-full"
                     />
                 </div>
+
                 <div className="col-12">
                     <div className="field">
-                        <label>Logo Sekolah</label>
-                        <div className="flex  items-center gap-4">
-                            <div >
-                                <img loading="lazy" src={imagePreview || defaultLogoSekolah} alt="" className='w-5rem h-5rem border-circle' onError={(e) => {
-                                    (e.target as HTMLImageElement).src = defaultLogoSekolah;
-                                }} />
+                        <label>Logo Sekolah <span className="text-red-500">*</span></label>
+                        <div className="flex items-center gap-4">
+                            <div>
+                                <img
+                                    loading="lazy"
+                                    src={imagePreview || defaultLogoSekolah}
+                                    alt=""
+                                    className="w-5rem h-5rem border-circle"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = defaultLogoSekolah;
+                                    }}
+                                />
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -295,19 +286,31 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
                                     disabled={loading}
                                 />
                             </div>
-
                             <div className="flex flex-col gap-2">
-                                <div className='my-auto flex gap-2'>
-                                    <Button disabled={loading} label="Ganti Logo" icon="pi pi-upload" className="p-button-sm" onClick={handleAvatarClick} />
-                                    <Button disabled={!imagePreview || loading} label="Hapus Logo" icon="pi pi-trash" className="p-button-sm p-button-danger" onClick={handleRemoveLogo} />
+                                <div className="my-auto flex gap-2">
+                                    <Button
+                                        disabled={loading}
+                                        label="Ganti Logo"
+                                        icon="pi pi-upload"
+                                        className="p-button-sm"
+                                        onClick={handleAvatarClick}
+                                    />
+                                    <Button
+                                        disabled={!imagePreview || loading}
+                                        label="Hapus Logo"
+                                        icon="pi pi-trash"
+                                        className="p-button-sm p-button-danger"
+                                        onClick={handleRemoveLogo}
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div className="col-12 mb-3">
                     <label htmlFor="name" className="block mb-2">
-                        Nama Sekolah
+                        Nama Sekolah <span className="text-red-500">*</span>
                     </label>
                     <InputText
                         id="name"
@@ -317,9 +320,10 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
                         placeholder="Masukkan nama sekolah"
                     />
                 </div>
+
                 <div className="col-12 mb-3">
-                    <label htmlFor="name" className="block mb-2">
-                        Alamat Sekolah
+                    <label htmlFor="address" className="block mb-2">
+                        Alamat Sekolah <span className="text-red-500">*</span>
                     </label>
                     <InputText
                         id="address"
@@ -329,70 +333,8 @@ const AdminCreateSchoolModal: React.FC<AdminCreateSchoolModalProps> = ({
                         placeholder="Masukkan alamat sekolah"
                     />
                 </div>
-                {/* <div className="col-12 mb-3">
-                    <label htmlFor="plan" className="block mb-2">
-                        Pilih Paket
-                    </label>
-                    <Dropdown
-                        id="plan"
-                        value={selectedPlan}
-                        options={plans}
-                        onChange={(e) => setSelectedPlan(e.value)}
-                        placeholder="Pilih paket"
-                        className="w-full"
-                    />
-                </div> */}
-                {/* <div className="col-12 mb-3">
-                    <label htmlFor="duration" className="block mb-2">
-                        Pilih Durasi
-                    </label>
-                    <Dropdown
-                        id="duration"
-                        value={selectedDuration}
-                        options={durations}
-                        onChange={(e) => setSelectedDuration(e.value)}
-                        placeholder="Pilih durasi"
-                        className="w-full"
-                        disabled={selectedPlan === "Free"}
-                    />
-                </div> */}
-                {/* {selectedPlan && (
-                    <div className="col-12">
-                        <div className="p-3 border-1 border-round surface-border">
-                            <h5>Fitur Paket {selectedPlan}</h5>
-                            <ul className="list-none m-0 p-0">
-                                {getSelectedPlanFeatures().map((feature, index) => (
-                                    <li key={index} className="flex align-items-center mb-2">
-                                        <Checkbox
-                                            checked
-                                            className="mr-2"
-                                            style={{ color: 'var(--primary-color)' }}
-                                        />
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                )} */}
-                {/* <div className="col-12">
-                    <div className="p-3 border-1 border-round surface-border">
-                        <h5>Ringkasan</h5>
-                        <div className="flex justify-content-between">
-                            <span>Harga Paket</span>
-                            <span>{`Rp ${getPlanPrice().toLocaleString()} / bulan`}</span>
-                        </div>
-                        <div className="flex justify-content-between mt-2">
-                            <span>Durasi</span>
-                            <span>{selectedPlan === 'Free' ? '-' : `${selectedDuration || '-'} bulan`}</span>
-                        </div>
-                        <div className="flex justify-content-between mt-2 font-bold">
-                            <span>Total Harga</span>
-                            <span>{selectedPlan === 'Free' ? 'Gratis' : `Rp ${calculateTotalPrice().toLocaleString()}`}</span>
-                        </div>
-                    </div>
-                </div> */}
             </div>
+
 
         </Dialog>
     );
