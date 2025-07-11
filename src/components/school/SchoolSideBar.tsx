@@ -120,14 +120,14 @@ const SchoolSideBar = () => {
                     className: currentPath === `/school/${schoolName}/custom-event` ? 'active-route' : 'menu-item',
                 },
                 {
-                    label: 'Waktu Presensi Default',
+                    label: 'Konfigurasi Waktu Presensi',
                     icon: 'pi pi-clock',
                     command: () => navigate(`/school/${schoolName}/default-attendance-time`),
                     className: currentPath === `/school/${schoolName}/default-attendance-time` ? 'active-route' : 'menu-item',
                 },
                 {
-                    label: 'Konfigurasi Waktu Presensi',
-                    icon: 'pi pi-clock',
+                    label: 'Daftar Jadwal Presensi',
+                    icon: 'pi pi-calendar-clock',
                     command: () => navigate(`/school/${schoolName}/attendance-window`),
                     className: currentPath === `/school/${schoolName}/attendance-window` ? 'active-route' : 'menu-item',
                 },

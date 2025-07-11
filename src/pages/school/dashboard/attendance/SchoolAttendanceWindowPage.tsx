@@ -20,6 +20,7 @@ import { format, formatDate } from 'date-fns';
 import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
 import attendanceWindowService from '../../../../services/attendanceWindowService';
 import { Calendar } from 'primereact/calendar';
+import { Dropdown } from 'primereact/dropdown';
 
 const defaultCheckInStatus = {
     status_name: '',
@@ -68,7 +69,7 @@ const SchoolAttendanceWindowPage = () => {
                                 href={`/school/${user?.school_id}/default-attendance-time`}
                                 className="text-primary underline"
                             >
-                                Waktu Presensi Default
+                                Konfigurasi Jadwal Presensi
                             </a>.
                         </p>
                     </div>
@@ -96,7 +97,7 @@ const SchoolAttendanceWindowPage = () => {
             setGenerateDate(null);
             fetchAttendanceWindow();
         } catch (error: any) {
-            const message = error.response?.data?.message || 'Gagal membuat waktu presensi';
+            const message = error.response?.data?.message || 'Gagal membuat Jadwal Presensi';
             toast.current?.show({
                 severity: 'error',
                 summary: 'Gagal',
@@ -141,31 +142,11 @@ const SchoolAttendanceWindowPage = () => {
         setOriginalData(defaultCheckInStatus);
     };
 
-    const isDataValid = () => {
-        const { status_name, description } = checkInStatusData;
-        return status_name.trim() !== '' && description.trim() !== '';
-    };
-
-    const isDataChanged = () => {
-        return JSON.stringify(checkInStatusData) !== JSON.stringify(originalData);
-    };
-
-    const confirmSaveCheckInStatus = (event: React.MouseEvent) => {
-        confirmPopup({
-            target: event.currentTarget as HTMLElement,
-            message: 'Apakah Anda yakin ingin menyimpan waktu presensi ini?',
-            icon: 'pi pi-exclamation-triangle',
-            acceptClassName: 'p-button-success',
-            acceptLabel: 'Ya',
-            rejectLabel: 'Tidak',
-            accept: () => handleSave(),
-        });
-    };
 
     const confirmDeleteCheckInStatus = (event: React.MouseEvent, id: number) => {
         confirmPopup({
             target: event.currentTarget as HTMLElement,
-            message: 'Apakah Anda yakin ingin menghapus waktu presensi ini?',
+            message: 'Apakah Anda yakin ingin menghapus Jadwal Presensi ini?',
             icon: 'pi pi-exclamation-triangle',
             acceptClassName: 'p-button-danger',
             acceptLabel: 'Ya',
@@ -179,6 +160,7 @@ const SchoolAttendanceWindowPage = () => {
         return (
             aw.name &&
             aw.date &&
+            aw.type &&
             aw.check_in_start_time &&
             aw.check_in_end_time &&
             aw.check_out_start_time &&
@@ -205,7 +187,7 @@ const SchoolAttendanceWindowPage = () => {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Gagal',
-                detail: 'Gagal memperbarui waktu presensi.',
+                detail: 'Gagal memperbarui Jadwal Presensi.',
                 life: 3000,
             });
         } finally {
@@ -259,14 +241,14 @@ const SchoolAttendanceWindowPage = () => {
             toast.current?.show({
                 severity: 'info',
                 summary: 'Loading...',
-                detail: 'Sedang menghapus data waktu presensi.',
+                detail: 'Sedang menghapus data Jadwal Presensi.',
                 life: 3000,
             });
-            await checkInStatusService.delete(id);
+            await attendanceWindowService.deleteAttendanceWindow(id);
             toast.current?.show({
                 severity: 'success',
                 summary: 'Berhasil',
-                detail: 'waktu presensi berhasil dihapus.',
+                detail: 'Waktu presensi berhasil dihapus.',
                 life: 3000,
             });
             fetchAttendanceWindow();
@@ -283,9 +265,10 @@ const SchoolAttendanceWindowPage = () => {
         }
     };
 
+
     return (
         <div className="card">
-            <h1>Konfigurasi Waktu Presensi</h1>
+            <h1>Daftar Jadwal Presensi</h1>
             <Toast ref={toast} />
             <Messages ref={msgs} />
             <ConfirmPopup />
@@ -293,7 +276,7 @@ const SchoolAttendanceWindowPage = () => {
                 hasAnyPermission(user, ['manage_schools']) && (
                     <div className="flex justify-content-between p-4 card">
                         <div className="flex gap-2">
-                            <Button icon="pi pi-calendar-plus" severity="success" label="Generate Waktu Presensi" onClick={() => setGenerateDialog(true)} />
+                            <Button icon="pi pi-calendar-plus" severity="success" label="Generate Jadwal Presensi" onClick={() => setGenerateDialog(true)} />
                         </div>
                     </div>
                 )
@@ -313,19 +296,19 @@ const SchoolAttendanceWindowPage = () => {
                 rowsPerPageOptions={[10, 20, 50, 100]}
                 tableStyle={{ minWidth: "50rem" }}
                 paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} waktu presensi"
+                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} Jadwal Presensi"
                 stripedRows
                 emptyMessage={
                     loading ? (
                         <div className="flex flex-column align-items-center gap-3 py-4">
                             <ProgressSpinner style={{ width: "50px", height: "50px" }} />
-                            <span className="text-gray-500 font-semibold">Memuat data waktu presensi...</span>
+                            <span className="text-gray-500 font-semibold">Memuat data Jadwal Presensi...</span>
                         </div>
                     ) : (
                         <div className="flex flex-column align-items-center gap-3 py-4">
                             <i className="pi pi-users text-gray-400" style={{ fontSize: "2rem" }} />
-                            <span className="text-gray-500 font-semibold">Belum ada data waktu presensi</span>
-                            <small className="text-gray-400">Silakan tambahkan waktu presensi melalui tombol tambah status.</small>
+                            <span className="text-gray-500 font-semibold">Belum ada data Jadwal Presensi</span>
+                            <small className="text-gray-400">Silakan tambahkan Jadwal Presensi melalui tombol tambah status.</small>
                         </div>
                     )
                 }
@@ -336,22 +319,51 @@ const SchoolAttendanceWindowPage = () => {
                 <Column field="check_in_end_time" header="Masuk Selesai" />
                 <Column field="check_out_start_time" header="Pulang Mulai" />
                 <Column field="check_out_end_time" header="Pulang Selesai" />
-                <Column field="type" header="Tipe" body={(rowData) => rowData.type === 'default' ? 'Default' : 'Libur'} />
+                <Column
+                    field="type"
+                    header="Tipe"
+                    body={(rowData) => {
+                        const typeMap: Record<string, string> = {
+                            default: 'Default',
+                            event: 'Event',
+                            holiday: 'Libur',
+                            event_holiday: 'Event Libur'
+                        };
+                        return typeMap[rowData.type] || rowData.type;
+                    }}
+                />
                 <Column
                     body={(rowData) => (
-                        <Button
-                            icon="pi pi-pencil"
-                            className="p-button-text p-button-sm"
-                            onClick={() => {
-                                setSelectedAttendanceWindow(rowData);
-                                setShowDialog(true);
-                            }}
-                            tooltip="Ubah"
-                            tooltipOptions={{ position: 'top' }}
-                        />
+                        <div className="flex justify-content-center gap-2">
+                            <Button
+                                icon="pi pi-pencil"
+                                severity="success"
+                                rounded
+                                text={false}
+                                onClick={() => {
+                                    setSelectedAttendanceWindow(rowData);
+                                    setShowDialog(true);
+                                }}
+                                tooltip="Edit"
+                                tooltipOptions={{ position: 'top' }}
+                                style={{ width: '2.5rem', height: '2.5rem', padding: 0 }}
+                            />
+                            <Button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                rounded
+                                text={false}
+                                onClick={(e) => confirmDeleteCheckInStatus(e, rowData.id)}
+                                tooltip="Hapus"
+                                tooltipOptions={{ position: 'top' }}
+                                style={{ width: '2.5rem', height: '2.5rem', padding: 0 }}
+                            />
+                        </div>
                     )}
-                    style={{ width: '80px' }}
+                    style={{ width: '100px', textAlign: 'center' }}
                 />
+
+
 
             </DataTable>
 
@@ -362,7 +374,7 @@ const SchoolAttendanceWindowPage = () => {
                     setShowDialog(false);
                     setSelectedAttendanceWindow({});
                 }}
-                header="Ubah Waktu Presensi"
+                header="Ubah Jadwal Presensi"
                 modal
                 className="p-fluid"
                 footer={
@@ -485,6 +497,27 @@ const SchoolAttendanceWindowPage = () => {
                             placeholder="HH:mm:ss"
                         />
                     </div>
+                    <div className="col -6 field">
+                        <label htmlFor="type">Tipe Presensi <span className="text-red-500">*</span></label>
+                        <Dropdown
+                            id="type"
+                            value={selectedAttendanceWindow.type || ''}
+                            options={[
+                                { label: 'Default', value: 'default' },
+                                { label: 'Event', value: 'event' },
+                                { label: 'Libur', value: 'holiday' },
+                                { label: 'Event Libur', value: 'event_holiday' },
+                            ]}
+                            onChange={(e) =>
+                                setSelectedAttendanceWindow({
+                                    ...selectedAttendanceWindow,
+                                    type: e.value,
+                                })
+                            }
+                            placeholder="Pilih tipe presensi"
+                        />
+                    </div>
+
 
                     {!isAttendanceWindowValid() && (
                         <Message
@@ -500,7 +533,7 @@ const SchoolAttendanceWindowPage = () => {
             <Dialog
                 visible={generateDialog}
                 style={{ width: '400px' }}
-                header="Generate Waktu Presensi"
+                header="Generate Jadwal Presensi"
                 modal
                 className="p-fluid"
                 onHide={() => { setGenerateDialog(false); setGenerateDate(null); }}

@@ -189,7 +189,7 @@ const SchoolSetAttendanceTimePage = () => {
                         <p>
                             Waktu ini akan dijadikan sebagai <b>default presensi mulai besok hari</b>.<br />
                             Jika Anda ingin mengatur waktu presensi untuk <b>hari ini</b>, silakan buka halaman{' '}
-                            <a href="/school/.../attendance-window" className="text-primary underline">Konfigurasi Waktu Presensi</a>.
+                            <a href="/school/.../attendance-window" className="text-primary underline">Daftar Jadwal Presensi</a>.
                         </p>
                     </div>
                 </div>

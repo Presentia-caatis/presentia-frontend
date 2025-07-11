@@ -11,12 +11,14 @@ import { useNavigate } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import attendanceService from '../../../../../services/attendanceService';
 import { useToastContext } from '../../../../../layout/ToastContext';
+import { Button } from 'primereact/button';
 
 const SchoolStudentAttendanceInPage = () => {
     const { school, schoolLoading } = useSchool();
     const { checkAuth } = useAuth();
     const navigate = useNavigate();
     const [nis, setNis] = useState("");
+    const [loading, setLoading] = useState(false);
     const { showToast } = useToastContext();
     function callToast(showToast: any, severity: string, summary: string, detail: string) {
         showToast({
@@ -44,6 +46,7 @@ const SchoolStudentAttendanceInPage = () => {
         e.preventDefault();
         if (!nis) return;
 
+        setLoading(true);
         try {
             const res = await attendanceService.manualAttendance(Number(nis));
             const { status, message, data } = res;
@@ -64,9 +67,24 @@ const SchoolStudentAttendanceInPage = () => {
             setNis("");
         } catch (err: any) {
             console.error(err);
-            callToast(showToast, 'error', 'Gagal', err?.message || 'Presensi gagal');
+
+            const responseData = err?.response?.data;
+            const message = responseData?.message || err?.message || 'Presensi gagal.';
+            const errorDetail = responseData?.error || '';
+
+            if (
+                message === 'Resource not found' ||
+                errorDetail.includes('No query results for model [App\\Models\\Student]')
+            ) {
+                callToast(showToast, 'error', 'Siswa Tidak Ditemukan', 'NIS tidak terdaftar. Pastikan sudah benar.');
+            } else {
+                callToast(showToast, 'error', 'Gagal', message);
+            }
+        } finally {
+            setLoading(false);
         }
     };
+
 
 
 
@@ -78,21 +96,7 @@ const SchoolStudentAttendanceInPage = () => {
         );
     }
 
-    const topStudents = [
-        { name: 'Ahmad Ali', time: '08:00' },
-        { name: 'Budi Santoso', time: '08:05' },
-        { name: 'Citra Dewi', time: '08:10' },
-        { name: 'Dewi Lestari', time: '08:15' },
-        { name: 'Eko Prabowo', time: '08:20' },
-    ];
 
-    const latestStudents = [
-        { name: 'Fajar Ramadhan', time: '08:25' },
-        { name: 'Gina Sari', time: '08:30' },
-        { name: 'Hendra Jaya', time: '08:35' },
-        { name: 'Indah Permata', time: '08:40' },
-        { name: 'Joko Susilo', time: '08:50' },
-    ];
 
     return (
         <div className="flex flex-column w-full h-full pt-4 px-2 pb-4 align-items-center justify-content-center">
@@ -101,7 +105,7 @@ const SchoolStudentAttendanceInPage = () => {
                     <img loading="lazy" src={school?.logoImagePath || defaultLogoSekolah} className='w-6rem md:w-8rem lg:w-11rem' alt="SMK Telkom Logo" />
                 </a>
             </div>
-            <h1 className="text-center lg:text-6xl">Presensi Masuk<br />{school ? school.name : "Loading..."}</h1>
+            <h1 className="text-center lg:text-6xl">Presensi<br />{school ? school.name : "Loading..."}</h1>
             <Card className="w-full lg:w-6 flex flex-column">
                 <form className='px-2' onSubmit={handleManualAttendance}>
                     <InputText
@@ -110,6 +114,17 @@ const SchoolStudentAttendanceInPage = () => {
                         className="w-full text-center py-4 text-2xl border border-1 border-gray-400"
                         placeholder="Masukkan NIS"
                     />
+                    <div className="flex justify-content-center pt-3 pb-3">
+                        <Button
+                            type="submit"
+                            label="Presensi"
+                            icon="pi pi-check"
+                            className="p-button-lg"
+                            disabled={!nis || loading}
+                            loading={loading}
+                        />
+
+                    </div>
                 </form>
                 <div className="flex flex-column align-items-center pt-1">
                     <label htmlFor="">Created And Supported By</label>

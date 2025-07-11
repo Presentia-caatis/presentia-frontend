@@ -31,6 +31,16 @@ class AttendanceWindowService {
         }
     }
 
+    async deleteAttendanceWindow(id: number | string) {
+        try {
+            const response = await axiosClient.delete(`/attendance-window/${id}`);
+            return response;
+        } catch (error) {
+            console.error('Error deleting attendance window:', error);
+            throw error;
+        }
+    }
+
 }
 
 export default new AttendanceWindowService();
