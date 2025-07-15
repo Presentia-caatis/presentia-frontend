@@ -8,16 +8,28 @@ class StudentService {
         classGroupId?: string | number,
         search?: string,
         filters?: Record<string, any>,
-        schoolId?: string | number
+        schoolId?: string | number,
+        sort?: Record<string, "asc" | "desc">
     ) {
         try {
-            const params: Record<string, any> = { page, perPage, class_group_id: classGroupId, search, 'school_id': schoolId };
-
+            const params: Record<string, any> = {
+                page,
+                perPage,
+                class_group_id: classGroupId,
+                search,
+                school_id: schoolId,
+            };
             if (filters) {
                 Object.entries(filters).forEach(([key, filter]) => {
                     if (filter?.value !== undefined && filter?.value !== null) {
                         params[`filter[${key}]`] = filter.value;
                     }
+                });
+            }
+
+            if (sort) {
+                Object.entries(sort).forEach(([key, direction]) => {
+                    params[`sort[${key}]`] = direction;
                 });
             }
 
@@ -28,6 +40,7 @@ class StudentService {
             throw error;
         }
     }
+
 
     async addStudent(payload: any) {
         try {

@@ -93,6 +93,9 @@ const SchoolStudentAttendancePage = () => {
     const [startDate, setStartDate] = useState<Date | null>(new Date());
     const [endDate, setEndDate] = useState<Date | null>(new Date());
     const [isFileChanged, setIsFileChanged] = useState(false);
+    const [sortField, setSortField] = useState<string>("");
+    const [sortOrder, setSortOrder] = useState<1 | -1 | 0>(0);
+
 
 
 
@@ -128,8 +131,13 @@ const SchoolStudentAttendancePage = () => {
 
 
     useEffect(() => {
-        fetchAttendances(currentPage, rowsPerPage);
-    }, [currentPage, rowsPerPage]);
+        const sortParam: Record<string, "asc" | "desc"> | undefined = sortField
+            ? { [sortField]: sortOrder === 1 ? "asc" : "desc" }
+            : undefined;
+
+        fetchAttendances(currentPage, rowsPerPage, sortParam);
+    }, [currentPage, rowsPerPage, sortField, sortOrder]);
+
 
     useEffect(() => {
         if (debounceRef.current) {
@@ -515,11 +523,16 @@ const SchoolStudentAttendancePage = () => {
     }
 
 
-    const fetchAttendances = async (page = 1, perPage = 20) => {
+    const fetchAttendances = async (
+        page = 1,
+        perPage = 20,
+        sort?: Record<string, "asc" | "desc">
+    ) => {
         try {
             if (!user?.school_id) return;
             setLoadingAttendance(true);
             setListAttendances([]);
+
             const params: any = {
                 page,
                 perPage,
@@ -532,12 +545,11 @@ const SchoolStudentAttendancePage = () => {
             if (endDate) {
                 params.endDate = endDate.toLocaleDateString("en-CA");
             }
-
             if (selectedKelas && selectedKelas.length > 0) {
                 params.classGroup = selectedKelas.join(',');
             }
-            const filters: Record<string, string> = {};
 
+            const filters: Record<string, string> = {};
             if (globalFilter) {
                 filters['student.student_name'] = globalFilter;
             }
@@ -558,10 +570,16 @@ const SchoolStudentAttendancePage = () => {
                     filters['absencePermit.absence_permit_type_id'] = selectedAbsensiIds.join(',');
                 }
             }
+
             params.filter = filters;
 
-            const response = await attendanceService.getAttendances(params);
+            if (sort) {
+                Object.entries(sort).forEach(([key, direction]) => {
+                    params[`sort[${key}]`] = direction;
+                });
+            }
 
+            const response = await attendanceService.getAttendances(params);
             setListAttendances(response.data.data);
             setTotalRecords(response.data.total);
             setCurrentPage(response.data.current_page);
@@ -571,6 +589,7 @@ const SchoolStudentAttendancePage = () => {
             setLoadingAttendance(false);
         }
     };
+
 
 
     const fetchKelas = async () => {
@@ -857,6 +876,12 @@ const SchoolStudentAttendancePage = () => {
                 <DataTable
                     selectionMode="multiple"
                     dataKey='id'
+                    sortField={sortField}
+                    sortOrder={sortOrder}
+                    onSort={(e) => {
+                        setSortField(e.sortField);
+                        setSortOrder((e.sortOrder ?? 0) as 1 | -1 | 0);
+                    }}
                     stripedRows
                     value={listAttendances}
                     selection={selectedAttendances}
@@ -905,22 +930,25 @@ const SchoolStudentAttendancePage = () => {
                     <Column
                         field="student.student_name"
                         header="Nama"
+                        sortable
                         body={(rowData) => rowData.student?.student_name?.toUpperCase()}
                     />
-                    <Column field="student.nis" header="NIS"></Column>
-                    <Column field="student.gender" header="Kelamin" body={(rowData) => rowData.student.gender === "male" ? "Laki-laki" : "Perempuan"}></Column>
-                    <Column field="student.class_group.class_name" header="Kelas"></Column>
+                    <Column field="student.nis" header="NIS" sortable></Column>
+                    <Column field="student.gender" header="Kelamin" sortable body={(rowData) => rowData.student.gender === "male" ? "Laki-laki" : "Perempuan"}></Column>
+                    <Column field="student.class_group.class_name" sortable header="Kelas"></Column>
                     <Column
                         field="check_in_time"
                         header="Tanggal"
+                        sortable
                         body={(rowData) =>
                             rowData.attendance_window.date ? rowData.attendance_window.date : "-"
                         }
                     />
-                    <Column field="check_in_time" header="Waktu Masuk" body={(rowData) => rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleTimeString("id-ID") : "-"}></Column>
-                    <Column field="check_out_time" header="Waktu Pulang" body={(rowData) => rowData.check_out_time ? new Date(rowData.check_out_time).toLocaleTimeString("id-ID") : "-"}></Column>
+                    <Column field="check_in_time" header="Waktu Masuk" sortable body={(rowData) => rowData.check_in_time ? new Date(rowData.check_in_time).toLocaleTimeString("id-ID") : "-"}></Column>
+                    <Column field="check_out_time" header="Waktu Pulang" sortable body={(rowData) => rowData.check_out_time ? new Date(rowData.check_out_time).toLocaleTimeString("id-ID") : "-"}></Column>
                     <Column
                         header="Status"
+                        sortable
                         body={(rowData) => {
                             const status = rowData.check_in_status?.status_name || "-";
                             const permit = listStatusAbsensi.find(p => p.value === rowData.absence_permit?.absence_permit_type_id);

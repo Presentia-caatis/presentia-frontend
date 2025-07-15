@@ -2,6 +2,11 @@ import { ProgressSpinner } from 'primereact/progressspinner';
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RoleGuard from './components/RoleGuard';
+import { ForgotPasswordPage, ResetPasswordPage } from './components/public/ForgotPassword';
+import PublicAttendancePage from './pages/public/PublicAttendancePage';
+import SchoolAttendanceWindowPage from './pages/school/dashboard/attendance/SchoolAttendanceWindowPage';
+import SchoolUsersPage from './pages/school/dashboard/admin/SchoolUsersPage';
+import UserInvitationPage from './pages/user/Invitation/UserInvitationPage';
 
 const Login = lazy(() => import('./pages/auth/LoginPage'));
 const AdminLayout = lazy(() => import('./layout/AdminLayout'));
@@ -65,6 +70,7 @@ const AppRoutes = () => {
 
             <Route path="/user" element={withSuspense(UserLayout)}>
                 <Route path="dashboard" element={withSuspense(UserDashboard)} />
+                <Route path="dashboard/invitation" element={withSuspense(UserInvitationPage)} />
                 <Route path="dashboard/billing" element={withSuspense(UserBillingPage)} />
                 <Route path="invoice/:id" element={withSuspense(UserInvoiceDetailPage)} />
                 <Route path="dashboard/support" element={withSuspense(UserSupportPage)} />
@@ -88,18 +94,26 @@ const AppRoutes = () => {
                 <Route path="attendance-record-result" element={withSuspense(StudentAttendanceRecordResultPage)} />
                 <Route path="custom-event" element={withSuspense(CustomEventPage)} />
                 <Route path="default-attendance-time" element={withSuspense(DefaultAttendanceTimePage)} />
+                <Route path="attendance-window" element={withSuspense(SchoolAttendanceWindowPage)} />
                 <Route path="check-in/status" element={withSuspense(SchoolCheckInStatusPage)} />
                 <Route path="absence-permit/type" element={withSuspense(AbsenceStatusListPage)} />
                 <Route path="classroom" element={withSuspense(ClassroomListPage)} />
                 <Route path="fingerprint" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
                     {withSuspense(FingerprintPage)}
                 </RoleGuard>} />
+                <Route path="users" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
+                    {withSuspense(SchoolUsersPage)}
+                </RoleGuard>} />
             </Route>
 
             <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />
-            <Route path="/school/student/attendance/in" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>{
-                withSuspense(StudentAttendanceInPage)}</RoleGuard>} />
+            <Route path="/school/student/attendance/in" element={
+                withSuspense(StudentAttendanceInPage)
+            } />
             <Route path="/school/student/attendance/out" element={withSuspense(StudentAttendanceOutPage)} />
+            <Route path="/forgot-password" element={withSuspense(ForgotPasswordPage)} />
+            <Route path="/reset-password" element={withSuspense(ResetPasswordPage)} />
+            <Route path="/kehadiran/:schoolId" element={<PublicAttendancePage />} />
 
             <Route path="*" element={withSuspense(NotFoundPage)} />
         </Routes>

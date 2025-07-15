@@ -164,7 +164,7 @@ const FingerprintPage = () => {
         }
 
         if (search) {
-            filter.name = search;
+            filter.student_name = search;
         }
 
         if (type === 'table') {

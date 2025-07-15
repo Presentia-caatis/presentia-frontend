@@ -10,8 +10,6 @@ const axiosClient = axios.create({
     withCredentials: true,
 });
 
-
-
 axiosClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');

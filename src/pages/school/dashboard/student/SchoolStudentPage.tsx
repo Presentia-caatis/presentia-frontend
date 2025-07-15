@@ -50,6 +50,8 @@ const SchoolStudentPage = () => {
     const [listKelas, setListKelas] = useState([]);
     const { school } = useSchool();
     const { user } = useAuth();
+    const [sortField, setSortField] = useState<string>("");
+    const [sortOrder, setSortOrder] = useState<1 | -1 | 0>(0);
     const listKelamin = [
         { label: 'Laki-Laki', value: 'male' },
         { label: 'Perempuan', value: 'female' }];
@@ -268,8 +270,13 @@ const SchoolStudentPage = () => {
 
 
     useEffect(() => {
-        fetchStudents(currentPage, rowsPerPage, debouncedFilter, undefined, debouncedFilters);
-    }, [currentPage, rowsPerPage, debouncedFilter, debouncedFilters]);
+        const sortParam: Record<string, "asc" | "desc"> | undefined = sortField
+            ? { [sortField]: sortOrder === 1 ? "asc" : "desc" }
+            : undefined;
+
+        fetchStudents(currentPage, rowsPerPage, debouncedFilter, undefined, debouncedFilters, sortParam);
+    }, [currentPage, rowsPerPage, debouncedFilter, debouncedFilters, sortField, sortOrder]);
+
 
 
     const fetchStudents = async (
@@ -277,14 +284,23 @@ const SchoolStudentPage = () => {
         perPage = 20,
         search = "",
         classGroupId?: string | number,
-        filters?: Record<string, any>
+        filters?: Record<string, any>,
+        sort?: Record<string, "asc" | "desc">
     ) => {
         try {
             setLoading(true);
             if (!school?.id) return;
             setStudentData([]);
 
-            const response = await studentService.getStudent(page, perPage, classGroupId, search, filters, school.id);
+            const response = await studentService.getStudent(
+                page,
+                perPage,
+                classGroupId,
+                search,
+                filters,
+                school.id,
+                sort
+            );
             setStudentData(response.data.data);
             setTotalRecords(response.data.total);
         } catch (error) {
@@ -293,6 +309,7 @@ const SchoolStudentPage = () => {
             setLoading(false);
         }
     };
+
 
 
 
@@ -523,9 +540,6 @@ const SchoolStudentPage = () => {
                             />
                             <Button icon="pi pi-trash" severity='danger' label='Hapus' disabled={!selectedStudents?.length} />
                         </div>
-                        {/* <Button icon="pi pi-upload" loading={loadingExport} severity='help' onClick={() => {
-                            handleExport();
-                        }} label='Export' /> */}
                     </div>
                 )}
 
@@ -533,6 +547,12 @@ const SchoolStudentPage = () => {
                     dataKey="id"
                     selection={selectedStudents!}
                     selectionMode="multiple"
+                    sortField={sortField}
+                    sortOrder={sortOrder}
+                    onSort={(e) => {
+                        setSortField(e.sortField);
+                        setSortOrder((e.sortOrder ?? 0) as 1 | -1 | 0);
+                    }}
                     value={studentData}
                     onSelectionChange={(e) => setSelectedStudents(e.value)}
                     emptyMessage={
@@ -588,6 +608,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="student_name"
                         header="Nama"
+                        sortable
                         body={(rowData) => (loading ? <Skeleton width="80%" height="1.5rem" /> : rowData.student_name?.toUpperCase())}
                         filter
                         filterElement={inputFilterTemplate("student_name")}
@@ -597,6 +618,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="nis"
                         header="NIS"
+                        sortable
                         body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nis)}
                         filter
                         filterElement={inputFilterTemplate("nis")}
@@ -606,6 +628,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="nisn"
                         header="NISN"
+                        sortable
                         body={(rowData) => (loading ? <Skeleton width="60%" height="1.5rem" /> : rowData.nisn)}
                         filter
                         filterElement={inputFilterTemplate("nisn")}
@@ -615,6 +638,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="gender"
                         header="Jenis Kelamin"
+                        sortable
                         body={(rowData) =>
                             loading ? <Skeleton width="40%" height="1.5rem" />
                                 : rowData.gender === "male" ? "Laki-Laki"
@@ -628,6 +652,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="class_group_id"
                         header="Kelas"
+                        sortable
                         body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
                         filter
                         filterElement={dropdownFilterTemplate("class_group_id", listKelas)}
@@ -637,6 +662,7 @@ const SchoolStudentPage = () => {
                     <Column
                         field="is_active"
                         header="Status"
+                        sortable
                         body={(rowData) =>
                             loading ? (
                                 <Skeleton width="40%" height="1.5rem" />
