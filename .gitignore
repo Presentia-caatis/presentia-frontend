@@ -22,3 +22,4 @@ node_modules
 *.sw?
 .env
 cypress.env.json
+deploy.bat
