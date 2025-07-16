@@ -102,7 +102,6 @@ const UserProfilePage = () => {
 
 
 
-
     const handleChangePassword = async () => {
         if (newPassword !== newPasswordConfirmation) {
             showToast({
@@ -115,30 +114,33 @@ const UserProfilePage = () => {
 
         try {
             setLoading(true);
-            const payload = {
-                current_password: currentPassword,
-                new_password: newPassword,
-                new_password_confirmation: newPasswordConfirmation,
-            };
 
+            const formData = new FormData();
+            formData.append('old_password', currentPassword);
+            formData.append('password', newPassword);
+            formData.append('password_confirmation', newPasswordConfirmation);
 
-            const res = await authService.changePassword(payload);
+            const res = await userService.updateUser(formData);
+
             showToast({
                 severity: 'success',
                 summary: 'Sukses',
-                detail: res?.message,
+                detail: res?.responseData?.message || 'Password berhasil diperbarui',
             });
-            navigate('/login');
         } catch (error: any) {
             showToast({
                 severity: 'error',
                 summary: 'Gagal Ganti Password',
-                detail: error?.response?.message || 'Terjadi kesalahan',
+                detail:
+                    error?.response?.data?.message ||
+                    error?.response?.message ||
+                    'Terjadi kesalahan saat memperbarui password.',
             });
         } finally {
             setLoading(false);
         }
     };
+
 
 
     // const handleResetPassword = async () => {
