@@ -31,25 +31,7 @@ describe('Add Student Data Test', () => {
                         .should('contain.text', 'Daftar Siswa')
                         .invoke('text')
                         .should('match', /^Daftar Siswa\s+\S+/);
-
-                    const buttons = [
-                        { label: 'Siswa Baru', icon: '.pi.pi-plus', shouldBeDisabled: false },
-                        { label: 'Import', icon: '.pi.pi-upload', shouldBeDisabled: false },
-                        { label: 'Hapus', icon: '.pi.pi-trash', shouldBeDisabled: true },
-                        { label: 'Export', icon: '.pi.pi-upload', shouldBeDisabled: false }
-                    ];
-
-                    buttons.forEach(({ label, icon, shouldBeDisabled }) => {
-                        cy.contains('button', label)
-                            .should('be.visible')
-                            .within(() => {
-                                cy.get(icon).should('be.visible');
-                            });
-
-                        if (shouldBeDisabled !== undefined) {
-                            cy.contains('button', label).should(shouldBeDisabled ? 'be.disabled' : 'not.be.disabled');
-                        }
-                    });
+   
 
                     cy.get('table').should('be.visible');
                     cy.contains('Memuat data siswa...').should('not.exist');

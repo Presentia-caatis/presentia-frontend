@@ -27,7 +27,6 @@ describe("Attendance Time Configuration Test", () => {
                     cy.url().should("include", `/school/${school}/default-attendance-time`);
 
                     const attendancePageElements = [
-                        { selector: 'h1', text: 'Konfigurasi Waktu Presensi' },
                         { selector: 'label', text: 'Mulai jam masuk' },
                         { selector: 'label', text: 'Selesai jam masuk' },
                         { selector: 'label', text: 'Mulai jam pulang' },

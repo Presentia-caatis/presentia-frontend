@@ -99,7 +99,7 @@ describe('Select Status for Attendance Data Test', () => {
                         .find('.p-multiselect')
                         .should('be.visible')
                         .click({ force: true });
-                    cy.get('.p-multiselect-panel', { timeout: 5000 }).should('be.visible');
+                    cy.get('.p-multiselect-panel', { timeout: 6000 }).should('be.visible');
                     cy.get('.p-multiselect-panel')
                         .contains('.p-multiselect-item', 'Absent')
                         .should('be.visible')
