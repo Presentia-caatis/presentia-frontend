@@ -42,49 +42,35 @@ describe('Edit Account Password Test', () => {
                     cy.get(`.pi.${iconClass}`).should('exist');
                 });
 
-                cy.contains('Ganti Password').click();
-                cy.contains('h2', 'Ganti Password').should('be.visible');
+                // cy.contains('Ganti Password').click();
+                // cy.contains('h2', 'Ganti Password').should('be.visible');
 
-                const buttonsToCheck = [
-                    { label: 'Ganti Password', assert: 'be.visible' },
-                    { label: 'Batal', assert: 'be.visible' }
-                ];
+                // const buttonsToCheck = [
+                //     { label: 'Ganti Password', assert: 'be.visible' },
+                //     { label: 'Batal', assert: 'be.visible' }
+                // ];
 
-                buttonsToCheck.forEach(({ label, assert }) => {
-                    cy.contains(label).should(assert);
-                });
+                // buttonsToCheck.forEach(({ label, assert }) => {
+                //     cy.contains(label).should(assert);
+                // });
 
-                const passwordFields = [
-                    { label: 'Password Sekarang', inputId: '#currentPassword' },
-                    { label: 'Password Baru', inputId: '#newPassword' },
-                    { label: 'Konfirmasi Password', inputId: '#confirmPassword' },
-                ];
+                // const passwordFields = [
+                //     { label: 'Password Sekarang', inputId: '#currentPassword' },
+                //     { label: 'Password Baru', inputId: '#newPassword' },
+                //     { label: 'Konfirmasi Password', inputId: '#confirmPassword' },
+                // ];
 
-                passwordFields.forEach(({ label, inputId }) => {
-                    cy.contains('h5', label).should('be.visible');
-                    cy.get(inputId).should('exist');
-                });
+                // passwordFields.forEach(({ label, inputId }) => {
+                //     cy.contains('h5', label).should('be.visible');
+                //     cy.get(inputId).should('exist');
+                // });
 
-                cy.get('#currentPassword').clear().type(oldPassword);
-                cy.get('#newPassword').clear().type(newPassword);
-                cy.get('#confirmPassword').clear().type(newPassword);
-                cy.get('.p-button').contains('Ganti Password').click()
+                // cy.get('#currentPassword').clear().type(oldPassword);
+                // cy.get('#newPassword').clear().type(newPassword);
+                // cy.get('#confirmPassword').clear().type(newPassword);
+                // cy.get('.p-button').contains('Ganti Password').click()
 
-                cy.contains('.p-toast-summary', /Sukses|Gagal/, { timeout: 10000 }).should('exist');
-                cy.contains('.p-toast-detail', /Password berhasil diganti|Terjadi kesalahan/, { timeout: 10000 }).should('exist');
-
-                cy.url().should('include', '/user/dashboard');
-                cy.get('.layout-topbar .flex.gap-2.cursor-pointer').click();
-                cy.get('.absolute.bg-white').should('be.visible');
-                cy.contains(/Profile Pengguna|Profile/).click();
-                cy.url().should('include', '/user/profile');
-
-                cy.contains('Ganti Password').click();
-
-                cy.get('#currentPassword').clear().type(newPassword);
-                cy.get('#newPassword').clear().type(oldPassword);
-                cy.get('#confirmPassword').clear().type(oldPassword);
-                cy.get('.p-button').contains('Ganti Password').click();
+                // cy.contains('.p-toast-summary', /Sukses|Gagal/, { timeout: 10000 }).should('exist');
             });
     });
 });

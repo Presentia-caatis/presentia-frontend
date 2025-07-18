@@ -101,7 +101,7 @@ describe('Select Status for Attendance Data Test', () => {
                         .click({ force: true });
                     cy.get('.p-multiselect-panel', { timeout: 6000 }).should('be.visible');
                     cy.get('.p-multiselect-panel')
-                        .contains('.p-multiselect-item', 'Absent')
+                        .contains('.p-multiselect-item', 'Absen')
                         .should('be.visible')
                         .within(() => {
                             cy.get('.p-checkbox').click();
@@ -124,7 +124,7 @@ describe('Select Status for Attendance Data Test', () => {
                                 cy.wrap($row).find('td').eq(8)
                                     .invoke('text')
                                     .then((textValue) => {
-                                        expect(textValue).to.match(/^(On Time|Late|Absent)$/);
+                                        expect(textValue).to.match(/^(On Time|Late|Absen)$/);
                                     });
                             });
                         }
