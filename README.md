@@ -8,7 +8,7 @@ Presentia Frontend is a modular web application built with React, TypeScript, an
 ## Prerequisites
 Ensure you have the following installed on your system before proceeding:
 
-- **Node.js**: v16.20.2+
+- **Node.js**: v18.20.2+
 - **npm**: v8.19.4+
 
 ---

@@ -49,6 +49,7 @@ const SchoolClassgroupPage = () => {
     const [studentCurrentPage, setStudentCurrentPage] = useState(1);
     const [studentRowsPerPage, setStudentRowsPerPage] = useState(20);
     const [studentTotalRecords, setStudentTotalRecords] = useState(0);
+    const dropdownRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
     const [showStudentDialog, setShowStudentDialog] = useState(false);
     const [students, setStudents] = useState([]);
@@ -138,14 +139,39 @@ const SchoolClassgroupPage = () => {
         setStudentCurrentPage(1);
         setStudentRowsPerPage(10);
         setActivatedClassGroup(classGroup);
-        fetchStudents(1, studentRowsPerPage, classGroup.id);
+        fetchStudents(1, 10, classGroup.id);
     };
 
-    const fetchStudents = async (page = 1, perPage = 20, classGroupId: number) => {
+
+    const fetchStudents = async (
+        page = 1,
+        perPage = 20,
+        classGroupId: number,
+        filtersStudentOverride?: Record<string, any>
+    ) => {
         try {
             setStudentLoading(true);
             setStudents([]);
-            const response = await studentService.getStudent(page, perPage, classGroupId);
+
+            const effectiveFilters = filtersStudentOverride ?? filtersStudent;
+
+            const cleanedFilters: Record<string, { value: any }> = {};
+            Object.entries(effectiveFilters).forEach(([key, filter]) => {
+                const val = filter?.value;
+                if (val !== null && val !== undefined && val !== '') {
+                    cleanedFilters[key] = { value: val };
+                }
+            });
+
+            const response = await studentService.getStudent(
+                page,
+                perPage,
+                classGroupId,
+                undefined,
+                cleanedFilters,
+                school?.id
+            );
+
             setStudents(response.data.data);
             setStudentTotalRecords(response.data.total);
         } catch (error) {
@@ -154,6 +180,8 @@ const SchoolClassgroupPage = () => {
             setStudentLoading(false);
         }
     };
+
+
 
     const inputFilterTemplate = (field: keyof typeof filters) => (
         <InputText
@@ -305,6 +333,84 @@ const SchoolClassgroupPage = () => {
             setDeleteLoading(false);
         }
     };
+
+    const handleClassChange = (
+        studentId: number,
+        student: any,
+        newClassId: number
+    ) => {
+        const targetClass = classgroupList.find(c => c.id === newClassId);
+        const targetClassName = targetClass?.class_name || 'kelas baru';
+
+        const targetEl = dropdownRefs.current[studentId];
+
+        confirmPopup({
+            target: targetEl as HTMLElement,
+            message: `Apakah Anda yakin ingin memindahkan ${student.student_name} ke kelas ${targetClassName}?`,
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-success',
+            acceptLabel: 'Ya',
+            rejectLabel: 'Tidak',
+            accept: async () => {
+                try {
+                    if (!school) {
+                        toast.current?.show({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'Sekolah tidak ditemukan.',
+                            life: 3000,
+                        });
+                        return;
+                    }
+
+                    const payload = {
+                        class_group_id: newClassId,
+                    };
+
+                    await studentService.updateStudent(school.id, student.id, payload);
+
+                    toast.current?.show({
+                        severity: 'success',
+                        summary: 'Sukses',
+                        detail: `Kelas siswa ${student.student_name} telah diperbarui ke ${targetClassName}.`,
+                        life: 3000,
+                    });
+
+                    if (activatedClassGroup?.id !== undefined) {
+                        fetchStudents(studentCurrentPage, studentRowsPerPage, activatedClassGroup.id, filtersStudent);
+                        fetchClassgroups(currentPage, rowsPerPage, filters);
+                    }
+                } catch (error) {
+                    console.error('Gagal mengganti kelas:', error);
+                    toast.current?.show({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Gagal mengganti kelas siswa.',
+                        life: 3000,
+                    });
+                }
+            },
+            reject: () => { },
+        });
+    };
+
+
+
+
+    useEffect(() => {
+        const classGroupId = activatedClassGroup?.id;
+        if (!classGroupId) return;
+
+        const timeout = setTimeout(() => {
+            fetchStudents(studentCurrentPage, studentRowsPerPage, classGroupId);
+        }, 500);
+
+        return () => clearTimeout(timeout);
+    }, [filtersStudent]);
+
+
+
+
 
 
 
@@ -556,6 +662,14 @@ const SchoolClassgroupPage = () => {
                         setShowStudentDialog(false);
                         setStudentCurrentPage(1);
                         setStudentRowsPerPage(10);
+                        setFiltersStudent({
+                            student_name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                            nis: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                            nisn: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                            gender: { value: null, matchMode: FilterMatchMode.EQUALS },
+                            class_group_id: { value: null, matchMode: FilterMatchMode.EQUALS },
+                            is_active: { value: null, matchMode: FilterMatchMode.EQUALS },
+                        });
                         setStudents([]);
                     }}
                     header={`Daftar Siswa Kelas ${activatedClassGroup?.class_name || ''}`}
@@ -627,12 +741,29 @@ const SchoolClassgroupPage = () => {
                                 filterElement={dropdownFilterTemplateStudent("gender", listKelamin)}
                                 showFilterMenu={false}
                             />
-                            <Column field="class_group.class_name" header="Kelas" body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
+                            {/* <Column field="class_group.class_name" header="Kelas" body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
+                            /> */}
+                            <Column
+                                field="class_group.id"
+                                header="Kelas"
+                                body={(rowData) => (
+                                    <div ref={el => dropdownRefs.current[rowData.id] = el}>
+                                        <Dropdown
+                                            value={rowData.class_group?.id}
+                                            options={classgroupList}
+                                            optionLabel="class_name"
+                                            optionValue="id"
+                                            onChange={(e) => handleClassChange(rowData.id, rowData, e.value)}
+                                            placeholder="Pilih Kelas"
+                                        />
+                                    </div>
+                                )}
                             />
+
                         </DataTable>
                     )}
                 </Dialog>
-            </div>
+            </div >
         </>
     );
 };
