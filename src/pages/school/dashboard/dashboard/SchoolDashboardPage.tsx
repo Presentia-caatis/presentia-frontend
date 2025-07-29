@@ -21,7 +21,7 @@ const SchoolDashboardPage = () => {
                 datasets: [
                     {
                         data: [school.activeStudents, school.inactiveStudents],
-                        backgroundColor: ["#1E3A8A", "#6B21A8"]
+                        backgroundColor: ["#10B981", "#EF4444"]
 
                     },
                 ],
@@ -32,7 +32,7 @@ const SchoolDashboardPage = () => {
                 datasets: [
                     {
                         data: [school.maleStudents, school.femaleStudents],
-                        backgroundColor: ["#6366F1", "#A855F7"]
+                        backgroundColor: ["#6366F1", "#F59E0B"]
                     },
                 ],
             });

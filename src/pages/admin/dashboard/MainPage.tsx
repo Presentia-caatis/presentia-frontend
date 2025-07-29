@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Chart } from 'primereact/chart';
+import schoolService from '../../../services/schoolService';
+import userService from '../../../services/userService';
 
 interface AdminDashboardData {
     total_schools: number;
     active_subscriptions: number;
     expired_subscriptions: number;
     total_users: number;
-    tickets_open: number;
-    tickets_closed: number;
     total_revenue: number;
     monthly_revenue: number;
 }
@@ -16,24 +16,48 @@ const AdminDashboard = () => {
     const documentStyle = getComputedStyle(document.documentElement);
     const textColor = documentStyle.getPropertyValue('--text-color');
 
-    const dummyData: AdminDashboardData = {
-        total_schools: 2,
-        active_subscriptions: 2,
+    const [dataDashboard, setDataDashboard] = useState<AdminDashboardData>({
+        total_schools: 0,
+        active_subscriptions: 0,
         expired_subscriptions: 0,
-        total_users: 12,
-        tickets_open: 0,
-        tickets_closed: 2,
-        total_revenue: 50000,
-        monthly_revenue: 200,
-    };
+        total_users: 0,
+        total_revenue: 0,
+        monthly_revenue: 22150000
+    });
 
-    const [dataDashboard] = useState<AdminDashboardData>(dummyData);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const schoolRes = await schoolService.count();
+                const userRes = await userService.count();
 
-    const [subscriptionStatusChart] = useState({
+                const totalSchools = schoolRes.data || 0;
+                const activeSubs = schoolRes.active || totalSchools;
+                const expiredSubs = totalSchools - activeSubs;
+
+                const totalUsers = userRes.data || 0;
+
+                setDataDashboard({
+                    total_schools: totalSchools,
+                    active_subscriptions: activeSubs,
+                    expired_subscriptions: expiredSubs,
+                    total_users: totalUsers,
+                    total_revenue: 0,
+                    monthly_revenue: 22000000,
+                });
+            } catch (error) {
+                console.error("Gagal mengambil data dashboard:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const [subscriptionStatusChart, setSubscriptionStatusChart] = useState({
         labels: ['Aktif', 'Tidak Aktif'],
         datasets: [
             {
-                data: [dummyData.active_subscriptions, dummyData.expired_subscriptions],
+                data: [dataDashboard.active_subscriptions, dataDashboard.expired_subscriptions],
                 backgroundColor: [
                     documentStyle.getPropertyValue('--green-500'),
                     documentStyle.getPropertyValue('--red-500'),
@@ -46,22 +70,24 @@ const AdminDashboard = () => {
         ],
     });
 
-    const [ticketStatusChart] = useState({
-        labels: ['Tiket Aktif', 'Tiket Selesai'],
-        datasets: [
-            {
-                data: [dummyData.tickets_open, dummyData.tickets_closed],
-                backgroundColor: [
-                    documentStyle.getPropertyValue('--orange-500'),
-                    documentStyle.getPropertyValue('--blue-500'),
-                ],
-                hoverBackgroundColor: [
-                    documentStyle.getPropertyValue('--orange-400'),
-                    documentStyle.getPropertyValue('--blue-400'),
-                ],
-            },
-        ],
-    });
+    useEffect(() => {
+        setSubscriptionStatusChart({
+            labels: ['Aktif', 'Tidak Aktif'],
+            datasets: [
+                {
+                    data: [dataDashboard.active_subscriptions, dataDashboard.expired_subscriptions],
+                    backgroundColor: [
+                        documentStyle.getPropertyValue('--green-500'),
+                        documentStyle.getPropertyValue('--red-500'),
+                    ],
+                    hoverBackgroundColor: [
+                        documentStyle.getPropertyValue('--green-400'),
+                        documentStyle.getPropertyValue('--red-400'),
+                    ],
+                },
+            ],
+        });
+    }, [dataDashboard]);
 
     const chartOptions = {
         plugins: {
@@ -72,6 +98,14 @@ const AdminDashboard = () => {
                 },
             },
         },
+    };
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+        }).format(value);
     };
 
     return (
@@ -112,7 +146,7 @@ const AdminDashboard = () => {
                         <div className="flex justify-content-between mb-3">
                             <div>
                                 <span className="block text-500 font-medium mb-3">Pendapatan Bulanan</span>
-                                <div className="text-900 font-medium text-xl">${dataDashboard.monthly_revenue}</div>
+                                <div className="text-900 font-medium text-xl">{formatCurrency(dataDashboard.monthly_revenue)}</div>
                             </div>
                             <div className="flex align-items-center justify-content-center bg-purple-100 border-round" style={{ width: '2.5rem', height: '2.5rem' }}>
                                 <i className="pi pi-wallet text-purple-500 text-xl"></i>
@@ -133,16 +167,10 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 </div>
-                <div className="col-12 xl:col-6">
+                <div className="col-12">
                     <div className="card flex flex-column align-items-center">
                         <h5 className="text-left w-full">Status Berlangganan</h5>
                         <Chart type="doughnut" data={subscriptionStatusChart} options={chartOptions} />
-                    </div>
-                </div>
-                <div className="col-12 xl:col-6">
-                    <div className="card flex flex-column align-items-center">
-                        <h5 className="text-left w-full">Status Tiket</h5>
-                        <Chart type="pie" data={ticketStatusChart} options={chartOptions} />
                     </div>
                 </div>
             </div>

@@ -225,19 +225,35 @@ const LoginPage = () => {
                             </form>
                             <Button
                                 type='button'
-                                label="Sign up with Google"
+                                label="Log In dengan Google"
                                 icon="pi pi-google"
                                 className="w-full p-3 text-xl p-button-outlined"
                                 onClick={handleGoogleLogin}
                             />
                             <div className='w-full flex justify-content-center pt-3'>
                                 <Button
-                                    label="Reset Password via Email"
+                                    label="Lupa Password?"
                                     icon="pi pi-envelope"
                                     className="p-button-text"
                                     onClick={() => navigate('/forgot-password')}
                                 />
                             </div>
+                            <div className="flex justify-content-center w-full  mb-1">
+                                <span className="text-600">atau</span>
+                            </div>
+                            <div className="flex justify-content-center mt-3 w-full">
+                                <span className="text-600">
+                                    Belum memiliki akun?{' '}
+                                    <span
+                                        onClick={() => handleGoogleLogin()}
+                                        className="text-primary font-medium cursor-pointer hover:underline"
+                                    >
+                                        Regiser
+                                    </span>
+                                </span>
+                            </div>
+
+
                         </Card>
                     </div>
                 </div>

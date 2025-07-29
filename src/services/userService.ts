@@ -50,6 +50,11 @@ class UserService {
         return { responseData: response.data, status: response.status };
     }
 
+    async count() {
+        const response = await axiosClient.get(`/user/count`);
+        return response.data;
+    }
+
 
     async deleteUser(userId: number): Promise<any> {
         const response = await axiosClient.delete(`/user/${userId}`);

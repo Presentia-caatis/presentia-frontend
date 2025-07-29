@@ -37,6 +37,11 @@ class SchoolService {
     return response.data;
   }
 
+  async count() {
+    const response = await axiosClient.get(`/school/count`);
+    return response.data;
+  }
+
   async create(payload: CreateSchoolPayload) {
     const formData = new FormData();
     formData.append('name', payload.name);
