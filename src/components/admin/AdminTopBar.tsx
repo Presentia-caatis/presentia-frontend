@@ -8,6 +8,7 @@ import { useToastContext } from '../../layout/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { Tag } from 'primereact/tag';
 import defaultProfileUser from '../../assets/defaultProfileUser.png';
+import { useLayoutConfig } from '../../context/LayoutConfigContext';
 
 const AdminTopbar = () => {
     const [topbarMenuActive, setTopbarMenuActive] = useState(false);
@@ -28,6 +29,8 @@ const AdminTopbar = () => {
             detail: detail
         });
     }
+
+    const { setIsSidebarVisible } = useLayoutConfig();
     const handleLogout = async () => {
         try {
             callToast(showToast, 'info', 'Logout', 'Sedang proses logout...');
@@ -118,64 +121,69 @@ const AdminTopbar = () => {
             <Link to="" className="layout-topbar-logo">
                 <span>Presentia Super Admin</span>
             </Link>
-
-            <div
-                ref={containerRef}
-                className="flex gap-2 cursor-pointer justify-content-end relative w-12rem"
-                onClick={handleToggleMenu}
-                aria-controls="popup_profile_menu"
-                aria-haspopup
-            >
-                <div className='my-auto flex flex-column'>
-                    <div className='school-profile'>
-                        {user?.fullname || 'Loading...'}
-                    </div>
-                    <div className='text-left md:text-right'>
-                        <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] || 'Loading'}</Tag>
-                    </div>
+            <div className='flex'>
+                <div className="menu-toggle cursor-pointer lg:hidden my-auto mr-3" onClick={() => setIsSidebarVisible(prev => !prev)}>
+                    <i className="pi pi-bars text-2xl"></i>
                 </div>
-                <div className=''>
-                    <img
-                        loading="lazy"
-                        src={user?.profile_image_path || defaultProfileUser}
-                        alt=""
-                        className='w-4rem h-4rem border-circle border-3'
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = defaultProfileUser;
-                        }}
-                    />
-                </div>
-                <div className='my-auto'>
-                    <i
-                        className={`pi ${profileOpen ? 'pi-angle-up' : 'pi-angle-down'
-                            } transition-all duration-300`}
-                    />
-                </div>
-
-                {profileOpen && (
-                    <div
-                        className="absolute bg-white card p-0 text-sm w-full transition-all duration-300 opacity-100 scale-100"
-                        style={{
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            top: 'calc(100% + 10px)',
-                            zIndex: 10,
-                        }}
-                    >
-                        <div className="flex flex-column">
-                            {profileItems.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="flex gap-2 align-items-center py-3 px-3 cursor-pointer hover:bg-primary-100 transition-all transition-delay-100 transition-duration-100"
-                                    onClick={item.action}
-                                >
-                                    <i className={item.icon}></i>
-                                    <div>{item.label}</div>
-                                </div>
-                            ))}
+                <div
+                    ref={containerRef}
+                    className="flex gap-2 cursor-pointer justify-content-end relative w-12rem"
+                    onClick={handleToggleMenu}
+                    aria-controls="popup_profile_menu"
+                    aria-haspopup
+                >
+                    <div className='my-auto flex flex-column'>
+                        <div className='school-profile'>
+                            {user?.fullname || 'Loading...'}
+                        </div>
+                        <div className='text-left md:text-right'>
+                            <Tag>{user?.roles[0] == "super_admin" ? 'Super Admin' : user?.roles[0] || 'Loading'}</Tag>
                         </div>
                     </div>
-                )}
+                    <div className=''>
+                        <img
+                            loading="lazy"
+                            src={user?.profile_image_path || defaultProfileUser}
+                            alt=""
+                            className='w-4rem h-4rem border-circle border-3'
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = defaultProfileUser;
+                            }}
+                        />
+                    </div>
+                    <div className='my-auto'>
+                        <i
+                            className={`pi ${profileOpen ? 'pi-angle-up' : 'pi-angle-down'
+                                } transition-all duration-300`}
+                        />
+                    </div>
+
+                    {profileOpen && (
+                        <div
+                            className="absolute bg-white card p-0 text-sm w-full transition-all duration-300 opacity-100 scale-100"
+                            style={{
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                top: 'calc(100% + 10px)',
+                                zIndex: 10,
+                            }}
+                        >
+                            <div className="flex flex-column">
+                                {profileItems.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex gap-2 align-items-center py-3 px-3 cursor-pointer hover:bg-primary-100 transition-all transition-delay-100 transition-duration-100"
+                                        onClick={item.action}
+                                    >
+                                        <i className={item.icon}></i>
+                                        <div>{item.label}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                    )}
+                </div>
             </div>
         </div>
     );
