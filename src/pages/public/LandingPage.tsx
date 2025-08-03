@@ -50,7 +50,7 @@ const LandingPage = () => {
                                 <Button
                                     label="Daftar"
                                     type="button"
-                                    onClick={() => navigate('/register')}
+                                    onClick={() => navigate('/login')}
                                     outlined
                                 />
                             </div>
@@ -118,8 +118,8 @@ const LandingPage = () => {
                                 <div className="text-600">Untuk sekolah dengan kebutuhan dasar presensi.</div>
                                 <hr className="my-3 mx-0 border-top-1 border-bottom-none border-300" />
                                 <div className="flex align-items-center">
-                                    <span className="font-bold text-2xl text-900">$9</span>
-                                    <span className="ml-2 font-medium text-600">per month</span>
+                                    <span className="font-bold text-2xl text-900">Rp.150.000</span>
+                                    <span className="ml-2 font-medium text-600">per bulan</span>
                                 </div>
                                 <hr className="my-3 mx-0 border-top-1 border-bottom-none border-300" />
                                 <ul className="list-none p-0 m-0 flex-grow-1">
@@ -145,8 +145,8 @@ const LandingPage = () => {
                                 <div className="text-600">Untuk sekolah yang membutuhkan fitur presensi lebih canggih.</div>
                                 <hr className="my-3 mx-0 border-top-1 border-bottom-none border-300" />
                                 <div className="flex align-items-center">
-                                    <span className="font-bold text-2xl text-900">$29</span>
-                                    <span className="ml-2 font-medium text-600">per month</span>
+                                    <span className="font-bold text-2xl text-900">Rp.300.000</span>
+                                    <span className="ml-2 font-medium text-600">per bulan</span>
                                 </div>
                                 <hr className="my-3 mx-0 border-top-1 border-bottom-none border-300" />
                                 <ul className="list-none p-0 m-0 flex-grow-1">
@@ -180,8 +180,8 @@ const LandingPage = () => {
                                 <div className="text-600">Untuk sekolah besar dengan kebutuhan pengelolaan presensi tingkat lanjut.</div>
                                 <hr className="my-3 mx-0 border-top-1 border-bottom-none border-300" />
                                 <div className="flex align-items-center">
-                                    <span className="font-bold text-2xl text-900">$49</span>
-                                    <span className="ml-2 font-medium text-600">per month</span>
+                                    <span className="font-bold text-2xl text-900">Rp.450.000</span>
+                                    <span className="ml-2 font-medium text-600">per bulan</span>
                                 </div>
                                 <hr className="my-3 mx-0 border-top-1 border-bottom-none border-300" />
                                 <ul className="list-none p-0 m-0 flex-grow-1">

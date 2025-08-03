@@ -31,7 +31,7 @@ import SchoolUsersPage from './pages/school/dashboard/admin/SchoolUsersPage';
 import FingerprintPage from './pages/school/dashboard/admin/FingerprintRegisterPage';
 import SchoolProfilePage from './pages/school/profile/SchoolProfilePage';
 
-import AdminDashboard from './pages/admin/dashboard/MainPage';
+import AdminDashboard from './pages/admin/dashboard/AdminDashboard';
 import AdminSchoolPage from './pages/admin/school-management/AdminSchoolPage';
 import AdminSubscribtionPage from './pages/admin/subscription/AdminSubscriptionPage';
 

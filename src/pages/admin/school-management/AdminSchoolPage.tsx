@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
 import { useNavigate } from 'react-router-dom';
 import AdminCreateSchoolModal from '../../../components/admin/AdminCreateSchoolModal';
 import SchoolService from '../../../services/schoolService';
@@ -157,20 +156,24 @@ const AdminSchoolPage = () => {
                 <Column
                     header="Aksi"
                     body={(rowData) => (
-                        <Button
-                            icon="pi pi-sign-in"
-                            label="Masuk"
-                            loading={schoolLoading}
-                            onClick={async () => {
-                                try {
-                                    localStorage.setItem("targetSchoolId", rowData.id);
-                                    localStorage.setItem("targetSchoolName", formatSchoolName(rowData.name));
-                                    updateUser({ school_id: rowData.id });
-                                } catch (error) {
-                                    console.error("Gagal masuk ke sekolah:", error);
-                                }
-                            }}
-                        />
+                        <div className='flex gap-1'>
+                            <Button
+                                icon="pi pi-sign-in"
+                                label="Masuk"
+                                loading={schoolLoading}
+                                onClick={async () => {
+                                    try {
+                                        localStorage.setItem("targetSchoolId", rowData.id);
+                                        localStorage.setItem("targetSchoolName", formatSchoolName(rowData.name));
+                                        updateUser({ school_id: rowData.id });
+                                    } catch (error) {
+                                        console.error("Gagal masuk ke sekolah:", error);
+                                    }
+                                }}
+                            />
+                            <Button icon="pi pi-trash" severity='danger' label='Hapus' />
+                        </div>
+
 
                     )}
                 />

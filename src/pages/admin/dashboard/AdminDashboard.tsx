@@ -170,7 +170,7 @@ const AdminDashboard = () => {
                 <div className="col-12">
                     <div className="card flex flex-column align-items-center">
                         <h5 className="text-left w-full">Status Berlangganan</h5>
-                        <Chart type="doughnut" data={subscriptionStatusChart} options={chartOptions} />
+                        <Chart type="pie" data={subscriptionStatusChart} options={chartOptions} />
                     </div>
                 </div>
             </div>

@@ -22,7 +22,7 @@ const CustomEventPage = lazy(() => import('./pages/school/dashboard/attendance/S
 const ClassroomListPage = lazy(() => import('./pages/school/dashboard/classgroup/SchoolClassgroupPage'));
 const DefaultAttendanceTimePage = lazy(() => import('./pages/school/dashboard/attendance/SchoolSetAttendanceTimePage'));
 const AbsenceStatusListPage = lazy(() => import('./pages/school/dashboard/attendance/SchoolAbsenceStatusPage'));
-const AdminDashboard = lazy(() => import('./pages/admin/dashboard/MainPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/dashboard/AdminDashboard'));
 const SchoolProfilePage = lazy(() => import('./pages/school/profile/SchoolProfilePage'));
 const PublicLayout = lazy(() => import('./layout/PublicLayout'));
 const LandingPage = lazy(() => import('./pages/public/LandingPage'));
