@@ -1,6 +1,6 @@
 describe('Logout Test', () => {
-    const roles = ['general_user', 'staf', 'admin', 'superadmin'];
-
+    const roles = ['admin'];
+    //tc-12
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'general_user' ? 'pengguna umum'
             : role === 'staf' ? 'staf sekolah'

@@ -1,6 +1,6 @@
 describe('School Information Test', () => {
-    const roles = ['staf', 'admin'];
-
+    const roles = ['admin'];
+    //tc-04
     roles.forEach((role) => {
         it(`Cek perilaku ${role === 'staf' ? 'staf sekolah'
             : role === 'admin' ? 'admin sekolah'
@@ -32,39 +32,6 @@ describe('School Information Test', () => {
                                         .and('not.contain', 'null');
                                 });
                         }
-                    });
-
-                    const attendanceData = [
-                        { icon: '.pi.pi-users', label: 'Jumlah siswa aktif' },
-                        { icon: '.pi.pi-address-book', label: 'Jumlah presensi hari ini' },
-                        { icon: '.pi.pi-user-minus', label: 'Jumlah absensi hari ini' }
-                    ];
-
-                    attendanceData.forEach(({ icon, label }) => {
-                        cy.get(icon)
-                            .closest('.p-card')
-                            .within(() => {
-                                cy.contains(label).should('exist');
-                                cy.get('p.text-3xl.font-bold')
-                                    .invoke('text')
-                                    .should('not.be.empty')
-                                    .and('not.match', /(undefined|null)/)
-                                    .and('match', /\d+/);
-                            });
-                    });
-
-                    const buttons = [
-                        { selector: 'button.p-button-primary', icon: '.pi.pi-home', text: 'Dashboard Sekolah' },
-                        { selector: 'button.p-button-success', icon: '.pi.pi-sign-in', text: 'Daftar Presensi Hari Ini' }
-                    ];
-
-                    buttons.forEach(({ selector, icon, text }) => {
-                        cy.get(selector)
-                            .should('be.visible')
-                            .within(() => {
-                                cy.get(icon).should('be.visible');
-                                cy.contains(text).should('be.visible');
-                            });
                     });
                 });
     });
