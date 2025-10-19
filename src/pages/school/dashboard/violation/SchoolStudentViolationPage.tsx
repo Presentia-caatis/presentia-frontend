@@ -164,14 +164,14 @@ const SchoolStudentViolationPage = () => {
                     });
                 }} header="Penambahan Data Pelanggaran Siswa" footer={
                     <div>
-                        <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => {
+                        <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={() => {
                             setShowAddDialog(false); setStudentAchievementData({
                                 achievement: null,
                                 student: [],
                                 description: ''
                             });
                         }} />
-                        <Button label="Save" icon="pi pi-check" className="p-button-text" onClick={() => { }} />
+                        <Button label="Simpan" icon="pi pi-check" className="p-button-text" onClick={() => { }} />
                     </div>
                 } modal={true} className='p-fluid'>
                     <div className='field'>

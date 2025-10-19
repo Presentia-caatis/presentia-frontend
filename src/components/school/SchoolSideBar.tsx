@@ -147,6 +147,17 @@ const SchoolSideBar = () => {
                 ] : []),
             ],
         },
+        {
+            label: 'Konfigurasi Sekolah',
+            items: [
+                {
+                    label: 'Tahun Ajaran',
+                    icon: 'pi pi-users',
+                    command: () => navigate(`/school/${schoolName}/semester`),
+                    className: currentPath === `/school/${schoolName}/semester` ? 'active-route' : 'menu-item',
+                },
+            ],
+        },
     ];
 
 

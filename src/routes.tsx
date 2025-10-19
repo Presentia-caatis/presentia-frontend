@@ -7,6 +7,7 @@ import PublicAttendancePage from './pages/public/PublicAttendancePage';
 import SchoolAttendanceWindowPage from './pages/school/dashboard/attendance/SchoolAttendanceWindowPage';
 import SchoolUsersPage from './pages/school/dashboard/admin/SchoolUsersPage';
 import UserInvitationPage from './pages/user/Invitation/UserInvitationPage';
+import SemesterPage from './pages/school/dashboard/school-configuration/SchoolSemesterPage';
 
 const Login = lazy(() => import('./pages/auth/LoginPage'));
 const AdminLayout = lazy(() => import('./layout/AdminLayout'));
@@ -104,6 +105,7 @@ const AppRoutes = () => {
                 <Route path="users" element={<RoleGuard roles={['school_admin', 'super_admin', 'school_coadmin']}>
                     {withSuspense(SchoolUsersPage)}
                 </RoleGuard>} />
+                <Route path="semester" element={withSuspense(SemesterPage)} />
             </Route>
 
             <Route path="/school/attendance" element={withSuspense(SchoolStudentAttendanceListPage)} />

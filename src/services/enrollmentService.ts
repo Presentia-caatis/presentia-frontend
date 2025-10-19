@@ -1,52 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosClient from '../utils/axiosClient';
 
-class StudentService {
-    async getStudent(
-        page: number = 1,
-        perPage: number = 10,
+class EnrollmentService {
+    async enroll(
+        studentId: string | number,
         classGroupId?: string | number,
-        search?: string,
-        filters?: Record<string, any>,
-        schoolId?: string | number,
-        sort?: Record<string, "asc" | "desc">,
-        unfilteredSemester?: boolean,
-        onlyWithoutEnrollment?: boolean
     ) {
         try {
-            const params: Record<string, any> = {};
 
-            params.page = page;
-            params.perPage = perPage;
-
-            if (classGroupId !== undefined && classGroupId !== null) params.class_group_id = classGroupId;
-            if (schoolId !== undefined && schoolId !== null) params.school_id = schoolId;
-            if (search !== undefined && search !== null && search !== "") params.search = search;
-            if (unfilteredSemester) params.unfilteredSemester = 1;
-            if (onlyWithoutEnrollment) params.onlyWithoutEnrollment = 1;
-
-            if (filters) {
-                Object.entries(filters).forEach(([key, filter]) => {
-                    const v = (filter as any)?.value;
-                    if (v !== undefined && v !== null && v !== "") {
-                        params[`filter[${key}]`] = v;
-                    }
-                });
-            }
-            if (sort) {
-                Object.entries(sort).forEach(([key, direction]) => {
-                    if (direction) params[`sort[${key}]`] = direction;
-                });
-            }
-
-            const response = await axiosClient.get(`/student`, { params });
+            const response = await axiosClient.post(`/enrollment`,
+                {
+                    student_id: studentId,
+                    class_group_id: classGroupId,
+                }
+            );
             return response.data;
         } catch (error) {
             console.error("Error fetching students", error);
             throw error;
         }
     }
-
 
 
     async addStudent(payload: any) {
@@ -119,4 +92,4 @@ class StudentService {
     }
 }
 
-export default new StudentService();
+export default new EnrollmentService();

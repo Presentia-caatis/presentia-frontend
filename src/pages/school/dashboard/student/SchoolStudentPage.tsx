@@ -19,6 +19,9 @@ import { FilterMatchMode } from 'primereact/api';
 import { FileUpload, FileUploadSelectEvent } from 'primereact/fileupload';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { hasAnyPermission } from '../../../../utils/hasAnyPermissions';
+import { TabPanel, TabView } from 'primereact/tabview';
+import enrollmentService from '../../../../services/enrollmentService';
+import { MultiSelect } from 'primereact/multiselect';
 
 
 
@@ -29,7 +32,7 @@ type StudentData = {
     nisn: string;
     gender: string;
     is_active: number;
-    class_group_id: number;
+    class_group_id: number | null;
     class_group: {
         id: number;
         class_name: string;
@@ -68,7 +71,7 @@ const SchoolStudentPage = () => {
         nisn: '',
         gender: '',
         is_active: 1,
-        class_group_id: 0,
+        class_group_id: null,
         class_group: {
             id: 0,
             class_name: ''
@@ -90,6 +93,158 @@ const SchoolStudentPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(20);
     const [totalRecords, setTotalRecords] = useState(0);
+    const [selectedStudentIds, setSelectedStudentIds] = useState<Array<number | string>>([]);
+    const [selectedClassGroupId, setSelectedClassGroupId] = useState<number | string | undefined>(undefined);
+    const [unenrolledOptions, setUnenrolledOptions] = useState<StudentData[]>([]);
+    const [enrollLoading, setEnrollLoading] = useState(false);
+    const [typeQuery, setTypeQuery] = useState("");
+    const debounceRef = useRef<number | undefined>(undefined);
+    const debounce = (fn: () => void, delay = 400) => {
+        if (debounceRef.current) window.clearTimeout(debounceRef.current);
+        debounceRef.current = window.setTimeout(fn, delay);
+    };
+    const canEnroll = !!(selectedClassGroupId && selectedStudentIds.length > 0);
+    const canSaveAdd = !!(
+        newStudentData.student_name &&
+        newStudentData.nis &&
+        newStudentData.nisn &&
+        newStudentData.gender &&
+        newStudentData.is_active !== undefined
+    );
+    const [activeTab, setActiveTab] = useState<number>(0);
+
+    const isNumeric = (s: string) => /^[0-9]+$/.test(s);
+
+    const uniqById = (arr: any[]) => {
+        const map = new Map();
+        for (const it of arr) map.set(it.id, it);
+        return Array.from(map.values());
+    };
+
+    const loadUnenrolledStudents = async (q: string) => {
+        if (!school?.id) return;
+        const keyword = (q || "").trim();
+        if (keyword.length < 3) {
+            setUnenrolledOptions([]);
+            return;
+        }
+
+        try {
+            setEnrollLoading(true);
+            setUnenrolledOptions([]);
+
+            if (isNumeric(keyword)) {
+                const [byNis, byNisn] = await Promise.all([
+                    studentService.getStudent(
+                        1, 20, undefined, undefined,
+                        { nis: { value: keyword } },
+                        school.id,
+                        { student_name: "asc" },
+                        true,
+                        true
+                    ),
+                    studentService.getStudent(
+                        1, 20, undefined, undefined,
+                        { nisn: { value: keyword } },
+                        school.id,
+                        { student_name: "asc" },
+                        true,
+                        true
+                    ),
+                ]);
+
+                const rowsA = byNis?.data?.data ?? byNis?.data ?? [];
+                const rowsB = byNisn?.data?.data ?? byNisn?.data ?? [];
+                setUnenrolledOptions(uniqById([...rowsA, ...rowsB]));
+            } else {
+                const res = await studentService.getStudent(
+                    1, 20, undefined, undefined,
+                    { student_name: { value: keyword } },
+                    school.id,
+                    { student_name: "asc" },
+                    true,
+                    true
+                );
+                const rows = res?.data?.data ?? res?.data ?? [];
+                setUnenrolledOptions(rows);
+            }
+        } catch (e) {
+            console.error(e);
+            setUnenrolledOptions([]);
+        } finally {
+            setEnrollLoading(false);
+        }
+    };
+
+    const handleEnrollStudents = async () => {
+        if (!selectedClassGroupId) {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Pilih Kelas",
+                detail: "Silakan pilih kelas terlebih dahulu.",
+                life: 2500,
+            });
+            return;
+        }
+        if (selectedStudentIds.length === 0) {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Pilih Siswa",
+                detail: "Silakan pilih minimal satu siswa.",
+                life: 2500,
+            });
+            return;
+        }
+
+        try {
+            setSaveLoading(true);
+
+            const nameOf = (id: number | string) => {
+                const s = unenrolledOptions.find((x: any) => x.id === id);
+                return s ? `${s.student_name} (${s.nis ?? "-"})` : `ID ${id}`;
+            };
+
+            const ids = [...selectedStudentIds];
+
+            for (const id of ids) {
+                try {
+                    await enrollmentService.enroll(id, selectedClassGroupId);
+                    toast.current?.show({
+                        severity: "success",
+                        summary: "Enroll berhasil",
+                        detail: `${nameOf(id)} berhasil di-enroll.`,
+                        life: 2000,
+                    });
+                } catch (err: any) {
+                    const code = err?.response?.status;
+                    toast.current?.show({
+                        severity: code === 409 ? "warn" : "error",
+                        summary: code === 409 ? "Sudah ter-enroll" : "Enroll gagal",
+                        detail: nameOf(id),
+                        life: 2500,
+                    });
+                }
+
+                await new Promise((resolve) => setTimeout(resolve, 300));
+            }
+
+            await fetchStudents();
+            setSelectedStudentIds([]);
+            setSelectedClassGroupId(undefined);
+            setUnenrolledOptions([]);
+        } catch (err) {
+            console.error("Enroll error:", err);
+            toast.current?.show({
+                severity: "error",
+                summary: "Enroll gagal",
+                detail: "Terjadi kesalahan saat memproses enroll.",
+                life: 3000,
+            });
+        } finally {
+            setSaveLoading(false);
+        }
+    };
+
 
     const handleFileSelect = (event: FileUploadSelectEvent) => {
         const file = event.files?.[0];
@@ -104,6 +259,17 @@ const SchoolStudentPage = () => {
             });
         }
     };
+
+
+    useEffect(() => {
+        if (showAddDialog || showEditDialog) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+
+        return () => document.body.classList.remove('modal-open');
+    }, [showAddDialog, showEditDialog]);
 
 
     const handleClearFile = () => {
@@ -333,6 +499,7 @@ const SchoolStudentPage = () => {
     const handleAddStudent = async (newStudent: StudentData) => {
         try {
             setSaveLoading(true);
+
             const payload = {
                 student_name: newStudent.student_name,
                 nis: newStudent.nis,
@@ -340,29 +507,84 @@ const SchoolStudentPage = () => {
                 gender: newStudent.gender,
                 is_active: newStudent.is_active,
                 class_group_id: newStudent.class_group_id,
-                school_id: user?.school_id
+                school_id: user?.school_id,
             };
 
-            if (user?.school_id !== undefined) {
-                if (user?.school_id !== null) {
-                    await studentService.addStudent(payload);
-                    setSaveLoading(false);
-                    toast.current?.show({ severity: 'success', summary: 'Siswa berhasil ditambahkan', detail: 'Anda berhasil menambahkan siswa.', life: 3000 });
-                } else {
-                    throw new Error('School ID is null');
+            if (user?.school_id === undefined) throw new Error("School ID is undefined");
+            if (user?.school_id === null) throw new Error("School ID is null");
+
+            const addRes = await studentService.addStudent(payload);
+
+            const created = addRes?.data ?? addRes;
+            const newId =
+                created?.id ??
+                created?.data?.id ??
+                created?.student?.id ??
+                created?.data?.student?.id;
+
+            const labelName = newStudent.student_name || `ID ${newId ?? "-"}`;
+
+            toast.current?.show({
+                severity: "success",
+                summary: "Siswa berhasil ditambahkan",
+                detail: `${labelName} berhasil ditambahkan.`,
+                life: 3000,
+            });
+
+            if (newStudent.class_group_id && newId) {
+                try {
+                    await enrollmentService.enroll(newId, newStudent.class_group_id);
+
+                    const sem =
+                        school?.currentSemester
+                            ? `${school.currentSemester.academic_year} - ${school.currentSemester.period === "odd" ? "Ganjil" : "Genap"
+                            }`
+                            : "semester aktif";
+
+                    toast.current?.show({
+                        severity: "success",
+                        summary: "Enroll berhasil",
+                        detail: `${labelName} di-enroll ke ${sem}.`,
+                        life: 3000,
+                    });
+                } catch (err: any) {
+                    const code = err?.response?.status;
+                    toast.current?.show({
+                        severity: code === 409 ? "warn" : "error",
+                        summary: code === 409 ? "Sudah ter-enroll" : "Enroll gagal",
+                        detail:
+                            code === 409
+                                ? `${labelName} sudah ter-enroll pada semester ini.`
+                                : `Gagal enroll ${labelName}.`,
+                        life: 3000,
+                    });
                 }
-            } else {
-                throw new Error('School ID is undefined');
             }
-            fetchStudents();
-            closeDialog('add');
-            setSaveLoading(false);
+
+            await fetchStudents();
+            setNewStudentData({
+                id: 0,
+                student_name: "",
+                nis: "",
+                nisn: "",
+                gender: "",
+                is_active: 1,
+                class_group_id: null,
+                class_group: { id: 0, class_name: "" },
+            });
         } catch (error) {
+            console.error("Error Add student:", error);
+            toast.current?.show({
+                severity: "error",
+                summary: "Siswa gagal ditambahkan",
+                detail: "Terjadi kesalahan saat menambah siswa.",
+                life: 3000,
+            });
+        } finally {
             setSaveLoading(false);
-            toast.current?.show({ severity: 'error', summary: 'Siswa gagal ditambahkan', detail: 'Anda gagal menambahkan siswa.', life: 3000 });
-            console.error('Error Add student:', error);
         }
     };
+
 
     const handleUpdateStudent = async (updatedStudent: StudentData) => {
         try {
@@ -495,12 +717,15 @@ const SchoolStudentPage = () => {
                 nisn: '',
                 gender: '',
                 is_active: 1,
-                class_group_id: 0,
+                class_group_id: null,
                 class_group: {
                     id: 0,
                     class_name: ''
                 }
             });
+            setSelectedStudentIds([]);
+            setSelectedClassGroupId(undefined);
+            setUnenrolledOptions([]);
             setShowAddDialog(false);
         } else if (type === "update") {
             setEditStudentData({
@@ -510,7 +735,7 @@ const SchoolStudentPage = () => {
                 nisn: '',
                 gender: '',
                 is_active: 1,
-                class_group_id: 0,
+                class_group_id: null,
                 class_group: {
                     id: 0,
                     class_name: ''
@@ -529,7 +754,7 @@ const SchoolStudentPage = () => {
                 {hasAnyPermission(user, ['manage_students']) && (
                     <div className='flex flex-column md:flex-row justify-content-between p-4 card'>
                         <div className='flex flex-column mb-2 md:mb-0 md:flex-row gap-2'>
-                            <Button icon="pi pi-plus" severity='success' label='Siswa Baru' onClick={() => {
+                            <Button icon="pi pi-plus" severity='success' label='Tambah / Enroll Siswa' onClick={() => {
                                 setShowAddDialog(true);
                             }} />
                             <Button
@@ -653,7 +878,12 @@ const SchoolStudentPage = () => {
                         field="class_group_id"
                         header="Kelas"
                         sortable
-                        body={(rowData) => (loading ? <Skeleton width="70%" height="1.5rem" /> : rowData.class_group?.class_name)}
+                        body={(rowData: any) => (
+                            loading ? <Skeleton width="70%" height="1.5rem" /> :
+                                rowData.enrollments
+                                    ?.find((enrollment: any) => enrollment.semester_id === school?.currentSemester?.id)
+                                    ?.class_group?.class_name || 'Belum di enroll'
+                        )}
                         filter
                         filterElement={dropdownFilterTemplate("class_group_id", listKelas)}
                         showFilterMenu={false}
@@ -710,86 +940,196 @@ const SchoolStudentPage = () => {
                 </DataTable>
 
                 <Dialog visible={showAddDialog} style={{ width: '450px' }} onHide={() => closeDialog('add')} header="Penambahan Data Siswa" footer={
-                    <div>
-                        <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={() => closeDialog('add')} />
-                        <Button label="Save" loading={saveLoading} disabled={!newStudentData.student_name ||
-                            !newStudentData.nis ||
-                            !newStudentData.nisn ||
-                            !newStudentData.class_group_id ||
-                            !newStudentData.gender ||
-                            newStudentData.is_active === undefined} icon="pi pi-check" className="p-button-text" onClick={(event) => confirmAddStudent(event, newStudentData)} />
+                    <div className="flex justify-content-end gap-2 w-full">
+                        <Button
+                            label="Batal"
+                            icon="pi pi-times"
+                            className="p-button-text"
+                            loading={saveLoading}
+                            onClick={() => closeDialog('add')}
+                        />
+                        <Button
+                            label={activeTab === 0 ? "Simpan" : "Enroll"}
+                            icon={activeTab === 0 ? "pi pi-check" : "pi pi-check"}
+                            loading={saveLoading}
+                            disabled={activeTab === 0 ? !canSaveAdd : !canEnroll}
+                            onClick={(e) =>
+                                activeTab === 0
+                                    ? confirmAddStudent(e, newStudentData)
+                                    : handleEnrollStudents()
+                            }
+                        />
                     </div>
                 } modal={true} className='p-fluid'>
-                    <div className='field'>
-                        <label htmlFor="nama">Nama  <span className='text-red-600'>*</span></label>
-                        <InputText
-                            id="nama"
-                            placeholder='Masukkan Nama'
-                            value={newStudentData.student_name}
-                            onChange={(e) => setNewStudentData({ ...newStudentData, student_name: e.target.value })}
-                            required
-                            autoFocus
-                        />
-                    </div>
-                    <div className='field'>
-                        <label htmlFor="nis">NIS  <span className='text-red-600'>*</span></label>
-                        <InputText
-                            id="nis"
-                            type='number'
-                            placeholder='Masukkan NIS'
-                            value={newStudentData.nis}
-                            onChange={(e) => setNewStudentData({ ...newStudentData, nis: e.target.value })}
-                            required
-                            autoFocus
-                        />
-                    </div>
-                    <div className='field'>
-                        <label htmlFor="nisn">NISN  <span className='text-red-600'>*</span></label>
-                        <InputText
-                            id="nisn"
-                            type='number'
-                            placeholder='Masukkan NISN'
-                            value={newStudentData.nisn}
-                            onChange={(e) => setNewStudentData({ ...newStudentData, nisn: e.target.value })}
-                            required
-                            autoFocus
-                        />
-                    </div>
-                    <div className='field'>
-                        <label htmlFor="kelas">Kelas  <span className='text-red-600'>*</span></label>
-                        <Dropdown value={newStudentData.class_group_id} loading={loadingKelas} onChange={(e) => setNewStudentData({ ...newStudentData, class_group_id: e.value })} options={listKelas} optionLabel="label"
-                            placeholder="Pilih Kelas" />
-                    </div>
-                    <div className='field'>
-                        <label htmlFor="Jenis Kelamin">Jenis Kelamin  <span className='text-red-600'>*</span></label>
-                        <Dropdown value={newStudentData.gender} onChange={(e) => setNewStudentData({ ...newStudentData, gender: e.value })} options={listKelamin} optionLabel="label"
-                            placeholder="Pilih Jenis Kelamin" />
-                    </div>
-                    <div className='field'>
-                        <label htmlFor="status">Status Siswa  <span className='text-red-600'>*</span></label>
-                        <div className="formgrid grid">
-                            <div className="field-radiobutton col-6">
-                                <RadioButton
-                                    inputId="status1"
-                                    name="status"
-                                    value={1}
-                                    onChange={(e) => setNewStudentData({ ...newStudentData, is_active: e.value })}
-                                    checked={newStudentData.is_active === 1}
+                    <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
+                        <TabPanel header="Tambah Siswa Baru">
+                            <div className='field'>
+                                <label htmlFor="nama">Nama  <span className='text-red-600'>*</span></label>
+                                <InputText
+                                    id="nama"
+                                    placeholder='Masukkan Nama'
+                                    value={newStudentData.student_name}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, student_name: e.target.value })}
+                                    required
+                                    autoFocus
                                 />
-                                <label htmlFor="status1" className="ml-2">Aktif</label>
                             </div>
-                            <div className="field-radiobutton col-6">
-                                <RadioButton
-                                    inputId="status2"
-                                    name="status"
-                                    value={0}
-                                    onChange={(e) => setNewStudentData({ ...newStudentData, is_active: e.value })}
-                                    checked={newStudentData.is_active === 0}
+                            <div className='field'>
+                                <label htmlFor="nis">NIS  <span className='text-red-600'>*</span></label>
+                                <InputText
+                                    id="nis"
+                                    type='number'
+                                    placeholder='Masukkan NIS'
+                                    value={newStudentData.nis}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, nis: e.target.value })}
+                                    required
+                                    autoFocus
                                 />
-                                <label htmlFor="status2" className="ml-2">Tidak Aktif</label>
                             </div>
-                        </div>
-                    </div>
+                            <div className='field'>
+                                <label htmlFor="nisn">NISN  <span className='text-red-600'>*</span></label>
+                                <InputText
+                                    id="nisn"
+                                    type='number'
+                                    placeholder='Masukkan NISN'
+                                    value={newStudentData.nisn}
+                                    onChange={(e) => setNewStudentData({ ...newStudentData, nisn: e.target.value })}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+                            <div className='field'>
+                                <label htmlFor="kelas">Kelas</label>
+                                <Dropdown
+                                    showClear
+                                    id="kelas"
+                                    value={newStudentData.class_group_id}
+                                    loading={loadingKelas}
+                                    onChange={(e) =>
+                                        setNewStudentData({ ...newStudentData, class_group_id: e.value })
+                                    }
+                                    options={listKelas}
+                                    optionLabel="label"
+                                    placeholder="Pilih Kelas"
+                                />
+                                {newStudentData.class_group_id && school?.currentSemester && (
+                                    <small className="p-d-block text-gray-500 mt-1">
+                                        Siswa akan otomatis di-enroll ke semester{" "}
+                                        <strong>
+                                            {school.currentSemester.academic_year} -{" "}
+                                            {school.currentSemester.period === "odd" ? "Ganjil" : "Genap"}
+                                        </strong>
+                                    </small>
+                                )}
+                            </div>
+
+                            <div className='field'>
+                                <label htmlFor="Jenis Kelamin">Jenis Kelamin  <span className='text-red-600'>*</span></label>
+                                <Dropdown value={newStudentData.gender} onChange={(e) => setNewStudentData({ ...newStudentData, gender: e.value })} options={listKelamin} optionLabel="label"
+                                    placeholder="Pilih Jenis Kelamin" />
+                            </div>
+                            <div className='field'>
+                                <label htmlFor="status">Status Siswa  <span className='text-red-600'>*</span></label>
+                                <div className="formgrid grid">
+                                    <div className="field-radiobutton col-6">
+                                        <RadioButton
+                                            inputId="status1"
+                                            name="status"
+                                            value={1}
+                                            onChange={(e) => setNewStudentData({ ...newStudentData, is_active: e.value })}
+                                            checked={newStudentData.is_active === 1}
+                                        />
+                                        <label htmlFor="status1" className="ml-2">Aktif</label>
+                                    </div>
+                                    <div className="field-radiobutton col-6">
+                                        <RadioButton
+                                            inputId="status2"
+                                            name="status"
+                                            value={0}
+                                            onChange={(e) => setNewStudentData({ ...newStudentData, is_active: e.value })}
+                                            checked={newStudentData.is_active === 0}
+                                        />
+                                        <label htmlFor="status2" className="ml-2">Tidak Aktif</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </TabPanel>
+                        <TabPanel header="Enroll ke Semester Aktif">
+                            <div className="flex flex-column gap-3">
+                                <div className="flex align-items-center gap-2">
+                                    <label className="w-12rem">Semester Aktif</label>
+                                    <InputText
+                                        value={
+                                            school?.currentSemester
+                                                ? `${school.currentSemester.academic_year} - ${school.currentSemester.period === "odd"
+                                                    ? "Ganjil"
+                                                    : "Genap"
+                                                }`
+                                                : "-"
+                                        }
+                                        disabled
+                                    />
+                                </div>
+
+
+                                <div className="flex align-items-center gap-2">
+                                    <label className="w-12rem">Kelas</label>
+                                    <Dropdown
+                                        value={selectedClassGroupId}
+                                        options={listKelas}
+                                        disabled={saveLoading}
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        placeholder="Pilih kelas"
+                                        onChange={(e) => setSelectedClassGroupId(e.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                <div className="flex align-items-start gap-2">
+                                    <label className="w-12rem mt-2">Siswa Belum Ter-enroll</label>
+                                    <MultiSelect
+                                        value={selectedStudentIds}
+                                        options={unenrolledOptions.map(s => ({
+                                            label: `${s.student_name} (${s.nis ?? "-"})`,
+                                            value: s.id,
+                                        }))}
+                                        optionLabel="label"
+                                        optionValue="value"
+                                        loading={enrollLoading}
+                                        disabled={saveLoading}
+                                        placeholder={enrollLoading ? "Memuat..." : "Ketik minimal 3 huruf"}
+                                        emptyFilterMessage={
+                                            enrollLoading
+                                                ? "Sedang memuat…"
+                                                : (typeQuery.length < 3 ? "Ketik minimal 3 huruf" : "Tidak ada hasil")
+                                        }
+                                        emptyMessage={
+                                            enrollLoading
+                                                ? "Sedang memuat…"
+                                                : (typeQuery.length < 3 ? "Ketik minimal 3 huruf" : "Tidak ada hasil")
+                                        }
+                                        display="chip"
+                                        className="w-full multiselect-vertical"
+                                        filter
+                                        filterPlaceholder="Ketik nama/nis (min 3 huruf)"
+                                        onFilter={(e) => {
+                                            const q = e.filter || "";
+                                            setTypeQuery(q);
+                                            debounce(() => loadUnenrolledStudents(q), 400);
+                                        }}
+                                        onChange={(e) => {
+                                            if (enrollLoading) return;
+                                            setSelectedStudentIds(e.value);
+                                        }}
+                                        appendTo={null}
+                                    />
+
+                                </div>
+                            </div>
+                        </TabPanel>
+                    </TabView>
+
                 </Dialog>
 
                 <Dialog
@@ -800,13 +1140,13 @@ const SchoolStudentPage = () => {
                     footer={
                         <div>
                             <Button
-                                label="Cancel"
+                                label="Batal"
                                 icon="pi pi-times"
                                 className="p-button-text"
                                 onClick={() => closeDialog('update')}
                             />
                             <Button
-                                label="Update"
+                                label="Simpan"
                                 loading={saveLoading}
                                 icon="pi pi-check"
                                 className="p-button-text"

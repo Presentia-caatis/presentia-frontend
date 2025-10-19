@@ -28,6 +28,17 @@ interface SchoolData {
     activePackage: string;
     packageExpiry: string;
     dailyData: []
+    currentSemester: {
+        id: number;
+        academic_year: string;
+        period: string;
+        school_id: number;
+        start_date: string;
+        end_date: string;
+        is_active: number;
+        created_at: string;
+        updated_at: string;
+    }
 }
 
 interface SchoolContextProps {
@@ -100,7 +111,8 @@ export const SchoolProvider = ({ children }: { children: React.ReactNode }) => {
                     femaleStudents: staticRes.data.female_students,
                     activePackage: staticRes.data.subscription_packet?.subscription_name ?? "-",
                     packageExpiry: staticRes.data.subscription_packet?.end_duration ?? "-",
-                    dailyData: dailyRes.data[0]?.statistic?.check_in ?? []
+                    dailyData: dailyRes.data[0]?.statistic?.check_in ?? [],
+                    currentSemester: schoolRes.data.current_semester ?? null,
                 });
 
             } catch (error) {

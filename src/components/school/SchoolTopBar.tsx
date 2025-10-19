@@ -88,6 +88,12 @@ const SchoolTopbar = () => {
                 </div>
             </Link>
 
+            <div className='text-lg hidden xl:block'>
+                Tahun Ajaran {""}
+                <span className='font-bold'>
+                    {school?.currentSemester?.academic_year || 'Loading...'} - {school?.currentSemester?.period == "odd" ? "Genap" : "Ganjil"} </span>
+            </div>
+
             <div className='flex'>
                 <div className="menu-toggle cursor-pointer lg:hidden my-auto mr-3" onClick={() => setIsSidebarVisible(prev => !prev)}>
                     <i className="pi pi-bars text-2xl"></i>

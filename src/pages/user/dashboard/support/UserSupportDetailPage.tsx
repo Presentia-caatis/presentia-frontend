@@ -141,7 +141,7 @@ const UserSupportDetailPage = () => {
                             onClick={handleSendMessage}
                         />
                         <Button
-                            label="Cancel"
+                            label="Batal"
                             icon="pi pi-times"
                             className="p-button-secondary"
                             onClick={() => setReplyFormVisible(false)}

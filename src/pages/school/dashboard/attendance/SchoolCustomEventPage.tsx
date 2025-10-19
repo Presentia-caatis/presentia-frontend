@@ -209,8 +209,8 @@ const SchoolCustomEventPage = () => {
                     header={editMode ? 'Edit Acara' : 'Buat Acara Baru'}
                     footer={
                         <div>
-                            <Button label="Cancel" icon="pi pi-times" className="p-button-text" onClick={resetForm} />
-                            <Button label="Save" icon="pi pi-check" className="p-button-text" onClick={handleSave} />
+                            <Button label="Batal" icon="pi pi-times" className="p-button-text" onClick={resetForm} />
+                            <Button label="Simpan" icon="pi pi-check" className="p-button-text" onClick={handleSave} />
                         </div>
                     }
                     modal={true}

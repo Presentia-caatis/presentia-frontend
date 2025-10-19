@@ -277,13 +277,13 @@ const AdminSubscriptionPage: React.FC = () => {
                 </div>
                 <div className="flex justify-content-end gap-2 mt-3">
                     <Button
-                        label="Cancel"
+                        label="Batal"
                         icon="pi pi-times"
                         className="p-button-text"
                         onClick={resetForm}
                     />
                     <Button
-                        label="Save"
+                        label="Simpan"
                         icon="pi pi-check"
                         onClick={saveSubscription}
                     />
