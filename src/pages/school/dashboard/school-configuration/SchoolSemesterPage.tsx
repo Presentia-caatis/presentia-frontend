@@ -13,6 +13,7 @@ import { Tag } from "primereact/tag";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import semesterService, { SemesterPayload, MigrationConfig } from "../../../../services/semesterService";
+import { ProgressSpinner } from "primereact/progressspinner";
 
 type Semester = {
     id: number;
@@ -185,17 +186,28 @@ export default function SchoolSemesterPage() {
     };
 
     return (
-        <div className="p-4 flex flex-column gap-4">
+        <div className="p-4 flex card flex-column gap-4">
             <Toast ref={toast} />
             <ConfirmDialog />
 
             <div className="flex justify-content-between align-items-center">
-                <h2 className="m-0">Manajemen Semester</h2>
-                <Button label="Tambah Semester" icon="pi pi-plus" onClick={openCreate} />
+                <h1 className="m-0">Manajemen Semester</h1>
+                <Button
+                    label="Tambah Semester"
+                    icon="pi pi-plus"
+                    severity="help"
+                    className="p-button-rounded"
+                    onClick={openCreate}
+                />
             </div>
 
-            <Card title="Semester Aktif Saat Ini">
-                {current ? (
+            <div >
+                {loading ? (
+                    <div className="flex flex-column align-items-center gap-3 py-4">
+                        <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                        <span className="text-gray-500 font-semibold">Memuat data semester aktif...</span>
+                    </div>
+                ) : current ? (
                     <div className="grid">
                         <div className="col-12 md:col-3"><strong>Tahun Akademik</strong><br />{current.academic_year}</div>
                         <div className="col-12 md:col-3"><strong>Periode</strong><br /><Tag value={periodLabel(current.period)} severity={current.period === "odd" ? "info" : "success"} /></div>
@@ -205,12 +217,13 @@ export default function SchoolSemesterPage() {
                 ) : (
                     <div className="text-color-secondary">Belum ada semester aktif pada tanggal saat ini.</div>
                 )}
-            </Card>
+            </div>
 
-            <Card title="Daftar Semester">
+
+            <div>
+
                 <DataTable
                     value={items}
-                    loading={loading}
                     paginator
                     rows={perPage}
                     totalRecords={total}
@@ -219,7 +232,22 @@ export default function SchoolSemesterPage() {
                     onPage={onPage}
                     rowsPerPageOptions={[10, 20, 50]}
                     responsiveLayout="scroll"
-                    emptyMessage="Tidak ada data."
+                    rowHover
+                    size="small"
+                    emptyMessage={
+                        loading ? (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <ProgressSpinner style={{ width: "50px", height: "50px" }} />
+                                <span className="text-gray-500 font-semibold">Memuat data semester...</span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-column align-items-center gap-3 py-4">
+                                <i className="pi pi-calendar-times text-gray-400" style={{ fontSize: "2rem" }} />
+                                <span className="text-gray-500 font-semibold">Belum ada data semester</span>
+                                <small className="text-gray-400">Silakan tambahkan melalui tombol “Tambah Semester”.</small>
+                            </div>
+                        )
+                    }
                 >
                     <Column field="academic_year" header="Tahun Akademik" sortable />
                     <Column header="Periode" body={(row: Semester) => (
@@ -234,21 +262,42 @@ export default function SchoolSemesterPage() {
                     )} />
                     <Column header="Aksi" body={(row: Semester) => (
                         <div className="flex gap-2">
-                            <Button icon="pi pi-pencil" rounded text onClick={() => openEdit(row)} tooltip="Edit" />
-                            <Button icon="pi pi-trash" severity="danger" rounded text onClick={() => handleDelete(row)} tooltip="Hapus" disabled={row.is_active} />
-                            <Button
-                                icon={row.is_active ? "pi pi-stop" : "pi pi-check-circle"}
-                                rounded
-                                text
-                                onClick={() => handleActivate(row)}
-                                tooltip={row.is_active ? "Nonaktifkan" : "Aktifkan"}
-                            />
+                            <div className="flex gap-2">
+                                <Button
+                                    icon="pi pi-pencil"
+                                    rounded
+                                    severity="success"
+                                    aria-label="Edit"
+                                    onClick={() => openEdit(row)}
+                                    tooltip="Edit"
+                                    className="p-button-sm"
+                                />
+                                <Button
+                                    icon="pi pi-trash"
+                                    rounded
+                                    severity="danger"
+                                    aria-label="Hapus"
+                                    onClick={() => handleDelete(row)}
+                                    tooltip="Hapus"
+                                    disabled={row.is_active}
+                                    className="p-button-sm"
+                                />
+                                <Button
+                                    icon={row.is_active ? "pi pi-stop" : "pi pi-check-square"}
+                                    rounded
+                                    severity="help"
+                                    outlined
+                                    aria-label={row.is_active ? "Nonaktifkan" : "Aktifkan"}
+                                    onClick={() => handleActivate(row)}
+                                    tooltip={row.is_active ? "Nonaktifkan" : "Aktifkan"}
+                                    className="p-button-sm"
+                                />
+                            </div>
                         </div>
                     )} />
                 </DataTable>
-            </Card>
+            </div>
 
-            {/* Dialog Create / Edit */}
             <Dialog
                 header={isEdit ? "Ubah Semester" : "Tambah Semester"}
                 visible={showEditor}
