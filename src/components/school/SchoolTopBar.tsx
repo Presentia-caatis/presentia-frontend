@@ -91,7 +91,7 @@ const SchoolTopbar = () => {
             <div className='text-lg hidden xl:block'>
                 Tahun Ajaran {""}
                 <span className='font-bold'>
-                    {school?.currentSemester?.academic_year || 'Loading...'} - {school?.currentSemester?.period == "odd" ? "Genap" : "Ganjil"} </span>
+                    {school?.currentSemester?.academic_year || 'Loading...'} - {school?.currentSemester?.period == "even" ? "Genap" : "Ganjil"} </span>
             </div>
 
             <div className='flex'>
