@@ -346,7 +346,7 @@ const FingerprintPage = () => {
         return (
             <div className="flex align-items-center justify-content-between">
                 <span>
-                    {option.student_name?.toUpperCase()} - {option.class_group?.class_name || 'Tanpa Kelas'} - {option.id}
+                    {option.student_name?.toUpperCase()} - {option.class_group[0]?.class_name || 'Tanpa Kelas'} - {option.id}
                 </span>
                 {isRegistered && <i className="ml-2 pi pi-check text-green-500"></i>}
             </div>
@@ -604,7 +604,7 @@ const FingerprintPage = () => {
                     <div style={{ padding: '20px' }}>
                         <h3 style={{ fontWeight: 'bold', marginBottom: '10px' }}>{selectedStudentFingerprint?.student_name}</h3>
                         <p style={{ fontSize: '14px', marginBottom: '20px' }}>
-                            <strong>Kelas:</strong> {selectedStudentFingerprint?.class_group?.class_name}
+                            <strong>Kelas:</strong> {selectedStudentFingerprint?.class_group[0]?.class_name}
                         </p>
                         <div style={{ fontWeight: '600', marginBottom: '15px' }}>Daftar Sidik Jari:</div>
                         {selectedStudentFingerprint?.credential_ids?.length > 0 ? (
